@@ -1,0 +1,5 @@
+jupyter
+matplotlib
+emcee
+corner
+git+https://github.com/rmnldwg/lymph@081123dad17ccfc808978de370d23e7d7e3fb2a1
