@@ -1,0 +1,45 @@
+---
+title: "Probabilistic Model of Bilateral Lymphatic Spread in Head and Neck Cancer"
+authors:
+  - name: Roman Ludwig
+    orcid: 0000-0001-9434-328X
+    email: roman.ludwig@usz.ch
+  - name: Yoel Perez Haas
+    email: yoel.perezhaas@usz.ch
+  - name: Jan Unkelbach
+    orcid: 0000-0002-4275-990X
+    email: jan.unkelbach@usz.ch
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+# Introduction
+
+- head and neck cancer spreads lymphatically
+- may sometimes spread to contralateral side
+- spreads more frequently and to larger extent contralaterally when tumor extends the mid-sagittal line
+- we describe a model based on previously published hidden Markov model
+- we extend it to cover the contralateral side, too
+- ipsi- and contralateral side are correlated via time of diagnosis, which is correlated with T-category
+- tumor extension over mid-sagittal line is modelled as random variable
+- spread probabilities from tumor to contralateral LNLs in case of midline extesnion are linear combinations of these probabilities in case of ipsilateral spread and contralateral spread when tumor is clearly lateralized
+
+```{python}
+from lymph import models
+
+graph_dict = {
+  ("tumor", "T"): ["II", "III"],
+  ("lnl", "II"): ["III"],
+  ("lnl", "III"): [],
+}
+model = models.Midline(
+  graph_dict=graph_dict,
+  is_symmetric={"lnl_spread": True},
+  use_mixing=True,
+  use_central=False,
+  use_midext_evo=True,
+)
+model.set_modality("max_llh", spec=1.0, sens=1.0)
+```
