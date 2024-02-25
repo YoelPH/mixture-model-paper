@@ -1,0 +1,41 @@
+schema: '2.0'
+stages:
+  enhance:
+    cmd: lyscripts data enhance data/2021-usz-oropharynx.csv data/enhanced.csv
+    deps:
+    - path: data/2021-usz-oropharynx.csv
+      hash: md5
+      md5: 1b949c74081ac4b6224186ebbb9c90df
+      size: 159482
+    params:
+      params.yaml:
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+    outs:
+    - path: data/enhanced.csv
+      hash: md5
+      md5: 6f2ce0947a73b70957218896e1a3d12b
+      size: 195484

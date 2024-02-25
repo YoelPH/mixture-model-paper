@@ -1,0 +1,37 @@
+########################################################################################
+# This dictionary defines which LNLs are present in the
+# graph and how they are connected.
+graph:
+  tumor:
+    primary: [II, III]
+  lnl:
+    II: [III]
+    III: []
+
+########################################################################################
+# Below are some parameters necessary for the model setup:
+model:
+  first_binom_prob: 0.3         # defines shape of time prior of first T-stage
+  max_t: 10                     # max number of time steps to evolve system
+  t_stages: [early, late]       # T-stages to consider in the data
+  class: Unilateral             # model class to use (see `lymph-model` docs)
+  # keyword arguments to pass to the model constructor
+  kwargs:
+    base_symmetric: false
+    trans_symmetric: true
+    use_mixing: true
+
+########################################################################################
+# Under this key we define the specficity and sensitivity for a range
+# of diagnostic modalities. They are taken from literature and during
+# sampling, everything that's not commented our here will be used for
+# inference.
+modalities:
+  CT: [0.76, 0.81]
+  MRI: [0.63, 0.81]
+  PET: [0.86, 0.79]
+  FNA: [0.98, 0.80]
+  diagnostic_consensus: [0.86, 0.81]
+  pathology: [1.0, 1.0]
+  pCT: [0.86, 0.81]
+  max_llh: [1.0, 1.0]
