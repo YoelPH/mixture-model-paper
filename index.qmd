@@ -26,20 +26,79 @@ jupyter: python3
 - tumor extension over mid-sagittal line is modelled as random variable
 - spread probabilities from tumor to contralateral LNLs in case of midline extesnion are linear combinations of these probabilities in case of ipsilateral spread and contralateral spread when tumor is clearly lateralized
 
+
+# Methods
+
+Prepare the model and load the data:
+
 ```{python}
+import numpy as np
+import pandas as pd
+
 from lymph import models
+from lyscripts.utils import binom_pmf, parametric_binom_pmf
+
+
+np.random.seed(42)
 
 graph_dict = {
   ("tumor", "T"): ["II", "III"],
   ("lnl", "II"): ["III"],
   ("lnl", "III"): [],
 }
-model = models.Midline(
+model = models.Bilateral(
   graph_dict=graph_dict,
   is_symmetric={"lnl_spread": True},
-  use_mixing=True,
-  use_central=False,
-  use_midext_evo=True,
+  # use_mixing=True,
+  # use_central=False,
+  # use_midext_evo=True,
 )
 model.set_modality("max_llh", spec=1.0, sens=1.0)
+model.set_distribution(
+  "early",
+  binom_pmf(np.arange(model.max_time+1), model.max_time, p=0.3),
+)
+model.set_distribution("late", parametric_binom_pmf)
+model.load_patient_data(
+  pd.read_csv("data/enhanced.csv", header=[0,1,2]),
+)
 ```
+
+
+Do the sampling:
+
+```{python}
+from emcee import EnsembleSampler, backends, moves
+
+ndim = model.get_num_dims()
+initial = np.random.uniform(size=(20 * ndim, ndim))
+
+backend = backends.HDFBackend(filename="models/test.hdf5")
+moves = [(moves.DEMove(), 0.8), (moves.DESnookerMove(), 0.2)]
+sampler = EnsembleSampler(
+  nwalkers=20 * ndim,
+  ndim=ndim,
+  log_prob_fn=model.likelihood,
+  backend=backend,
+  moves=moves,
+  parameter_names=list(model.get_params().keys()),
+)
+sampler.run_mcmc(initial, 1000, progress=True)
+```
+
+
+Look at the results:
+
+```{python}
+from corner import corner
+
+samples = sampler.get_chain(discard=500, thin=10, flat=True)
+corner(
+  samples,
+  titles=list(model.get_params().keys()),
+  show_titles=True,
+);
+```
+
+
+NOTE: For the `Bilateral` model the results look absolutely plausible, but the `Midline` model seems to have some issues (`late_p` was learned to be 0.17 !?).
