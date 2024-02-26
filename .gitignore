@@ -188,3 +188,11 @@ pyrightconfig.json
 
 # models are tracked by DVC, not git
 models/
+
+# Quarto generated files
+index_files/
+index.*
+!index.qmd
+
+# jupyter
+.jupyter_cache/
