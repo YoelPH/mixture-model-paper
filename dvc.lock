@@ -1,12 +1,12 @@
 schema: '2.0'
 stages:
   enhance:
-    cmd: lyscripts data enhance data/2021-usz-oropharynx.csv data/enhanced.csv
+    cmd: lyscripts data enhance data/2021-clb-oropharynx.csv data/enhanced.csv
     deps:
-    - path: data/2021-usz-oropharynx.csv
+    - path: data/2021-clb-oropharynx.csv
       hash: md5
-      md5: 1b949c74081ac4b6224186ebbb9c90df
-      size: 159482
+      md5: d40c0a1ae967a6983d60a0a809cf3972
+      size: 92742
     params:
       params.yaml:
         modalities:
@@ -37,5 +37,5 @@ stages:
     outs:
     - path: data/enhanced.csv
       hash: md5
-      md5: 6f2ce0947a73b70957218896e1a3d12b
-      size: 195484
+      md5: 3c172958ffa3b0228a6134c60ba54a44
+      size: 115389

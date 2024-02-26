@@ -1,8 +1,8 @@
 stages:
   enhance:
-    cmd: lyscripts data enhance data/2021-usz-oropharynx.csv data/enhanced.csv
+    cmd: lyscripts data enhance data/2021-clb-oropharynx.csv data/enhanced.csv
     deps:
-    - data/2021-usz-oropharynx.csv
+    - data/2021-clb-oropharynx.csv
     params:
     - modalities
     outs:
