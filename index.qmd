@@ -15,6 +15,11 @@ format:
 jupyter: python3
 execute: 
   cache: true
+crossref:
+  fig-prefix: "figure"
+  tbl-prefix: "table"
+  eq-prefix: "equation"
+  sec-prefix: "section"
 ---
 
 # Introduction
@@ -30,6 +35,69 @@ execute:
 
 
 # Methods
+
+## Modelling Unilateral Lymphatic Spread
+
+- what we previously did
+
+$$
+P \left( \mathbf{X} \mid \mathbf{Z} \right) = \frac{P \left( \mathbf{Z} \mid \mathbf{X} \right) P \left( \mathbf{X} \right)}{P \left( \mathbf{Z} \right)}
+$$ {#eq-uni-bayes-law}
+
+Let us for later use define the matrices $\boldsymbol{\Lambda}$:
+
+$$
+\boldsymbol{\Lambda} = P \left( \mathbf{X} \mid \mathbf{t} \right) = \begin{pmatrix}
+\boldsymbol{\pi}^\intercal \cdot \mathbf{A}^0 \\
+\boldsymbol{\pi}^\intercal \cdot \mathbf{A}^1 \\
+\vdots \\
+\boldsymbol{\pi}^\intercal \cdot \mathbf{A}^{t_\text{max}} \\
+\end{pmatrix}
+$$ {#eq-lambda-matrix}
+
+The $n$-th row in this matrix corresponds to the distribution over hidden states after $t=n-1$ time-steps.
+
+
+## Extending the Formalism to Both Sides of the Neck
+
+In analogy to @eq-uni-bayes-law, we can write down the posterior joint probability of an involvement $\mathbf{X}^\text{i}$ ipsilaterally _and_ an involvement $\mathbf{X}^\text{c}$ contralaterally, given a diagnosis of the ipsilateral LNLs $\mathbf{Z}^\text{i}$ and of the contralateral ones $\mathbf{Z}^\text{c}$:
+
+$$
+P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \right) = \frac{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right)}{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \right)}
+$$
+
+The likelihood of the diagnoses given a hidden state simply factorise: $P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) = P \left( \mathbf{Z}^\text{i} \mid \mathbf{X}^\text{i} \right) \cdot P \left( \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{c} \right)$. And the two factors are contained in the observation matrices $\mathbf{B}^\text{i}$ and $\mathbf{B}^\text{c}$.
+
+The term representing the model's prior probability of hidden involvement does not factorize. However, if we assume that lymphatic spread typically does not cross the mid-sagittal line, we can write it as a factorising sum:
+
+$$
+\begin{aligned}
+P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) &= \sum_{t=0}^{t_\text{max}} p(t) \cdot P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid t \right) \\
+&= \sum_{t=0}^{t_\text{max}} p(t) \cdot P \left( \mathbf{X}^\text{i} \mid t \right) \cdot P \left( \mathbf{X}^\text{c} \mid t \right)
+\end{aligned}
+$$
+
+This assumption makes intuitive sense: The two sides of the lymphatic network in a typical patient are approximately mirror images of each other. Thus, no major vessels cross the mid-sagittal line. There may, however, be diffusion of lymph fluid accross this line or bulky involvement that redirects lymphatic drainage significantly.
+
+Using this assumption along with @eq-lambda-matrix, we can write the above distribution algebraically as a product:
+
+$$
+P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} p(\mathbf{t}) \cdot \boldsymbol{\Lambda}^\intercal_\text{c} \right]_{n,m}
+$$
+
+
+## Parameter Symmetries
+
+- spread from LNL to LNL probably symmetric
+
+
+## Tumors Extending Over the Mid-Sagittal Line
+
+- higher prevalence of contralateral involvement when tumor crosses the mid-sagittal plane
+- but still lower than on ipsilateral side
+- spread to contralateral side in case of midline extension may be describes as linear combination of ipsi- and contralateral spread in case of no midline extension.
+- only one additional "mixing parameter" $\alpha$
+- tumor's midline extension modelled as a binary RV (lateralized or crossing/extending)
 
 
 # Results
