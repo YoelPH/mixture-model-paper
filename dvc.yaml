@@ -1,9 +1,27 @@
 stages:
-  enhance:
-    cmd: lyscripts data enhance data/2021-usz-oropharynx.csv data/enhanced.csv
+  join:
+    cmd: lyscripts data join -i data/2021-usz-oropharynx.csv data/2021-clb-oropharynx.csv
+      data/2023-isb-multisite.csv data/2023-clb-multisite.csv -o data/joined.csv
     deps:
+    - data/2021-clb-oropharynx.csv
     - data/2021-usz-oropharynx.csv
+    - data/2023-clb-multisite.csv
+    - data/2023-isb-multisite.csv
+    outs:
+    - data/joined.csv
+
+  enhance:
+    cmd: lyscripts data enhance data/joined.csv data/enhanced.csv
+    deps:
+    - data/joined.csv
     params:
     - modalities
     outs:
     - data/enhanced.csv
+
+  filter:
+    cmd: lyscripts data filter data/enhanced.csv data/filtered.csv --include-subsites C02 C03 C04 C05 C06
+    deps:
+    - data/enhanced.csv
+    outs:
+    - data/filtered.csv

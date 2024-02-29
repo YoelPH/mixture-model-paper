@@ -1,12 +1,12 @@
 schema: '2.0'
 stages:
   enhance:
-    cmd: lyscripts data enhance data/2021-usz-oropharynx.csv data/enhanced.csv
+    cmd: lyscripts data enhance data/joined.csv data/enhanced.csv
     deps:
-    - path: data/2021-usz-oropharynx.csv
+    - path: data/joined.csv
       hash: md5
-      md5: 1b949c74081ac4b6224186ebbb9c90df
-      size: 159482
+      md5: 92014c3bd3e3ea650d39558a92b45d28
+      size: 807385
     params:
       params.yaml:
         modalities:
@@ -37,5 +37,43 @@ stages:
     outs:
     - path: data/enhanced.csv
       hash: md5
-      md5: 6f2ce0947a73b70957218896e1a3d12b
-      size: 195484
+      md5: f46d236f942e8b4a1a11a352b56bf136
+      size: 976691
+  join:
+    cmd: lyscripts data join -i data/2021-usz-oropharynx.csv data/2021-clb-oropharynx.csv
+      data/2023-isb-multisite.csv data/2023-clb-multisite.csv -o data/joined.csv
+    deps:
+    - path: data/2021-clb-oropharynx.csv
+      hash: md5
+      md5: d40c0a1ae967a6983d60a0a809cf3972
+      size: 92742
+    - path: data/2021-usz-oropharynx.csv
+      hash: md5
+      md5: 1b949c74081ac4b6224186ebbb9c90df
+      size: 159482
+    - path: data/2023-clb-multisite.csv
+      hash: md5
+      md5: 9d72ee96af2c51033a2fb0bb8551e318
+      size: 123938
+    - path: data/2023-isb-multisite.csv
+      hash: md5
+      md5: 6135ac91c08b7518372488fb2e0f9b69
+      size: 204322
+    outs:
+    - path: data/joined.csv
+      hash: md5
+      md5: 92014c3bd3e3ea650d39558a92b45d28
+      size: 807385
+  filter:
+    cmd: lyscripts data filter data/enhanced.csv data/filtered.csv --include-subsites
+      C02 C03 C04 C05 C06
+    deps:
+    - path: data/enhanced.csv
+      hash: md5
+      md5: f46d236f942e8b4a1a11a352b56bf136
+      size: 976691
+    outs:
+    - path: data/filtered.csv
+      hash: md5
+      md5: a4e5662e5c419d966a56728c70cc0acc
+      size: 324525

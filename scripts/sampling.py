@@ -1,14 +1,17 @@
 """
-Implement the sampling in this module.
+Run the sampling in this module.
 """
+import argparse
+from pathlib import Path
+
 import numpy as np
+from scipy.special import factorial
 import pandas as pd
 from emcee import EnsembleSampler, backends, moves
 
 from lymph import models
 
 
-from scipy.special import factorial
 
 def binom_pmf(k: np.ndarray, n: int, p: float):
     """Binomial PMF"""
@@ -24,7 +27,25 @@ def late_binomial(support: np.ndarray, p: float = 0.5) -> np.ndarray:
     return binom_pmf(k=support, n=support[-1], p=p)
 
 
-def create_model() -> models.Midline:
+def create_parser() -> argparse.ArgumentParser:
+    """Create the parser."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--data", type=Path, default="data/enhanced.csv",
+        help="Path to the data file."
+    )
+    parser.add_argument(
+        "--samples", type=Path, default="models/midline.hdf5",
+        help="Path to the generated samples HDF5 file."
+    )
+    parser.add_argument(
+        "--nstep", type=int, default=5000,
+        help="Number of steps for the sampling."
+    )
+    return parser
+
+
+def create_model(data_path: Path) -> models.Midline:
     """Create the model."""
     graph_dict = {
         ("tumor", "T"): ["II", "III"],
@@ -42,18 +63,17 @@ def create_model() -> models.Midline:
     frozen_binom_pmf = binom_pmf(np.arange(model.max_time+1), model.max_time, p=0.3)
     model.set_distribution("early", frozen_binom_pmf)
     model.set_distribution("late", late_binomial)
-    model.load_patient_data(pd.read_csv("data/enhanced.csv", header=[0,1,2]))
+    model.load_patient_data(pd.read_csv(data_path, header=[0,1,2]))
 
     return model
 
 
-def run_sampling(model: models.Midline, nstep: int = 5000) -> None:
+def run_sampling(model: models.Midline, samples_path: Path, nstep: int = 5000) -> None:
     """Run the sampling."""
     ndim = model.get_num_dims()
     initial = np.random.uniform(size=(20 * ndim, ndim))
 
-    suffix = "evo" if model.use_midext_evo else "fix"
-    backend = backends.HDFBackend(filename=f"models/midline_{suffix}.hdf5")
+    backend = backends.HDFBackend(filename=samples_path)
     moves_mix = [(moves.DEMove(), 0.8), (moves.DESnookerMove(), 0.2)]
     sampler = EnsembleSampler(
         nwalkers=20 * ndim,
@@ -68,9 +88,12 @@ def run_sampling(model: models.Midline, nstep: int = 5000) -> None:
 
 def main() -> None:
     """Run the script."""
+    parser = create_parser()
+    args = parser.parse_args()
+
     np.random.seed(42)
-    model = create_model()
-    run_sampling(model, nstep=5000)
+    model = create_model(data_path=args.data)
+    run_sampling(model, samples_path=args.samples, nstep=args.nstep)
 
 
 if __name__ == "__main__":
