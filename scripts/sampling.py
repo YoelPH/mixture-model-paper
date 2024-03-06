@@ -31,7 +31,7 @@ def create_parser() -> argparse.ArgumentParser:
     """Create the parser."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--data", type=Path, default="data/enhanced.csv",
+        "--data", type=Path, default="data/filtered.csv",
         help="Path to the data file."
     )
     parser.add_argument(
@@ -63,7 +63,9 @@ def create_model(data_path: Path) -> models.Midline:
     frozen_binom_pmf = binom_pmf(np.arange(model.max_time+1), model.max_time, p=0.3)
     model.set_distribution("early", frozen_binom_pmf)
     model.set_distribution("late", late_binomial)
-    model.load_patient_data(pd.read_csv(data_path, header=[0,1,2]))
+    df = pd.read_csv(data_path, header=[0,1,2])
+    df["tumor", "1", "extension"] = df["tumor", "1", "extension"].astype(bool)
+    model.load_patient_data(df)
 
     return model
 
