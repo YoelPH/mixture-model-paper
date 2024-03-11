@@ -3,14 +3,17 @@ Run the sampling in this module.
 """
 import argparse
 from pathlib import Path
+import warnings
 
 import numpy as np
 from scipy.special import factorial
 import pandas as pd
 from emcee import EnsembleSampler, backends, moves
 
-from lymph import models
+from lymph import models, types
 
+
+warnings.filterwarnings("ignore", category=types.DataWarning)
 
 
 def binom_pmf(k: np.ndarray, n: int, p: float):
@@ -39,7 +42,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to the generated samples HDF5 file."
     )
     parser.add_argument(
-        "--nstep", type=int, default=5000,
+        "--nstep", type=int, default=2000,
         help="Number of steps for the sampling."
     )
     return parser
@@ -48,9 +51,10 @@ def create_parser() -> argparse.ArgumentParser:
 def create_model(data_path: Path) -> models.Midline:
     """Create the model."""
     graph_dict = {
-        ("tumor", "T"): ["II", "III"],
+        ("tumor", "T"): ["II", "III", "IV"],
         ("lnl", "II"): ["III"],
-        ("lnl", "III"): [],
+        ("lnl", "III"): ["IV"],
+        ("lnl", "IV"): [],
     }
     model = models.Midline(
         graph_dict=graph_dict,
@@ -77,6 +81,7 @@ def run_sampling(model: models.Midline, samples_path: Path, nstep: int = 5000) -
 
     backend = backends.HDFBackend(filename=samples_path)
     moves_mix = [(moves.DEMove(), 0.8), (moves.DESnookerMove(), 0.2)]
+
     sampler = EnsembleSampler(
         nwalkers=20 * ndim,
         ndim=ndim,
