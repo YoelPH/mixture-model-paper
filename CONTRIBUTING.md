@@ -86,9 +86,9 @@ Now your Python environment should be good to go!
 
 ## Start the Live Preview
 
-If you are working in VS Code, then open the `index.qmd` file (which is the main manuscript of the paper) and click the little "Preview" button on the top right of the windows where the file is open.
+If you are working in VS Code, then open the `manuscript.qmd` file (which is the main manuscript of the paper) and click the little "Preview" button on the top right of the windows where the file is open.
 
-When you use a normal text editor, run `quarto preview index.qmd` in your terminal. Running this command should open a browser window where an HTML preview of the document is rendered (ideally with all figures). You can now have your text editor and browser preview window next to each other and see how the preview updates as you type.
+When you use a normal text editor, run `quarto preview manuscript.qmd` in your terminal. Running this command should open a browser window where an HTML preview of the document is rendered (ideally with all figures). You can now have your text editor and browser preview window next to each other and see how the preview updates as you type.
 
 
 ## Authoring in Quarto's Markdown-based Syntax

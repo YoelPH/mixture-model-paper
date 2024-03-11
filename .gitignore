@@ -190,9 +190,13 @@ pyrightconfig.json
 models/
 
 # Quarto generated files
-index_files/
-index.*
-!index.qmd
+manuscript_files/
+manuscript.*
+!manuscript.qmd
+.quarto/
 
 # jupyter
 .jupyter_cache/
+
+# VS Code
+.vscode
