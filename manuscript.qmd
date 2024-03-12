@@ -40,42 +40,7 @@ crossref:
 - spread probabilities from tumor to contralateral LNLs in case of midline extesnion are linear combinations of these probabilities in case of ipsilateral spread and contralateral spread when tumor is clearly lateralized
 
 
-# Methods
-
-## Data
-
-```{python}
-#| echo: false
-#| label: tbl-contra
-#| tbl-cap: Contralateral involvement depending on whether the primary tumor extends over the mid-sagittal line, the T-category, and whether the ipsilateral LNL III was involved or healthy.
-
-import pandas as pd
-from scripts import paths, COL, CONTRA_LNLS
-
-data = pd.read_csv(paths.filtered, header=[0,1,2])
-data[COL.t_stage] = data[COL.t_stage].apply(lambda x: "early" if x <= 2 else "late")
-grouped = data.groupby(by=[COL.midext, COL.t_stage, COL.ipsi_III])
-
-total = grouped.count()[CONTRA_LNLS]["max_llh", "contra"]
-idx = total.index.rename(["Mid. ext.", "T-cat.", "ipsi III"])
-
-num_involved = grouped.sum()[CONTRA_LNLS]["max_llh", "contra"]
-percent_involved = num_involved / total
-total.index = idx
-num_involved.index = idx
-percent_involved.index = idx
-
-involved = num_involved.join(
-  100 * percent_involved,
-  rsuffix=" (%)",
-).sort_index(axis="columns")
-involved.columns = pd.MultiIndex.from_product([["I", "II", "III", "IV"], ["n", "%"]])
-involved.style \
-  .format(precision=2)
-```
-
-
-## Modelling Unilateral Lymphatic Spread
+# Unilateral Model for Lymphatic Progression {#sec-unilateral}
 
 - what we previously did
 
@@ -97,9 +62,52 @@ $$ {#eq-lambda-matrix}
 The $n$-th row in this matrix corresponds to the distribution over hidden states after $t=n-1$ time-steps.
 
 
-## Extending the Formalism to Both Sides of the Neck
+# Extension to a Bilateral Model
 
-In analogy to @eq-uni-bayes-law, we can write down the posterior joint probability of an involvement $\mathbf{X}^\text{i}$ ipsilaterally _and_ an involvement $\mathbf{X}^\text{c}$ contralaterally, given a diagnosis of the ipsilateral LNLs $\mathbf{Z}^\text{i}$ and of the contralateral ones $\mathbf{Z}^\text{c}$:
+A naive approach to model the contralateral lymphatic spread would be to simply employ two independent unilateral models as introduced in @sec-unilateral. During training, one could even enforce some shared parameters between these two models, like the parameterization of the distributions over diagnose times or the spread among the LNLs. Additionally, we could think of an approach to incorporate the primary tumor's mid-sagittal extension as a risk factor.
+
+However, we did not consider this straightforward approach, as it lacks a way to describe the correlation between ipsi- and contralateral involvement. This is displayed in @tbl-contra and shows how often the contralateral LNLs I, II, III, and IV were involved, given all possible combinations of midline extension, T-category, and ipsilateral LNL III involvement. Unsurprisingly, the prevalence for contralateral involvement is consistently higher when the tumor extends over the mid-sagittal line or is of later T-category. But it is also more frequent when the ipsilateral side shows more severe involvement, which is here shown via the surrogate LNL III.
+
+```{python}
+#| echo: false
+#| label: tbl-contra
+#| tbl-cap: Contralateral involvement depending on whether the primary tumor extends over the mid-sagittal line, the T-category, and whether the ipsilateral LNL III was involved or healthy.
+
+import pandas as pd
+import numpy as np
+from scripts import paths, COL, CONTRA_LNLS
+
+def right_align(column) -> str:
+  """Right align some columns."""
+  return ["text-align: right"] * len(column)
+
+data = pd.read_csv(paths.filtered, header=[0,1,2])
+data[COL.t_stage] = data[COL.t_stage].apply(lambda x: "early" if x <= 2 else "late")
+grouped = data.groupby(by=[COL.midext, COL.t_stage, COL.ipsi_III])
+
+total = grouped.count()[CONTRA_LNLS]["max_llh", "contra"]
+idx = total.index.rename(["Mid. ext.", "T-cat.", "ipsi III"])
+
+num_involved = grouped.sum()[CONTRA_LNLS]["max_llh", "contra"]
+percent_involved = num_involved / total
+total.index = idx
+num_involved.index = idx
+percent_involved.index = idx
+
+involved = num_involved.join(
+  100 * percent_involved,
+  rsuffix=" (%)",
+).sort_index(axis="columns")
+involved.columns = pd.MultiIndex.from_product([["I", "II", "III", "IV"], ["n", "%"]])
+(
+  involved.style
+  .format(precision=2)
+  .apply(right_align, axis="index")
+)
+```
+
+
+Thus, we attempt to extend the formalism in @sec-unilateral in such a way that the model's ipsi- and contralateral side evolve synchronously. To achieve that, we start by writing down the posterior distribution of involvement an analogy to @eq-uni-bayes-law, which is now a joint probability of an involvement $\mathbf{X}^\text{i}$ ipsilaterally *and* an involvement $\mathbf{X}^\text{c}$ contralaterally, given a diagnosis of the ipsilateral LNLs $\mathbf{Z}^\text{i}$ and of the contralateral ones $\mathbf{Z}^\text{c}$:
 
 $$
 P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \right) = \frac{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right)}{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \right)}
@@ -121,13 +129,44 @@ This assumption makes intuitive sense: The two sides of the lymphatic network in
 Using this assumption along with @eq-lambda-matrix, we can write the above distribution algebraically as a product:
 
 $$
-P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} p(\mathbf{t}) \cdot \boldsymbol{\Lambda}^\intercal_\text{c} \right]_{n,m}
+P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} p(\mathbf{t}) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
 $$
+
+
+## Incorporating Midline Crossing
+
+To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized (state $\centernot{\text{e}}$) and every time-step there is a finite probability $\epsilon$ that the tumor grows over the symmetry plane of the patient (into state $\text{e}$).
+
+Technically, the introduction of this additional random variable doubles the space of the hidden states. However, since we assume no correlation between the tumor's lateralization and the metastases in the LNLs, we can evolve the two parts separately.
+
+As with the state of the lymphatic network, we can also define a small transition matrix $\mathbf{A}_\epsilon$ that evolves the lateralized starting state $\boldsymbol{\pi}_\text{e} = \begin{pmatrix} 1 & 0 \end{pmatrix}$:
+
+$$
+\boldsymbol{\xi}^\text{e}[t] = \boldsymbol{\pi}_\text{e} \cdot \mathbf{A}_\epsilon^t = \begin{pmatrix} 1 & 0 \end{pmatrix} \cdot \begin{pmatrix} 1 - \epsilon & \epsilon \\ 0 & 1 \end{pmatrix}^t
+$$
+
+Just as the lymphatic states, this lateralization state's evolution over the time-steps must then be marginalized over the time of diagnosis using $p(t)$.
+
+- multiply first or second index of evolution with time-prior
+- choose appropriate resulting joint, depending on patient's tumor lateralization
 
 
 ## Parameter Symmetries
 
-- spread from LNL to LNL probably symmetric
+In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambda}_\text{c}$ could be parameterized using a disjoint set of parameters. I.e., the ipsi- and contralateral spread rates are entirely different. However, using two sensible assumptions, we can reduce the parameter space by sharing some parameters between the sides:
+
+1. We assume the spread *among* the LNLs to be same on both sides. It is reasonable to assume the lymphatic system is symmetric. Thus, the spread rates from one LNL to the other should be symmetric, too. Formally, this means \
+   $$
+   \begin{aligned}
+   b_v^\text{c} &\neq b_v^\text{i} \\
+   t_{rv}^\text{c} &= t_{rv}^\text{i}
+   \end{aligned}
+   $$ {#eq-symmetries}
+   for all $v \leq V$ and $r \in \operatorname{pa}(v)$.
+2. The tumor's spread to the contralateral side in case of an extension over the midline is larger than if it was clearly lateralized, but smaller than its spread to the ipsilateral side. This assumption stems from a simple thought experiment: Consider moving the tumor from a clearly lateralized position accross the mid-sagittal plane to its mirror position. In the beginning we would have $b_v^\text{c} < b_v^\text{i}$, while in the end, the situation is reversed. If a tumor extends over the mid-sagittal line, its contralateral spread rate can be expected to be in between these two extremes. We encode this in a *mixing parameter* $\alpha$ that captures a "degree of asymmetry": \
+   $$
+   b_v^\text{c,e} = \alpha \cdot b_v^\text{i} + (1 - \alpha) \cdot b_v^{\text{c},\centernot{\text{e}}}
+   $$ {#eq-mixing}
 
 
 ## Tumors Extending Over the Mid-Sagittal Line
