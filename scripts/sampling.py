@@ -61,14 +61,13 @@ def create_model(data_path: Path) -> models.Midline:
         is_symmetric={"lnl_spread": True},
         use_mixing=True,
         use_central=False,
-        use_midext_evo=False,
+        use_midext_evo=True,
     )
     model.set_modality("max_llh", spec=1.0, sens=1.0)
     frozen_binom_pmf = binom_pmf(np.arange(model.max_time+1), model.max_time, p=0.3)
     model.set_distribution("early", frozen_binom_pmf)
     model.set_distribution("late", late_binomial)
     df = pd.read_csv(data_path, header=[0,1,2])
-    df["tumor", "1", "extension"] = df["tumor", "1", "extension"].astype(bool)
     model.load_patient_data(df)
 
     return model
