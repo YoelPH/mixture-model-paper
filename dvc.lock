@@ -85,7 +85,7 @@ stages:
   sampling:
     cmd: "lyscripts sample --input data/filtered.csv --params params.yaml --output
       models/midline.hdf5 --history models/midline_history.csv --walkers-per-dim 10
-      --check-interval 50 --nsteps 100 --thin 20\n"
+      --check-interval 50 --nsteps 50 --thin 1\n"
     deps:
     - path: data/filtered.csv
       hash: md5
@@ -98,8 +98,8 @@ stages:
     outs:
     - path: models/midline.hdf5
       hash: md5
-      md5: b6a31fac8206d6bb8708d6796d7357b7
-      size: 37566560
+      md5: f4a1da52954f8c7d090e3561bf22e459
+      size: 37361760
     - path: models/midline_history.csv
       hash: md5
       md5: 53a6d54163288cc430685bfa726e1107

@@ -97,3 +97,12 @@ The Quarto website has some [nice explanations and help pages][Markdown basics] 
 
 [Markdown basics]: https://quarto.org/docs/authoring/markdown-basics.html
 [Markdown]: https://daringfireball.net/projects/markdown/
+
+
+## Merge your Changes Back into the Original Repository
+
+Finally, you want your work (e.g. edits or new paragraphs) to be reflected in the original repository. They should be *merged* with the edits of the other authors.
+
+To learn how this works, read this great and detailed guide on [how to contribute to open source projects] (because that's essentially what we're doing here).
+
+[how to contribute to open source projects]: https://www.dataschool.io/how-to-contribute-on-github/
