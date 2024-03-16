@@ -2,9 +2,10 @@ jupyter
 jupyter-cache
 matplotlib
 tueplots
+plotly
 emcee
 corner
 dvc
 scipy
--e ../lymph
--e ../lyscripts
+git+https://github.com/rmnldwg/lymph.git@dev
+git+https://github.com/rmnldwg/lyscripts.git@dev

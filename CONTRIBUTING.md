@@ -58,7 +58,7 @@ If it does not return anything greater or equal to `3.10`, head over to the [Pyt
 
 
 > [!TIP]
-> I'd highly recommend using a virtual environment using `venv` (or any other virtual environment manager). To create one, enter these commands in your terminal:
+> I'd highly recommend using a virtual environment using `venv` (or any other virtual environment manager). To create one, enter these commands in your terminal (while inside the `bilateral-paper` repository):
 > ```
 > python -m venv .venv
 > source .venv/bin/activate

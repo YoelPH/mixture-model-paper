@@ -82,3 +82,25 @@ stages:
       hash: md5
       md5: 0c102461cf4e270ac69c9c48e720a289
       size: 659555
+  sampling:
+    cmd: "lyscripts sample --input data/filtered.csv --params params.yaml --output
+      models/midline.hdf5 --history models/midline_history.csv --walkers-per-dim 10
+      --check-interval 50 --nsteps 100 --thin 20\n"
+    deps:
+    - path: data/filtered.csv
+      hash: md5
+      md5: 0c102461cf4e270ac69c9c48e720a289
+      size: 659555
+    - path: params.yaml
+      hash: md5
+      md5: 4f48066a721eb9b928d5e152b46180b6
+      size: 1751
+    outs:
+    - path: models/midline.hdf5
+      hash: md5
+      md5: b6a31fac8206d6bb8708d6796d7357b7
+      size: 37566560
+    - path: models/midline_history.csv
+      hash: md5
+      md5: 53a6d54163288cc430685bfa726e1107
+      size: 3193

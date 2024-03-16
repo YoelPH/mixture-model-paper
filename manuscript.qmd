@@ -17,6 +17,7 @@ format:
     include-in-header:
     - text: |
         \usepackage{multirow}
+        \usepackage{centernot}
 jupyter: python3
 execute: 
   cache: true
@@ -181,24 +182,34 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 # Results
 
 ```{python}
-from emcee import backends
-from corner import corner
+#| echo: false
+#| label: fig-burnin-history
+#| layout-ncol: 2
+#| fig-cap: Monitoring quantities during the burn-in phase of the parameter sampling.
+#| fig-subcap: 
+#|   - "Autocorrelation time"
+#|   - "log likelihood"
+
+import pandas as pd
 import matplotlib.pyplot as plt
 from tueplots import figsizes, fontsizes
 
-backend = backends.HDFBackend(
-  filename="models/midline_fix.hdf5",
-  read_only=True,
+plt.rcParams.update(figsizes.icml2024_half())
+plt.rcParams.update(fontsizes.icml2024())
+
+burnin_history = pd.read_csv("models/midline_history.csv").set_index("steps")
+
+plt.plot(
+  burnin_history.index,
+  burnin_history.acor_times,
 )
-samples = backend.get_chain(thin=20)
-ndim = samples.shape[-1]
+plt.show()
 
-plt.rcParams.update(**figsizes.icml2022_full(nrows=ndim))
-
-fig, axes = plt.subplots(nrows=ndim, sharex=True)
-for i, ax in enumerate(axes):
-  ax.plot(samples[:,::10,i], color="gray", alpha=0.2)
-  ax.axhline(samples[200:,:,i].mean(), color="red")
-  ax.set_xlim(0., samples.shape[0])
-  ax.set_ylim(0., 1.)
+plt.plot(
+  burnin_history.index,
+  burnin_history.max_log_probs,
+)
+plt.show()
 ```
+
+@Fig-burnin-history is only a temporary placeholder for now.

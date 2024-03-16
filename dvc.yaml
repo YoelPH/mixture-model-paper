@@ -32,3 +32,21 @@ stages:
     - data/enhanced.csv
     outs:
     - data/filtered.csv
+
+  sampling:
+    cmd: >
+      lyscripts sample
+      --input data/filtered.csv
+      --params params.yaml
+      --output models/midline.hdf5
+      --history models/midline_history.csv
+      --walkers-per-dim ${sampling.walkers_per_dim}
+      --check-interval ${sampling.check_interval}
+      --nsteps ${sampling.nsteps}
+      --thin ${sampling.thin}
+    deps:
+    - data/filtered.csv
+    - params.yaml
+    outs:
+    - models/midline.hdf5
+    - models/midline_history.csv
