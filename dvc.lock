@@ -104,3 +104,302 @@ stages:
       hash: md5
       md5: 53a6d54163288cc430685bfa726e1107
       size: 3193
+  sampling@contra:
+    cmd: "lyscripts sample --input data/reduced.csv --params models/contra/params.yaml
+      --output models/contra/samples.hdf5 --history models/contra/history.csv --walkers-per-dim
+      16 --check-interval 50 --nsteps 50 --thin 1\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: aa002de073d5623e88aa2a0bedbf3795
+      size: 550127
+    params:
+      models/contra/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          class: Unilateral.binary
+          side: contra
+        version: 1
+    outs:
+    - path: models/contra/history.csv
+      hash: md5
+      md5: ec68f39f3b63ac89e65cbbf48b19f47a
+      size: 2710
+    - path: models/contra/samples.hdf5
+      hash: md5
+      md5: 317859bf60541c607d7468559037fe62
+      size: 18116896
+  sampling@bilateral:
+    cmd: "lyscripts sample --input data/reduced.csv --params models/bilateral/params.yaml
+      --output models/bilateral/samples.hdf5 --history models/bilateral/history.csv
+      --walkers-per-dim 16 --check-interval 50 --nsteps 50 --thin 1\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: aa002de073d5623e88aa2a0bedbf3795
+      size: 550127
+    params:
+      models/bilateral/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          class: Bilateral
+          kwargs:
+            base_symmetric: false
+            trans_symmetric: true
+        version: 1
+    outs:
+    - path: models/bilateral/history.csv
+      hash: md5
+      md5: 29fab45530fbd154d613192cc316fe5d
+      size: 2958
+    - path: models/bilateral/samples.hdf5
+      hash: md5
+      md5: 2441f40762b2b52d562573aecdea8a97
+      size: 25166104
+  sampling@midline:
+    cmd: "lyscripts sample --input data/reduced.csv --params models/midline/params.yaml
+      --output models/midline/samples.hdf5 --history models/midline/history.csv --walkers-per-dim
+      16 --check-interval 50 --nsteps 50 --thin 1\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: aa002de073d5623e88aa2a0bedbf3795
+      size: 550127
+    params:
+      models/midline/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          class: Midline
+          kwargs:
+            base_symmetric: false
+            trans_symmetric: true
+            use_mixing: true
+            use_central: false
+            use_midext_evo: true
+        version: 1
+    outs:
+    - path: models/midline/history.csv
+      hash: md5
+      md5: e4a35fc4de450911e17d69f8f9fdc171
+      size: 3563
+    - path: models/midline/samples.hdf5
+      hash: md5
+      md5: c2b863c6e0fa97c27e76d37ce24a135b
+      size: 47047184
+  sampling@ipsi:
+    cmd: "lyscripts sample --input data/reduced.csv --params models/ipsi/params.yaml
+      --output models/ipsi/samples.hdf5 --history models/ipsi/history.csv --walkers-per-dim
+      16 --check-interval 50 --nsteps 50 --thin 1\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: aa002de073d5623e88aa2a0bedbf3795
+      size: 550127
+    params:
+      models/ipsi/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          class: Unilateral.binary
+          side: ipsi
+        version: 1
+    outs:
+    - path: models/ipsi/history.csv
+      hash: md5
+      md5: 8c2c4ff5f67650a91bbcefcaf80de516
+      size: 1265
+    - path: models/ipsi/samples.hdf5
+      hash: md5
+      md5: 596efad658826added839dad184253be
+      size: 8763376
+  reduce:
+    cmd: python scripts/reduce.py data/filtered.csv data/reduced.csv
+    deps:
+    - path: data/filtered.csv
+      hash: md5
+      md5: 0c102461cf4e270ac69c9c48e720a289
+      size: 659555
+    - path: scripts/reduce.py
+      hash: md5
+      md5: 0472e153b1689d42e5b798961ff84dd3
+      size: 831
+    outs:
+    - path: data/reduced.csv
+      hash: md5
+      md5: aa002de073d5623e88aa2a0bedbf3795
+      size: 550127

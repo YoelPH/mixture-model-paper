@@ -184,31 +184,42 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 ```{python}
 #| echo: false
 #| label: fig-burnin-history
-#| layout-ncol: 2
+#| layout-ncol: 1
+#| layout-nrow: 1
 #| fig-cap: Monitoring quantities during the burn-in phase of the parameter sampling.
 #| fig-subcap: 
 #|   - "Autocorrelation time"
 #|   - "log likelihood"
+from collections import namedtuple
 
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from tueplots import figsizes, fontsizes
 
-plt.rcParams.update(figsizes.icml2024_half())
+nrows, ncols = 1, 3
+label_map = {
+  "acor_times": "Autocorrelation [steps]",
+  "accept_fracs": "Sample Acceptance [%]",
+  "max_log_probs": "Maximum log-Likelihood",
+}
+
+plt.rcParams.update(figsizes.icml2024_full(nrows=nrows, ncols=ncols))
 plt.rcParams.update(fontsizes.icml2024())
 
-burnin_history = pd.read_csv("models/midline_history.csv").set_index("steps")
-
-plt.plot(
-  burnin_history.index,
-  burnin_history.acor_times,
+fig, axes = plt.subplots(
+  nrows=nrows,
+  ncols=ncols,
+  sharex=True,
 )
-plt.show()
 
-plt.plot(
-  burnin_history.index,
-  burnin_history.max_log_probs,
-)
+for model in ["ipsi", "contra", "bilateral", "midline"]:
+  history = pd.read_csv(f"models/{model}/history.csv").set_index("steps")
+  for i, column in enumerate(history.columns):
+    history.plot(y=column, ax=axes[i], label=model)
+    axes[i].autoscale(enable=True, tight=True, axis="x")
+    axes[i].set_title(label_map[column])
+
 plt.show()
 ```
 

@@ -33,20 +33,35 @@ stages:
     outs:
     - data/filtered.csv
 
-  sampling:
-    cmd: >
-      lyscripts sample
-      --input data/filtered.csv
-      --params params.yaml
-      --output models/midline.hdf5
-      --history models/midline_history.csv
-      --walkers-per-dim ${sampling.walkers_per_dim}
-      --check-interval ${sampling.check_interval}
-      --nsteps ${sampling.nsteps}
-      --thin ${sampling.thin}
+  reduce:
+    cmd: python scripts/reduce.py data/filtered.csv data/reduced.csv
     deps:
     - data/filtered.csv
-    - params.yaml
+    - scripts/reduce.py
     outs:
-    - models/midline.hdf5
-    - models/midline_history.csv
+    - data/reduced.csv
+
+  sampling:
+    foreach:
+    - ipsi
+    - contra
+    - bilateral
+    - midline
+    do:
+      cmd: >
+        lyscripts sample
+        --input data/reduced.csv
+        --params models/${item}/params.yaml
+        --output models/${item}/samples.hdf5
+        --history models/${item}/history.csv
+        --walkers-per-dim ${sampling.walkers_per_dim}
+        --check-interval ${sampling.check_interval}
+        --nsteps ${sampling.nsteps}
+        --thin ${sampling.thin}
+      deps:
+      - data/reduced.csv
+      params:
+      - models/${item}/params.yaml:
+      outs:
+      - models/${item}/samples.hdf5
+      - models/${item}/history.csv
