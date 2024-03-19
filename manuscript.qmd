@@ -20,7 +20,7 @@ format:
         \usepackage{centernot}
 jupyter: python3
 execute: 
-  cache: true
+  cache: false
 crossref:
   fig-prefix: "figure"
   tbl-prefix: "table"
@@ -84,6 +84,8 @@ def right_align(column) -> str:
 
 data = pd.read_csv(paths.filtered, header=[0,1,2])
 data[COL.t_stage] = data[COL.t_stage].apply(lambda x: "early" if x <= 2 else "late")
+early_midext_data = (data.loc[data[COL.t_stage] == "early", COL.midext] == True).mean()
+late_midext_data = (data.loc[data[COL.t_stage] == "late", COL.midext] == True).mean()
 grouped = data.groupby(by=[COL.midext, COL.t_stage, COL.ipsi_III])
 
 total = grouped.count()[CONTRA_LNLS]["max_llh", "contra"]
@@ -99,7 +101,11 @@ involved = num_involved.join(
   100 * percent_involved,
   rsuffix=" (%)",
 ).sort_index(axis="columns")
-involved.columns = pd.MultiIndex.from_product([["I", "II", "III", "IV"], ["n", "%"]])
+involved.columns = pd.MultiIndex.from_product(
+  [["I", "II", "III", "IV"],
+   ["n", "%"]],
+  names=["LNL", ""]
+)
 (
   involved.style
   .format(precision=2)
@@ -187,9 +193,6 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 #| layout-ncol: 1
 #| layout-nrow: 1
 #| fig-cap: Monitoring quantities during the burn-in phase of the parameter sampling.
-#| fig-subcap: 
-#|   - "Autocorrelation time"
-#|   - "log likelihood"
 from collections import namedtuple
 
 import pandas as pd
@@ -224,3 +227,52 @@ plt.show()
 ```
 
 @Fig-burnin-history is only a temporary placeholder for now.
+
+
+## Parameter Estimates
+
+```{python}
+#| label: tbl-midline-params
+#| tbl-cap: Mean sampled parameter estimates of the midline model and the respective standard deviation.
+#| echo: false
+
+import yaml
+
+import pandas as pd
+from emcee.backends import HDFBackend
+from lyscripts.utils import create_model
+
+with open("models/midline/params.yaml", mode="r") as file:
+  config = yaml.safe_load(file)
+
+model = create_model(config)
+backend = HDFBackend("models/midline/samples.hdf5", read_only=True)
+chain = backend.get_chain(flat=True)
+
+param_names = list(model.get_params().keys())
+param_means = chain.mean(axis=0)
+param_stds = chain.std(axis=0)
+model.set_params(*param_means)
+early_midext_prob = model.get_distribution("early").pmf @ model.midext_evo()[:,1]
+late_midext_prob = model.get_distribution("late").pmf @ model.midext_evo()[:,1]
+
+params_table = pd.DataFrame({
+  "name": param_names,
+  "mean": param_means,
+  "std": param_stds,
+})
+(
+  params_table.style
+  .format("{:.2%}", subset=["mean", "std"])
+  .apply(right_align, subset=["mean", "std"])
+  .hide()
+)
+```
+
+The predicted prevalence of midline extension for early T-category tumors is `{python} f"{early_midext_prob:.2%}"`. For a late T-category tumor, it is `{python} f"{late_midext_prob:.2%}"`.
+
+In the data, the prevalence of midline extension for early T-category tumors is `{python} f"{early_midext_data:.2%}"`. For late T-category tumors it is `{python} f"{late_midext_data:.2%}"`.
+
+- Discrepancy between data and model is due to late T-stage's time prior
+- still tied to other parameters
+- cannot fully represent spread of midline extension and also represent spread params
