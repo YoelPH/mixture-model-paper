@@ -150,6 +150,7 @@ stages:
           - 1.0
           - 1.0
         model:
+          class: Unilateral.binary
           distributions:
             early:
               frozen: binomial
@@ -161,7 +162,6 @@ stages:
               max_time: 10
           modalities:
           - max_llh
-          class: Unilateral.binary
           side: contra
         version: 1
     outs:
@@ -219,6 +219,11 @@ stages:
           - 1.0
           - 1.0
         model:
+          class: Bilateral.binary
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
           distributions:
             early:
               frozen: binomial
@@ -230,10 +235,6 @@ stages:
               max_time: 10
           modalities:
           - max_llh
-          class: Bilateral
-          kwargs:
-            base_symmetric: false
-            trans_symmetric: true
         version: 1
     outs:
     - path: models/bilateral/history.csv
@@ -290,6 +291,14 @@ stages:
           - 1.0
           - 1.0
         model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
           distributions:
             early:
               frozen: binomial
@@ -301,13 +310,6 @@ stages:
               max_time: 10
           modalities:
           - max_llh
-          class: Midline
-          kwargs:
-            base_symmetric: false
-            trans_symmetric: true
-            use_mixing: true
-            use_central: false
-            use_midext_evo: true
         version: 1
     outs:
     - path: models/midline/history.csv
@@ -364,6 +366,7 @@ stages:
           - 1.0
           - 1.0
         model:
+          class: Unilateral.binary
           distributions:
             early:
               frozen: binomial
@@ -375,7 +378,6 @@ stages:
               max_time: 10
           modalities:
           - max_llh
-          class: Unilateral.binary
           side: ipsi
         version: 1
     outs:

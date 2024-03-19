@@ -64,4 +64,5 @@ stages:
       - models/${item}/params.yaml:
       outs:
       - models/${item}/samples.hdf5
-      - models/${item}/history.csv
+      - models/${item}/history.csv:
+          cache: false

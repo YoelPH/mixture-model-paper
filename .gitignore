@@ -186,9 +186,6 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
 
-# models are tracked by DVC, not git
-models/
-
 # Quarto generated files
 manuscript_files/
 manuscript.*
