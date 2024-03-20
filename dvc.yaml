@@ -66,3 +66,22 @@ stages:
       - models/${item}/samples.hdf5
       - models/${item}/history.csv:
           cache: false
+
+  precompute-state-dists:
+    foreach:
+    - ipsi
+    - contra
+    - bilateral
+    - midline
+    do:
+      cmd: >
+        lyscripts predict precompute
+        --samples models/${item}/samples.hdf5
+        --params models/${item}/params.yaml
+        --state-dists models/${item}/distributions.hdf5
+      deps:
+      - models/${item}/samples.hdf5
+      params:
+      - models/${item}/params.yaml:
+      outs:
+      - models/${item}/distributions.hdf5

@@ -405,3 +405,268 @@ stages:
       hash: md5
       md5: aa002de073d5623e88aa2a0bedbf3795
       size: 550127
+  precompute-state-dists@ipsi:
+    cmd: "lyscripts predict precompute --samples models/ipsi/samples.hdf5 --params
+      models/ipsi/params.yaml --state-dists models/ipsi/distributions.hdf5\n"
+    deps:
+    - path: models/ipsi/samples.hdf5
+      hash: md5
+      md5: 596efad658826added839dad184253be
+      size: 8763376
+    params:
+      models/ipsi/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Unilateral.binary
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          side: ipsi
+        version: 1
+    outs:
+    - path: models/ipsi/distributions.hdf5
+      hash: md5
+      md5: 14189a287007c50124d13ba4fec3c18e
+      size: 104448
+  precompute-state-dists@contra:
+    cmd: "lyscripts predict precompute --samples models/contra/samples.hdf5 --params
+      models/contra/params.yaml --state-dists models/contra/distributions.hdf5\n"
+    deps:
+    - path: models/contra/samples.hdf5
+      hash: md5
+      md5: 317859bf60541c607d7468559037fe62
+      size: 18116896
+    params:
+      models/contra/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Unilateral.binary
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          side: contra
+        version: 1
+    outs:
+    - path: models/contra/distributions.hdf5
+      hash: md5
+      md5: 7e1fccc1995883f1996efeb17c1d6408
+      size: 104448
+  precompute-state-dists@bilateral:
+    cmd: "lyscripts predict precompute --samples models/bilateral/samples.hdf5 --params
+      models/bilateral/params.yaml --state-dists models/bilateral/distributions.hdf5\n"
+    deps:
+    - path: models/bilateral/samples.hdf5
+      hash: md5
+      md5: 2441f40762b2b52d562573aecdea8a97
+      size: 25166104
+    params:
+      models/bilateral/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Bilateral.binary
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+        version: 1
+    outs:
+    - path: models/bilateral/distributions.hdf5
+      hash: md5
+      md5: 837c41439bc363a2abca6430a14606ce
+      size: 616448
+  precompute-state-dists@midline:
+    cmd: "lyscripts predict precompute --samples models/midline/samples.hdf5 --params
+      models/midline/params.yaml --state-dists models/midline/distributions.hdf5\n"
+    deps:
+    - path: models/midline/samples.hdf5
+      hash: md5
+      md5: 171532a98073bb50597dab469dfd7cac
+      size: 49046032
+    params:
+      models/midline/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+          lnl:
+            II:
+            - III
+            III: []
+        modalities:
+          CT:
+          - 0.76
+          - 0.81
+          MRI:
+          - 0.63
+          - 0.81
+          PET:
+          - 0.86
+          - 0.79
+          FNA:
+          - 0.98
+          - 0.8
+          diagnostic_consensus:
+          - 0.86
+          - 0.81
+          pathology:
+          - 1.0
+          - 1.0
+          pCT:
+          - 0.86
+          - 0.81
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+        version: 1
+    outs:
+    - path: models/midline/distributions.hdf5
+      hash: md5
+      md5: 3ac438101bb6a305e5e6330c9a6b7d1e
+      size: 1640448
