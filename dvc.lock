@@ -314,12 +314,12 @@ stages:
     outs:
     - path: models/midline/history.csv
       hash: md5
-      md5: a2e23af48e392fa22b90516abc606427
-      size: 3760
+      md5: e4a35fc4de450911e17d69f8f9fdc171
+      size: 3563
     - path: models/midline/samples.hdf5
       hash: md5
-      md5: 171532a98073bb50597dab469dfd7cac
-      size: 49046032
+      md5: c2b863c6e0fa97c27e76d37ce24a135b
+      size: 47047184
   sampling@ipsi:
     cmd: "lyscripts sample --input data/reduced.csv --params models/ipsi/params.yaml
       --output models/ipsi/samples.hdf5 --history models/ipsi/history.csv --walkers-per-dim
@@ -606,8 +606,8 @@ stages:
     deps:
     - path: models/midline/samples.hdf5
       hash: md5
-      md5: 171532a98073bb50597dab469dfd7cac
-      size: 49046032
+      md5: c2b863c6e0fa97c27e76d37ce24a135b
+      size: 47047184
     params:
       models/midline/params.yaml:
         graph:
@@ -668,5 +668,5 @@ stages:
     outs:
     - path: models/midline/distributions.hdf5
       hash: md5
-      md5: 3ac438101bb6a305e5e6330c9a6b7d1e
+      md5: ce4b6b3bca3a277f9bd865495f665c7b
       size: 1640448
