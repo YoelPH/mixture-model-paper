@@ -67,7 +67,7 @@ stages:
       - models/${item}/history.csv:
           cache: false
 
-  precompute-state-dists:
+  precompute-early-priors:
     foreach:
     - ipsi
     - contra
@@ -75,13 +75,14 @@ stages:
     - midline
     do:
       cmd: >
-        lyscripts predict precompute
+        lyscripts precompute priors
         --samples models/${item}/samples.hdf5
+        --priors models/${item}/early_priors.hdf5
         --params models/${item}/params.yaml
-        --state-dists models/${item}/distributions.hdf5
+        --t-stage early
       deps:
       - models/${item}/samples.hdf5
       params:
       - models/${item}/params.yaml:
       outs:
-      - models/${item}/distributions.hdf5
+      - models/${item}/early_priors.hdf5
