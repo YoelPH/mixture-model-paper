@@ -47,3 +47,30 @@ modalities:
   pathology: [1.0, 1.0]
   pCT: [0.86, 0.81]
   max_llh: [1.0, 1.0]
+
+########################################################################################
+# Here we define the scenarios for which to compute the posterior state distributions,
+# risks, and/or prevalences.
+scenarios:
+  - t_stage: early
+    midext: false
+    mode: "HMM"
+    involvement:
+      ipsi: {II: true, III: null}
+      contra: {II: null, III: true}
+    diagnose:
+      ipsi:
+        MRI: {II: true, III: false}
+      contra:
+        MRI: {II: false, III: false}
+  - t_stage: early
+    midext: false
+    mode: "HMM"
+    involvement:
+      ipsi: {II: null, III: null}
+      contra: {II: true, III: null}
+    diagnose:
+      ipsi:
+        MRI: {II: true, III: false}
+      contra:
+        MRI: {II: false, III: false}
