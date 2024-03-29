@@ -20,7 +20,7 @@ model:
     is_symmetric:
       tumor_spread: false
       lnl_spread: true
-  distributions:                # marginalize over diagnose times. Keys are T-stages
+  distributions:                # marginalize over diagnosis times. Keys are T-stages
     early:
       frozen: binomial
       max_time: 10
@@ -55,7 +55,7 @@ scenarios:
     involvement:
       ipsi: {II: true, III: null}
       contra: {II: null, III: true}
-    diagnose:
+    diagnosis:
       ipsi:
         MRI: {II: true, III: false}
       contra:
@@ -66,7 +66,7 @@ scenarios:
     involvement:
       ipsi: {II: null, III: null}
       contra: {II: true, III: null}
-    diagnose:
+    diagnosis:
       ipsi:
         MRI: {II: true, III: false}
       contra:

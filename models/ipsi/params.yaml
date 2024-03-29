@@ -16,7 +16,7 @@ graph:
 # Below are some parameters necessary for the model setup:
 model:
   class: Unilateral.binary
-  distributions:                # marginalize over diagnose times. Keys are T-stages
+  distributions:                # marginalize over diagnosis times. Keys are T-stages
     early:
       frozen: binomial
       max_time: 10
