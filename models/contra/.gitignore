@@ -1,3 +1,4 @@
 /samples.hdf5
-/distributions.hdf5
-/early_priors.hdf5
+/prevalences.hdf5
+/priors.hdf5
+/posteriors.hdf5

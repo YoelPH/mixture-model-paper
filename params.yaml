@@ -20,5 +20,5 @@ modalities:
 sampling:
   walkers_per_dim: 16
   check_interval: 50
-  nsteps: 50
-  thin: 1
+  nsteps: 10
+  thin: 10

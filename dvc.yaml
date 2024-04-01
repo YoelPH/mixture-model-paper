@@ -67,7 +67,7 @@ stages:
       - models/${item}/history.csv:
           cache: false
 
-  precompute-early-priors:
+  precompute-priors:
     foreach:
     - ipsi
     - contra
@@ -77,12 +77,57 @@ stages:
       cmd: >
         lyscripts precompute priors
         --samples models/${item}/samples.hdf5
-        --priors models/${item}/early_priors.hdf5
+        --priors models/${item}/priors.hdf5
         --params models/${item}/params.yaml
-        --t-stage early
+        --scenarios scenarios.yaml
       deps:
       - models/${item}/samples.hdf5
       params:
       - models/${item}/params.yaml:
+      - scenarios.yaml:
       outs:
-      - models/${item}/early_priors.hdf5
+      - models/${item}/priors.hdf5
+
+  precompute-posteriors:
+    foreach:
+    - ipsi
+    - contra
+    - bilateral
+    - midline
+    do:
+      cmd: >
+        lyscripts precompute posteriors
+        --priors models/${item}/priors.hdf5
+        --posteriors models/${item}/posteriors.hdf5
+        --params models/${item}/params.yaml
+        --scenarios scenarios.yaml
+      deps:
+      - models/${item}/priors.hdf5
+      params:
+      - models/${item}/params.yaml:
+      - scenarios.yaml:
+      outs:
+      - models/${item}/posteriors.hdf5
+
+  predict-prevalences:
+    foreach:
+    - ipsi
+    - contra
+    - bilateral
+    - midline
+    do:
+      cmd: >
+        lyscripts predict prevalences
+        --priors models/${item}/priors.hdf5
+        --prevalences models/${item}/prevalences.hdf5
+        --data data/reduced.csv
+        --params models/${item}/params.yaml
+        --scenarios scenarios.yaml
+      deps:
+      - models/${item}/priors.hdf5
+      - data/reduced.csv
+      params:
+      - models/${item}/params.yaml:
+      - scenarios.yaml:
+      outs:
+      - models/${item}/prevalences.hdf5

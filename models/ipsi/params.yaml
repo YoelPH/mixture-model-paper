@@ -26,6 +26,12 @@ model:
       max_time: 10
   modalities: [max_llh]         # List of modalities, defined further down
   side: ipsi
+  mapping:
+    0: "early"
+    1: "early"
+    2: "early"
+    3: "late"
+    4: "late"
 
 ########################################################################################
 # Under this key we define the specficity and sensitivity for a range
