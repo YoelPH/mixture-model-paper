@@ -28,6 +28,20 @@ crossref:
   sec-prefix: "section"
 ---
 
+```{python}
+#| echo: false
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from tueplots import figsizes, fontsizes
+
+from lymph import models
+from lyscripts import utils
+
+from scripts import shared, paths, COL, CONTRA_LNLS
+```
+
 # Introduction
 
 - head and neck cancer spreads lymphatically
@@ -67,22 +81,17 @@ The $n$-th row in this matrix corresponds to the distribution over hidden states
 
 A naive approach to model the contralateral lymphatic spread would be to simply employ two independent unilateral models as introduced in @sec-unilateral. During training, one could even enforce some shared parameters between these two models, like the parameterization of the distributions over diagnose times or the spread among the LNLs. Additionally, we could think of an approach to incorporate the primary tumor's mid-sagittal extension as a risk factor.
 
-However, we did not consider this straightforward approach, as it lacks a way to describe the correlation between ipsi- and contralateral involvement. This is displayed in @tbl-contra and shows how often the contralateral LNLs I, II, III, and IV were involved, given all possible combinations of midline extension, T-category, and ipsilateral LNL III involvement. Unsurprisingly, the prevalence for contralateral involvement is consistently higher when the tumor extends over the mid-sagittal line or is of later T-category. But it is also more frequent when the ipsilateral side shows more severe involvement, which is here shown via the surrogate LNL III.
+However, this approach lacks a way to describe the correlation between ipsi- and contralateral involvement. This is displayed in @tbl-contra and shows how often the contralateral LNLs I, II, III, and IV were involved, given all possible combinations of midline extension, T-category, and ipsilateral LNL III involvement. Unsurprisingly, the prevalence for contralateral involvement is consistently higher when the tumor extends over the mid-sagittal line or is of later T-category. But it is also more frequent when the ipsilateral side shows more severe involvement, which is here shown via the surrogate LNL III.
 
 ```{python}
 #| echo: false
 #| label: tbl-contra
 #| tbl-cap: Contralateral involvement depending on whether the primary tumor extends over the mid-sagittal line, the T-category, and whether the ipsilateral LNL III was involved or healthy.
-
-import pandas as pd
-import numpy as np
-from scripts import paths, COL, CONTRA_LNLS
-
 def right_align(column) -> str:
   """Right align some columns."""
   return ["text-align: right"] * len(column)
 
-data = pd.read_csv(paths.filtered, header=[0,1,2])
+data = pd.read_csv(paths.data, header=[0,1,2])
 data[COL.t_stage] = data[COL.t_stage].apply(lambda x: "early" if x <= 2 else "late")
 early_midext_data = (data.loc[data[COL.t_stage] == "early", COL.midext] == True).mean()
 late_midext_data = (data.loc[data[COL.t_stage] == "late", COL.midext] == True).mean()
@@ -142,15 +151,61 @@ $$
 
 ## Incorporating Midline Crossing
 
-To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized (state $\centernot{\text{e}}$) and every time-step there is a finite probability $\epsilon$ that the tumor grows over the symmetry plane of the patient (into state $\text{e}$).
+To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized and every time-step there is a finite probability $p_\epsilon$ that the tumor grows over the symmetry plane of the patient.
 
 Technically, the introduction of this additional random variable doubles the space of the hidden states. However, since we assume no correlation between the tumor's lateralization and the metastases in the LNLs, we can evolve the two parts separately.
 
-As with the state of the lymphatic network, we can also define a small transition matrix $\mathbf{A}_\epsilon$ that evolves the lateralized starting state $\boldsymbol{\pi}_\text{e} = \begin{pmatrix} 1 & 0 \end{pmatrix}$:
+As with the state of the lymphatic network, we can also define a small transition matrix $\mathbf{A}_\epsilon$ that evolves the lateralized starting state $\boldsymbol{\epsilon}[0] = \begin{pmatrix} 1 & 0 \end{pmatrix}$:
 
 $$
-\boldsymbol{\xi}^\text{e}[t] = \boldsymbol{\pi}_\text{e} \cdot \mathbf{A}_\epsilon^t = \begin{pmatrix} 1 & 0 \end{pmatrix} \cdot \begin{pmatrix} 1 - \epsilon & \epsilon \\ 0 & 1 \end{pmatrix}^t
+\boldsymbol{\epsilon}[t] = \boldsymbol{\epsilon}[0] \cdot \mathbf{A}_\epsilon^t = \begin{pmatrix} 1 & 0 \end{pmatrix} \cdot \begin{pmatrix} 1 - \epsilon & \epsilon \\ 0 & 1 \end{pmatrix}^t = \begin{pmatrix} (1 - \epsilon)^t & 1 - (1 - \epsilon)^t \end{pmatrix}
 $$
+
+We can again collect the entire evolution in a matrix $\boldsymbol{\Lambda}_\epsilon$ that stores the probabilies $P(\boldsymbol{\epsilon} \mid t)$ for each time-step $t$:
+
+$$
+\boldsymbol{\Lambda}_\epsilon = P(\boldsymbol{\epsilon} \mid t) = \begin{pmatrix}
+\boldsymbol{\epsilon}[0] \cdot \mathbf{A}_\epsilon^0 \\
+\boldsymbol{\epsilon}[1] \cdot \mathbf{A}_\epsilon^1 \\
+\vdots \\
+\boldsymbol{\epsilon}[t] \cdot \mathbf{A}_\epsilon^t \\
+\end{pmatrix}
+$$
+
+This quantity has $t$ rows, one for each time-step, and two columns: one for the decreasing probability of a lateralized tumor and one for the increasing probability of a tumor that has crossed the mid-sagittal line.
+
+```{python}
+#| echo: false
+#| label: fig-midext-evo
+#| fig-cap: The matrix $\boldsymbol{\Lambda}_\epsilon$ shown as heatmap of probabilities.
+from matplotlib.colors import LinearSegmentedColormap
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+from lyscripts.plot.utils import COLORS
+
+nrows, ncols = 1, 1
+
+plt.rcParams.update(figsizes.icml2024_full(nrows=nrows, ncols=ncols))
+plt.rcParams.update(fontsizes.icml2024())
+
+model = shared.get_model(which="midline", load_samples=True)
+
+fig, ax = plt.subplots(tight_layout=True)
+
+cmap = LinearSegmentedColormap.from_list("redusz", [COLORS["gray"], COLORS["red"]])
+im = ax.imshow(model.midext_evo().T, cmap=cmap)
+
+# create an Axes on the right side of ax. The width of cax will be 5%
+# of ax and the padding between cax and ax will be fixed at 0.05 inch.
+divider = make_axes_locatable(ax);
+cax = divider.append_axes("right", size="5%", pad=0.05);
+plt.colorbar(im, cax=cax, label="Prob. of midext");
+
+ax.set_xticks(np.arange(model.max_time + 1));
+ax.set_xlabel("time-step $t$");
+
+ax.set_yticks([0., 1.], labels=["lat.", "ext."])
+```
 
 Just as the lymphatic states, this lateralization state's evolution over the time-steps must then be marginalized over the time of diagnosis using $p(t)$.
 
@@ -195,11 +250,6 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 #| fig-cap: Monitoring quantities during the burn-in phase of the parameter sampling.
 from collections import namedtuple
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from tueplots import figsizes, fontsizes
-
 nrows, ncols = 1, 3
 label_map = {
   "acor_times": "Autocorrelation [steps]",
@@ -236,27 +286,12 @@ Below we compare the predicted with the observed prevalence of some involvement 
 #| echo: false
 #| label: fig-prevalences
 #| fig-cap: Prevalences of different scenarios.
-
-from pathlib import Path
-
-import matplotlib.pyplot as plt
-from lymph import models
-from lyscripts import utils
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import draw, BetaPosterior, Histogram, COLOR_CYCLE
 
-model_dir = Path("models/midline")
-filename = model_dir / "prevalences.hdf5"
-
-params = utils.load_yaml_params(model_dir / "params.yaml")
-model = utils.create_model(params)
+model = shared.get_model(which="midline")
 scenarios_config = utils.load_yaml_params("scenarios.yaml")
-scenarios = Scenario.list_from_params(
-  params=scenarios_config,
-  is_uni=isinstance(model, models.Unilateral),
-  side=params["model"].get("side", "ipsi")
-)
-
+scenarios = Scenario.list_from_params(scenarios_config)
 
 fig, ax = plt.subplots()
 
@@ -264,24 +299,24 @@ content = []
 color = next(COLOR_CYCLE)
 content += [
   Histogram.from_hdf5(
-    filename=filename,
+    filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[0].md5_hash("prevalences"),
     color=color,
   ),
   BetaPosterior.from_hdf5(
-    filename=filename,
+    filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[0].md5_hash("prevalences"),
   ),
 ]
 color = next(COLOR_CYCLE)
 content += [
   Histogram.from_hdf5(
-    filename=filename,
+    filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[1].md5_hash("prevalences"),
     color=color,
   ),
   BetaPosterior.from_hdf5(
-    filename=filename,
+    filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[1].md5_hash("prevalences"),
   ),
 ]
@@ -290,42 +325,25 @@ draw(
   contents=content,
   percent_lims=(2., 2.),
 )
-
 ```
 
 
 ## Parameter Estimates
 
 ```{python}
+#| echo: false
 #| label: tbl-midline-params
 #| tbl-cap: Mean sampled parameter estimates of the midline model and the respective standard deviation.
-#| echo: false
+model = shared.get_model(which="midline", load_samples=True)
+samples = shared.get_samples(which="midline")
 
-import yaml
+names = list(model.get_params().keys())
+means, stds = samples.mean(axis=0), samples.std(axis=0)
 
-import pandas as pd
-from emcee.backends import HDFBackend
-from lyscripts.utils import create_model
-
-with open("models/midline/params.yaml", mode="r") as file:
-  config = yaml.safe_load(file)
-
-model = create_model(config)
-backend = HDFBackend("models/midline/samples.hdf5", read_only=True)
-chain = backend.get_chain(flat=True)
-
-param_names = list(model.get_params().keys())
-param_means = chain.mean(axis=0)
-param_stds = chain.std(axis=0)
-model.set_params(*param_means)
 early_midext_prob = model.get_distribution("early").pmf @ model.midext_evo()[:,1]
 late_midext_prob = model.get_distribution("late").pmf @ model.midext_evo()[:,1]
 
-params_table = pd.DataFrame({
-  "name": param_names,
-  "mean": param_means,
-  "std": param_stds,
-})
+params_table = pd.DataFrame({"name": names, "mean": means, "std": stds})
 (
   params_table.style
   .format("{:.2%}", subset=["mean", "std"])
