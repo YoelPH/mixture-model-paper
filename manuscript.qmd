@@ -228,6 +228,71 @@ plt.show()
 
 @Fig-burnin-history is only a temporary placeholder for now.
 
+## Prevalence Comparisons
+
+Below we compare the predicted with the observed prevalence of some involvement patterns.
+
+```{python}
+#| echo: false
+#| label: fig-prevalences
+#| fig-cap: Prevalences of different scenarios.
+
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+from lymph import models
+from lyscripts import utils
+from lyscripts.scenario import Scenario
+from lyscripts.plot.utils import draw, BetaPosterior, Histogram, COLOR_CYCLE
+
+model_dir = Path("models/midline")
+filename = model_dir / "prevalences.hdf5"
+
+params = utils.load_yaml_params(model_dir / "params.yaml")
+model = utils.create_model(params)
+scenarios_config = utils.load_yaml_params("scenarios.yaml")
+scenarios = Scenario.list_from_params(
+  params=scenarios_config,
+  is_uni=isinstance(model, models.Unilateral),
+  side=params["model"].get("side", "ipsi")
+)
+
+
+fig, ax = plt.subplots()
+
+content = []
+color = next(COLOR_CYCLE)
+content += [
+  Histogram.from_hdf5(
+    filename=filename,
+    dataname=scenarios[0].md5_hash("prevalences"),
+    color=color,
+  ),
+  BetaPosterior.from_hdf5(
+    filename=filename,
+    dataname=scenarios[0].md5_hash("prevalences"),
+  ),
+]
+color = next(COLOR_CYCLE)
+content += [
+  Histogram.from_hdf5(
+    filename=filename,
+    dataname=scenarios[1].md5_hash("prevalences"),
+    color=color,
+  ),
+  BetaPosterior.from_hdf5(
+    filename=filename,
+    dataname=scenarios[1].md5_hash("prevalences"),
+  ),
+]
+draw(
+  axes=ax,
+  contents=content,
+  percent_lims=(2., 2.),
+)
+
+```
+
 
 ## Parameter Estimates
 

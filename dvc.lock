@@ -2430,23 +2430,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -2457,11 +2457,11 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
@@ -2542,23 +2542,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -2569,11 +2569,11 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
@@ -2658,23 +2658,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -2685,11 +2685,11 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
@@ -2776,23 +2776,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -2803,11 +2803,11 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
@@ -2888,23 +2888,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -2915,17 +2915,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/ipsi/posteriors.hdf5
       hash: md5
-      md5: 634cc6f01fbecbdce9e228e5445732bb
+      md5: 3f84a1384ceb3dd27080803b96212881
       size: 54048
   compute-posteriors@contra:
     cmd: "lyscripts compute posteriors --priors models/contra/priors.hdf5 --posteriors
@@ -3001,23 +3001,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3028,17 +3028,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/contra/posteriors.hdf5
       hash: md5
-      md5: 19446358dee70fcd3eda8a47a6350723
+      md5: 6a6dce1900c9f7d1a5da99170f6dc00b
       size: 54048
   compute-posteriors@bilateral:
     cmd: "lyscripts compute posteriors --priors models/bilateral/priors.hdf5 --posteriors
@@ -3117,23 +3117,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3144,17 +3144,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/bilateral/posteriors.hdf5
       hash: md5
-      md5: 5a2635145a5587c6de4fd51e38d03031
+      md5: 5b0f6cb2f2284cfdc2dfb98db901d72a
       size: 258848
   compute-posteriors@midline:
     cmd: "lyscripts compute posteriors --priors models/midline/priors.hdf5 --posteriors
@@ -3236,23 +3236,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3263,17 +3263,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/midline/posteriors.hdf5
       hash: md5
-      md5: 5013348215af0659be7dfa5a7ed417c5
+      md5: 05c200de40f30be7ae430b591c575ce7
       size: 340768
   compute-prevalences@ipsi:
     cmd: "lyscripts compute prevalences --priors models/ipsi/priors.hdf5 --prevalences
@@ -3353,23 +3353,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3380,17 +3380,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/ipsi/prevalences.hdf5
       hash: md5
-      md5: c2fbad97e689fdf8616e999e80a45d3a
+      md5: a07dc786f37300e9d64399d314fc12f0
       size: 23616
   compute-prevalences@contra:
     cmd: "lyscripts compute prevalences --priors models/contra/priors.hdf5 --prevalences
@@ -3470,23 +3470,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3497,17 +3497,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/contra/prevalences.hdf5
       hash: md5
-      md5: 9b65579a5a0b8bd4c7c0841ede411f33
+      md5: b17e113458c2fbb72394dd5b1acf2012
       size: 23616
   compute-prevalences@bilateral:
     cmd: "lyscripts compute prevalences --priors models/bilateral/priors.hdf5 --prevalences
@@ -3590,23 +3590,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3617,17 +3617,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/bilateral/prevalences.hdf5
       hash: md5
-      md5: 8b5df1603b14acd4aa277f1be4ae82db
+      md5: 404bd749c56fa691f2cc9f01de770c47
       size: 28736
   compute-prevalences@midline:
     cmd: "lyscripts compute prevalences --priors models/midline/priors.hdf5 --prevalences
@@ -3713,23 +3713,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3740,17 +3740,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/midline/prevalences.hdf5
       hash: md5
-      md5: 24b50519113f8c4150a049d5805bbbbc
+      md5: 1108e7a538a270906ff02706bb35f8bc
       size: 33856
   compute-risks@ipsi:
     cmd: "lyscripts compute risks --posteriors models/ipsi/posteriors.hdf5 --risks
@@ -3758,7 +3758,7 @@ stages:
     deps:
     - path: models/ipsi/posteriors.hdf5
       hash: md5
-      md5: 634cc6f01fbecbdce9e228e5445732bb
+      md5: 3f84a1384ceb3dd27080803b96212881
       size: 54048
     params:
       models/ipsi/params.yaml:
@@ -3825,23 +3825,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3852,17 +3852,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/ipsi/risks.hdf5
       hash: md5
-      md5: e95099e993522f1322ae488da834b4bf
+      md5: 0dd29bb373a149468aa4dadf2752606e
       size: 23328
   compute-risks@contra:
     cmd: "lyscripts compute risks --posteriors models/contra/posteriors.hdf5 --risks
@@ -3870,7 +3870,7 @@ stages:
     deps:
     - path: models/contra/posteriors.hdf5
       hash: md5
-      md5: 19446358dee70fcd3eda8a47a6350723
+      md5: 6a6dce1900c9f7d1a5da99170f6dc00b
       size: 54048
     params:
       models/contra/params.yaml:
@@ -3937,23 +3937,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -3964,17 +3964,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/contra/risks.hdf5
       hash: md5
-      md5: 51a256d2c92df290926f2d56b0c2f8e7
+      md5: 2e6efe350ce50a2828c14b5d6d831bb7
       size: 23328
   compute-risks@bilateral:
     cmd: "lyscripts compute risks --posteriors models/bilateral/posteriors.hdf5 --risks
@@ -3983,7 +3983,7 @@ stages:
     deps:
     - path: models/bilateral/posteriors.hdf5
       hash: md5
-      md5: 5a2635145a5587c6de4fd51e38d03031
+      md5: 5b0f6cb2f2284cfdc2dfb98db901d72a
       size: 258848
     params:
       models/bilateral/params.yaml:
@@ -4053,23 +4053,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -4080,17 +4080,17 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/bilateral/risks.hdf5
       hash: md5
-      md5: e38598e468afe15a57947c09f7ac9ced
+      md5: a8c56a64ec4e077457493a565535ca7f
       size: 28448
   compute-risks@midline:
     cmd: "lyscripts compute risks --posteriors models/midline/posteriors.hdf5 --risks
@@ -4098,7 +4098,7 @@ stages:
     deps:
     - path: models/midline/posteriors.hdf5
       hash: md5
-      md5: 5013348215af0659be7dfa5a7ed417c5
+      md5: 05c200de40f30be7ae430b591c575ce7
       size: 340768
     params:
       models/midline/params.yaml:
@@ -4171,23 +4171,23 @@ stages:
           mode: HMM
           involvement:
             ipsi:
-              II: true
+              II:
               III:
             contra:
-              II:
+              II: true
               III: true
           diagnosis:
             ipsi:
-              MRI:
-                II: true
+              max_llh:
+                II: false
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           involvement:
             ipsi:
@@ -4198,15 +4198,15 @@ stages:
               III:
           diagnosis:
             ipsi:
-              MRI:
+              max_llh:
                 II: true
                 III: false
             contra:
-              MRI:
+              max_llh:
                 II: false
                 III: false
     outs:
     - path: models/midline/risks.hdf5
       hash: md5
-      md5: b0abd3766ac4da8e9464b48c52335190
+      md5: f3e49e41106fca80ef93cf7b6f9e25d3
       size: 33568
