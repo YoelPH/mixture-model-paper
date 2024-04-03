@@ -1,7 +1,7 @@
 jupyter
 jupyter-cache
 matplotlib >= 3, < 4
-tueplots == 0.0.14
+multiprocess >= 0.70, < 0.71
 plotly >= 5, < 6
 emcee >= 3, < 4
 corner >= 2, < 3

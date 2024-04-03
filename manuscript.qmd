@@ -34,7 +34,7 @@ crossref:
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from tueplots import figsizes, fontsizes
+from matplotlib import ticker
 
 from lymph import models
 from lyscripts import utils
@@ -185,8 +185,8 @@ from lyscripts.plot.utils import COLORS
 
 nrows, ncols = 1, 1
 
-plt.rcParams.update(figsizes.icml2024_full(nrows=nrows, ncols=ncols))
-plt.rcParams.update(fontsizes.icml2024())
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(nrows=nrows, ncols=ncols))
 
 model = shared.get_model(which="midline", load_samples=True)
 
@@ -244,21 +244,22 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 
 ```{python}
 #| echo: false
-#| label: fig-burnin-history
-#| layout-ncol: 1
-#| layout-nrow: 1
+#| label: fig-burnin-history 
 #| fig-cap: Monitoring quantities during the burn-in phase of the parameter sampling.
 from collections import namedtuple
 
+def custom(x, pos):
+  return "{:.1f}".format(x/1000)
+
 nrows, ncols = 1, 3
 label_map = {
-  "acor_times": "Autocorrelation [steps]",
-  "accept_fracs": "Sample Acceptance [%]",
-  "max_log_probs": "Maximum log-Likelihood",
+  "acor_times": "autocorrelation [steps]",
+  "accept_fracs": "acceptance fraction [%]",
+  "max_log_probs": r"max. log-likelihood [$\times 10^3$]",
 }
 
-plt.rcParams.update(figsizes.icml2024_full(nrows=nrows, ncols=ncols))
-plt.rcParams.update(fontsizes.icml2024())
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(nrows=nrows, ncols=ncols, aspect_ratio=1.))
 
 fig, axes = plt.subplots(
   nrows=nrows,
@@ -271,8 +272,12 @@ for model in ["ipsi", "contra", "bilateral", "midline"]:
   for i, column in enumerate(history.columns):
     history.plot(y=column, ax=axes[i], label=model)
     axes[i].autoscale(enable=True, tight=True, axis="x")
-    axes[i].set_title(label_map[column])
+    axes[i].set_ylabel(label_map[column])
+    axes[i].xaxis.set_major_formatter(ticker.FuncFormatter(custom))
+    axes[i].set_xlabel(r"steps [$\times 10^3$]")
 
+axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
+axes[2].yaxis.set_major_formatter(ticker.FuncFormatter(custom))
 plt.show()
 ```
 
@@ -287,37 +292,41 @@ Below we compare the predicted with the observed prevalence of some involvement 
 #| label: fig-prevalences
 #| fig-cap: Prevalences of different scenarios.
 from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import draw, BetaPosterior, Histogram, COLOR_CYCLE
+from lyscripts.plot.utils import draw, BetaPosterior, Histogram, COLORS
 
 model = shared.get_model(which="midline")
 scenarios_config = utils.load_yaml_params("scenarios.yaml")
 scenarios = Scenario.list_from_params(scenarios_config)
 
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(aspect_ratio=2.))
+
 fig, ax = plt.subplots()
 
 content = []
-color = next(COLOR_CYCLE)
 content += [
   Histogram.from_hdf5(
     filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[0].md5_hash("prevalences"),
-    color=color,
+    color=COLORS["blue"],
   ),
   BetaPosterior.from_hdf5(
     filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[0].md5_hash("prevalences"),
+    color=COLORS["blue"],
   ),
 ]
-color = next(COLOR_CYCLE)
+
 content += [
   Histogram.from_hdf5(
     filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[1].md5_hash("prevalences"),
-    color=color,
+    color=COLORS["orange"],
   ),
   BetaPosterior.from_hdf5(
     filename=paths.get_filename(model="midline", kind="prevalences"),
     dataname=scenarios[1].md5_hash("prevalences"),
+    color=COLORS["orange"],
   ),
 ]
 draw(
@@ -340,8 +349,8 @@ samples = shared.get_samples(which="midline")
 names = list(model.get_params().keys())
 means, stds = samples.mean(axis=0), samples.std(axis=0)
 
-early_midext_prob = model.get_distribution("early").pmf @ model.midext_evo()[:,1]
-late_midext_prob = model.get_distribution("late").pmf @ model.midext_evo()[:,1]
+early_midext_prob = model.state_dist(t_stage="early")[1].sum()
+late_midext_prob = model.state_dist(t_stage="late")[1].sum()
 
 params_table = pd.DataFrame({"name": names, "mean": means, "std": stds})
 (
