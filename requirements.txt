@@ -1,11 +1,11 @@
 jupyter
 jupyter-cache
-matplotlib
-tueplots
-plotly
-emcee
-corner
-dvc
-scipy
+matplotlib >= 3, < 4
+tueplots == 0.0.14
+plotly >= 5, < 6
+emcee >= 3, < 4
+corner >= 2, < 3
+dvc >= 3, < 4
+scipy >= 1, < 2
 lymph-model >= 1.2.0, < 2
-git+https://github.com/rmnldwg/lyscripts.git@dev
+lyscripts >= 1.0.0a1, < 2
