@@ -6,10 +6,12 @@ from typing import Any, Literal
 from lymph import types
 from lyscripts import utils
 import numpy as np
+import pandas as pd
 
 from . import paths
 
 
+pd.options.mode.copy_on_write = False
 CM_TO_INCH = 0.393701
 GOLDEN_RATIO = 1.61803398875
 
@@ -40,6 +42,16 @@ def get_samples(
     return utils.load_model_samples(samples_path)
 
 
+def get_data(map_t_stage: bool = True) -> pd.DataFrame:
+    """Get the data."""
+    data = utils.load_patient_data(paths.data)
+
+    if map_t_stage:
+        data.ly.map_t_stage(lambda x: "early" if x <= 2 else "late")
+
+    return data
+
+
 def get_fontsizes(base: int = 8, offset: int = 2) -> dict[str, int]:
     """Get fontsizes that can be used to update the matplotlib rcParams.
 
@@ -64,6 +76,7 @@ def get_figsizes(
     unit: Literal["cm", "in"] = "cm",
     constrained_layout: bool = True,
     tight_layout: bool = True,
+    individual: bool = False,
 ) -> dict[str, Any]:
     """Get figure sizes that can be used to update the matplotlib rcParams.
 
@@ -74,8 +87,10 @@ def get_figsizes(
         pad *= CM_TO_INCH
 
     subplot_width = width / ncols
-    subplot_height = subplot_width / aspect_ratio
-    height = subplot_height * nrows
+    height = subplot_width / aspect_ratio
+
+    if not individual:
+        height *= nrows
 
     return {
         "figure.figsize": (width, height),
