@@ -35,11 +35,26 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import ticker
+from matplotlib.colors import LinearSegmentedColormap
+import upsetplot
 
 from lymph import models
 from lyscripts import utils
+from lyscripts.plot.utils import COLORS
 
 from scripts import shared, paths, COL, CONTRA_LNLS
+
+midline_model = shared.get_model("midline", load_samples=True)
+```
+
+```{python}
+#| tags: [parameters]
+#| echo: false
+
+# width of figures. May depend on number of text columns
+full = 17 # cm
+half = full
+# half =  8 # cm
 ```
 
 # Introduction
@@ -135,82 +150,120 @@ The term representing the model's prior probability of hidden involvement does n
 
 $$
 \begin{aligned}
-P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) &= \sum_{t=0}^{t_\text{max}} p(t) \cdot P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid t \right) \\
-&= \sum_{t=0}^{t_\text{max}} p(t) \cdot P \left( \mathbf{X}^\text{i} \mid t \right) \cdot P \left( \mathbf{X}^\text{c} \mid t \right)
+P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) &= \sum_{t=0}^{t_\text{max}} P(t) \cdot P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid t \right) \\
+&= \sum_{t=0}^{t_\text{max}} P(t) \cdot P \left( \mathbf{X}^\text{i} \mid t \right) \cdot P \left( \mathbf{X}^\text{c} \mid t \right)
 \end{aligned}
-$$
+$$ {#eq-bilateral-marginal}
 
 This assumption makes intuitive sense: The two sides of the lymphatic network in a typical patient are approximately mirror images of each other. Thus, no major vessels cross the mid-sagittal line. There may, however, be diffusion of lymph fluid accross this line or bulky involvement that redirects lymphatic drainage significantly.
 
 Using this assumption along with @eq-lambda-matrix, we can write the above distribution algebraically as a product:
 
 $$
-P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} p(\mathbf{t}) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
-$$
+P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} P(\mathbf{t}) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
+$$ {#eq-bilateral-marginal-algebra}
 
 
 ## Incorporating Midline Crossing
 
-To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized and every time-step there is a finite probability $p_\epsilon$ that the tumor grows over the symmetry plane of the patient.
+To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized and at every time-step there is a finite probability $p_\epsilon$ that the tumor grows over the symmetry plane of the patient.
 
-Technically, the introduction of this additional random variable doubles the space of the hidden states. However, since we assume no correlation between the tumor's lateralization and the metastases in the LNLs, we can evolve the two parts separately.
+Technically, the introduction of this additional random variable doubles the space of the hidden states and therefore quadruples the size of the transition matrix $\mathbf{A}$. However, since we assume no correlation between the tumor's lateralization and the metastases in the LNLs, we can evolve the two parts separately.
 
-As with the state of the lymphatic network, we can also define a small transition matrix $\mathbf{A}_\epsilon$ that evolves the lateralized starting state $\boldsymbol{\epsilon}[0] = \begin{pmatrix} 1 & 0 \end{pmatrix}$:
-
-$$
-\boldsymbol{\epsilon}[t] = \boldsymbol{\epsilon}[0] \cdot \mathbf{A}_\epsilon^t = \begin{pmatrix} 1 & 0 \end{pmatrix} \cdot \begin{pmatrix} 1 - \epsilon & \epsilon \\ 0 & 1 \end{pmatrix}^t = \begin{pmatrix} (1 - \epsilon)^t & 1 - (1 - \epsilon)^t \end{pmatrix}
-$$
-
-We can again collect the entire evolution in a matrix $\boldsymbol{\Lambda}_\epsilon$ that stores the probabilies $P(\boldsymbol{\epsilon} \mid t)$ for each time-step $t$:
+The probabilities to find a patient with a clearly lateralized tumor or one that extends over the mid-sagittal line after $t$ time-steps are then given by
 
 $$
-\boldsymbol{\Lambda}_\epsilon = P(\boldsymbol{\epsilon} \mid t) = \begin{pmatrix}
-\boldsymbol{\epsilon}[0] \cdot \mathbf{A}_\epsilon^0 \\
-\boldsymbol{\epsilon}[1] \cdot \mathbf{A}_\epsilon^1 \\
-\vdots \\
-\boldsymbol{\epsilon}[t] \cdot \mathbf{A}_\epsilon^t \\
-\end{pmatrix}
+\begin{aligned}
+P(\epsilon = \texttt{False} \mid t) &= (1 - p_\epsilon)^t \\
+P(\epsilon = \texttt{True} \mid t) &= 1 - (1 - p_\epsilon)^t
+\end{aligned}
 $$
 
-This quantity has $t$ rows, one for each time-step, and two columns: one for the decreasing probability of a lateralized tumor and one for the increasing probability of a tumor that has crossed the mid-sagittal line.
+To get the joint probability over the ipsi- and contralateral hidden states, as well as the state of the tumor's midline extension $P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \right)$, we simply add the above terms to the marginalization in @eq-bilateral-marginal:
+
+$$
+P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \right) = \sum_{t=0}^{t_\text{max}} P(t) \cdot P(\epsilon \mid t) \cdot P \left( \mathbf{X}^\text{i} \mid t \right) \cdot P \left( \mathbf{X}^\text{c} \mid t \right)
+$$
+
+Again, this can be written algebraically, by defining the vector $P(\mathbf{t}, \epsilon) = P(\mathbf{t}) \cdot P(\epsilon \mid \mathbf{t})$, to achieve the same form as in @eq-bilateral-marginal-algebra:
+
+$$
+P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m, \epsilon \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} P(\mathbf{t}, \epsilon) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
+$$
+
+In @fig-midext-evo, we visualize how the prior distribution over diagnose times $P(t)$, the conditional probability of midline extension $P(\epsilon \mid t)$, and their joint $P(\epsilon, t)$ evolve over the course of a patient evolution.
 
 ```{python}
 #| echo: false
 #| label: fig-midext-evo
-#| fig-cap: The matrix $\boldsymbol{\Lambda}_\epsilon$ shown as heatmap of probabilities.
-from matplotlib.colors import LinearSegmentedColormap
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+#| fig-cap: The evolution of the probability for the tumor to remain lateralized (green) or to cross the mid-sagittal plane (red).
+t = np.linspace(0, 10, 11)
+p_midline = {
+  "lateralized": (1 - midline_model.midext_prob)**t,
+  "extension": 1 - (1 - midline_model.midext_prob)**t,
+}
+dist = {
+  "early": midline_model.get_distribution("early").pmf,
+  "late": midline_model.get_distribution("late").pmf,
+}
+p_colors = {"lateralized": COLORS["green"], "extension": COLORS["red"]}
+t_colors = {"early": COLORS["blue"], "late": COLORS["orange"]}
+markers = {}
 
-from lyscripts.plot.utils import COLORS
-
-nrows, ncols = 1, 1
-
+nrows, ncols = 2, 1
 plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(nrows=nrows, ncols=ncols))
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  width=half,
+  aspect_ratio=2.5,
+))
 
-model = shared.get_model(which="midline", load_samples=True)
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=True)
+w = 0.3
 
-fig, ax = plt.subplots(tight_layout=True)
+for label, p in p_midline.items():
+  axes[0].plot(
+    t, p_midline[label], "o-",
+    label=label,
+    color=p_colors[label],
+  )
+  for i, t_stage in enumerate(["early", "late"]):
+    if label == "lateralized":
+      axes[0].bar(
+        t + i*w - w/2, dist[t_stage],
+        color=t_colors[t_stage],
+        width=w,
+        label=f"{t_stage} T-cat.",
+      )
+    axes[1].plot(
+      t, p * dist[t_stage], "o-",
+      c=p_colors[label],
+      mfc=t_colors[t_stage],
+      mec=t_colors[t_stage],
+      label=f"{label}, {t_stage}",
+    )
 
-cmap = LinearSegmentedColormap.from_list("redusz", [COLORS["gray"], COLORS["red"]])
-im = ax.imshow(model.midext_evo().T, cmap=cmap)
+axes[0].set_ylim(0., 1.)
+axes[0].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
+axes[0].set_ylabel("probability")
+axes[0].grid(axis="y", color=COLORS["gray"], alpha=0.5)
 
-# create an Axes on the right side of ax. The width of cax will be 5%
-# of ax and the padding between cax and ax will be fixed at 0.05 inch.
-divider = make_axes_locatable(ax);
-cax = divider.append_axes("right", size="5%", pad=0.05);
-plt.colorbar(im, cax=cax, label="Prob. of midext");
+axes[0].legend()
 
-ax.set_xticks(np.arange(model.max_time + 1));
-ax.set_xlabel("time-step $t$");
+axes[1].set_xlim(min(t), max(t))
+axes[1].set_xticks(t)
+axes[1].set_xlabel("time-step $t$")
 
-ax.set_yticks([0., 1.], labels=["lat.", "ext."])
+axes[1].set_ylim(0., 0.25)
+axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
+axes[1].set_ylabel("probability")
+axes[1].grid(axis="y", color=COLORS["gray"], alpha=0.5)
+
+axes[1].legend()
+
+plt.show()
 ```
-
-Just as the lymphatic states, this lateralization state's evolution over the time-steps must then be marginalized over the time of diagnosis using $p(t)$.
-
-- multiply first or second index of evolution with time-prior
-- choose appropriate resulting joint, depending on patient's tumor lateralization
 
 
 ## Parameter Symmetries
@@ -259,7 +312,12 @@ label_map = {
 }
 
 plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(nrows=nrows, ncols=ncols, aspect_ratio=1.))
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  aspect_ratio=1.,
+  width=full,
+))
 
 fig, axes = plt.subplots(
   nrows=nrows,
@@ -299,7 +357,7 @@ scenarios_config = utils.load_yaml_params("scenarios.yaml")
 scenarios = Scenario.list_from_params(scenarios_config)
 
 plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(aspect_ratio=2.))
+plt.rcParams.update(shared.get_figsizes(aspect_ratio=2., width=half))
 
 fig, ax = plt.subplots()
 
@@ -368,3 +426,18 @@ In the data, the prevalence of midline extension for early T-category tumors is 
 - Discrepancy between data and model is due to late T-stage's time prior
 - still tied to other parameters
 - cannot fully represent spread of midline extension and also represent spread params
+
+
+## Distributions over States
+
+```{python}
+plt.rcdefaults()
+
+mi = pd.MultiIndex.from_product(
+  [[False, True]] * len(midline_model.ext.ipsi.graph.lnls),
+  names=midline_model.ext.ipsi.graph.lnls.keys(),
+)
+series = pd.Series(midline_model.ext.ipsi.state_dist(), index=mi)
+upsetplot.plot(series)
+plt.show()
+```

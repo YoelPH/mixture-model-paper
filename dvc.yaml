@@ -152,3 +152,14 @@ stages:
       - scenarios.yaml:
       outs:
       - models/${item}/risks.hdf5
+
+  render-pdf:
+    cmd: >
+      quarto render manuscript.qmd --to pdf
+    deps:
+    - models
+    - data/reduced.csv
+    - manuscript.qmd
+    outs:
+    - manuscript.pdf
+    - manuscript.tex

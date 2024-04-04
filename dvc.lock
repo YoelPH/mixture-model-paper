@@ -4210,3 +4210,28 @@ stages:
       hash: md5
       md5: f3e49e41106fca80ef93cf7b6f9e25d3
       size: 33568
+  render-pdf:
+    cmd: "quarto render manuscript.qmd --to pdf\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: aa002de073d5623e88aa2a0bedbf3795
+      size: 550127
+    - path: manuscript.qmd
+      hash: md5
+      md5: 5e5c57f0d14aa4b88551c96f006cdb6f
+      size: 16024
+    - path: models
+      hash: md5
+      md5: fe3767302f05023f10e0ff8536056125.dir
+      size: 102415687
+      nfiles: 32
+    outs:
+    - path: manuscript.pdf
+      hash: md5
+      md5: cda03d47f4c6af07efbc281c045d495c
+      size: 81531
+    - path: manuscript.tex
+      hash: md5
+      md5: e180857a2a133f7e21dcc958bbf594c1
+      size: 20782
