@@ -1,5 +1,5 @@
 """
-Some shared and reduced functions for the scripts.
+Some shared and reused functions for the scripts.
 """
 from typing import Any, Literal
 
