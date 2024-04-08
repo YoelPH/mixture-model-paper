@@ -9,8 +9,11 @@ authors:
   - name: Jan Unkelbach
     orcid: 0000-0002-4275-990X
     email: jan.unkelbach@usz.ch
+bibliography: references.bib
 format:
   html:
+    toc: true
+    toc-depth: 3
     code-fold: true
   pdf:
     keep-tex: true
@@ -20,12 +23,19 @@ format:
         \usepackage{centernot}
 jupyter: python3
 execute: 
-  cache: false
+  cache: true
 crossref:
   fig-prefix: "figure"
   tbl-prefix: "table"
   eq-prefix: "equation"
   sec-prefix: "section"
+code-links:
+  - text: GitHub Repo
+    href: https://github.com/rmnldwg/bilateral-paper
+    icon: github
+resources: 
+  - data/reduced.csv
+meca-bundle: true
 ---
 
 ```{python}
@@ -59,7 +69,8 @@ half = full
 
 # Introduction
 
-- head and neck cancer spreads lymphatically
+- blabla
+- head and neck cancer spreads through the lymphatic network
 - may sometimes spread to contralateral side
 - spreads more frequently and to larger extent contralaterally when tumor extends the mid-sagittal line
 - we describe a model based on previously published hidden Markov model
@@ -293,6 +304,33 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 - tumor's midline extension modelled as a binary RV (lateralized or crossing/extending)
 
 
+# Detailed Data on Lymphatic Involvement
+
+To train our models, we used detailed tabular data specifying the lymphatic involvement of individual patients on a per LNL basis.
+
+```{python}
+#| echo: false
+#| label: fig-data-upset
+#| fig-cap: Upset plot of the ipsilateral lymphatic involvement patterns [@lex_upset_2014]. Here, the horizontal bars depict the overall prevalence of LNL involvemen. I.e., LNL II is the only level that is involved in more than 500 patients. The vertical bar plots depict joint involvements. E.g., the fourth bar from the left depicts how often the LNLs II, III, and IV are jointly involved while level I and V are not. This is indicated by the light and dark shaded dots in the matrix underneath.
+#| warning: false
+lnls = ["I", "II", "III", "IV", "V"]
+
+indicator_data = upsetplot.from_indicators(lnls, data=data["max_llh", "ipsi"])
+upset = upsetplot.UpSet(
+  indicator_data,
+  sort_by="cardinality",
+  sort_categories_by="-input",
+  min_subset_size=10,
+  facecolor=COLORS["blue"],
+)
+upset.style_subsets(absent=lnls, facecolor=COLORS["green"], label="N0 (all healthy)")
+axes = upset.plot()
+axes["totals"].set_xlabel("Prevalence")
+axes["intersections"].set_ylabel("Scenario size")
+plt.show()
+```
+
+
 # Results
 
 ```{python}
@@ -419,9 +457,9 @@ params_table = pd.DataFrame({"name": names, "mean": means, "std": stds})
 )
 ```
 
-The predicted prevalence of midline extension for early T-category tumors is `{python} f"{early_midext_prob:.2%}"`. For a late T-category tumor, it is `{python} f"{late_midext_prob:.2%}"`.
+The predicted prevalence of midline extension for early T-category tumors is <!-- insert computational code later -->. For a late T-category tumor, it is <!-- insert computational code later -->.
 
-In the data, the prevalence of midline extension for early T-category tumors is `{python} f"{early_midext_data:.2%}"`. For late T-category tumors it is `{python} f"{late_midext_data:.2%}"`.
+In the data, the prevalence of midline extension for early T-category tumors is <!-- insert computational code later -->. For late T-category tumors it is <!-- insert computational code later -->.
 
 - Discrepancy between data and model is due to late T-stage's time prior
 - still tied to other parameters
