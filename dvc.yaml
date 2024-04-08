@@ -1,3 +1,6 @@
+vars:
+  - _variables.yml
+
 stages:
   join:
     cmd: >
@@ -18,11 +21,15 @@ stages:
     - data/joined.csv
 
   enhance:
-    cmd: lyscripts data enhance data/joined.csv data/enhanced.csv
+    cmd: >
+      lyscripts data enhance
+      --params _variables.yml
+      data/joined.csv data/enhanced.csv
     deps:
     - data/joined.csv
     params:
-    - modalities
+    - _variables.yml:
+        - modalities
     outs:
     - data/enhanced.csv
 
@@ -56,6 +63,8 @@ stages:
         --history models/${item}/history.csv
         --walkers-per-dim ${sampling.walkers_per_dim}
         --check-interval ${sampling.check_interval}
+        --trust-fac ${sampling.trust_fac}
+        --rel-thresh ${sampling.rel_thresh}
         --nsteps ${sampling.nsteps}
         --thin ${sampling.thin}
       deps:

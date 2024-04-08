@@ -197,3 +197,5 @@ manuscript.*
 
 # VS Code
 .vscode
+
+/.quarto/

@@ -20,5 +20,7 @@ modalities:
 sampling:
   walkers_per_dim: 16
   check_interval: 50
+  trust_fac: 50.0
+  rel_thresh: 0.05
   nsteps: 10
   thin: 10

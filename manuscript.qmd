@@ -277,7 +277,7 @@ plt.show()
 ```
 
 
-## Parameter Symmetries
+## Parameter Symmetries {#sec-params-symmetry}
 
 In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambda}_\text{c}$ could be parameterized using a disjoint set of parameters. I.e., the ipsi- and contralateral spread rates are entirely different. However, using two sensible assumptions, we can reduce the parameter space by sharing some parameters between the sides:
 
@@ -295,7 +295,7 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
    $$ {#eq-mixing}
 
 
-## Tumors Extending Over the Mid-Sagittal Line
+## Tumors Extending Over the Mid-Sagittal Line {#sec-midline}
 
 - higher prevalence of contralateral involvement when tumor crosses the mid-sagittal plane
 - but still lower than on ipsilateral side
@@ -305,6 +305,11 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 
 
 # Detailed Data on Lymphatic Involvement
+
+- describe origin of data
+- why is this data special?
+- mention [LyProX](https://lyprox.org)
+- visualize data, e.g. using upsetplots
 
 To train our models, we used detailed tabular data specifying the lymphatic involvement of individual patients on a per LNL basis.
 
@@ -329,6 +334,31 @@ axes["totals"].set_xlabel("Prevalence")
 axes["intersections"].set_ylabel("Scenario size")
 plt.show()
 ```
+
+
+# Methods
+
+We compared three different aprroaches to modelling the contralateral involvement in OPSCC:
+
+1. A naive model of the contralateral side only. Neither the patterns of ipsilateral involvement, nor the information on whether the patients' tumors crossed the mid-sagittal line enter this model.
+2. The bilateral model as introduced in the sections up to and including @sec-params-symmetry. The involvement patterns of both sides enter this model, but not whether the tumors extended the midline.
+3. An additional bilateral model that tracks the midline extension of the patients' tumors as a random variable. This includes the formalism introduced up to and including @sec-midline. In contrast to the other two models, it does consider the reported midline extension in the data to attempt a more accurate prediction of the risk for contralateral occult disease.
+
+- all models initialized with the same settings
+  - same graph
+  - same data
+  - same distributions over diagnose time
+- parameter samples were drawn for all three models:
+  - the sampling used {{< var sampling.walkers_per_dim >}} walkers per parameter space dimension.
+  - Every {{< var sampling.check_interval >}} steps, convergence was checked
+  - convergence was reached when two criteria were met:
+      1. the relative difference between subsequent autocorrelation estimates of the chain does not change more than {{< var sampling.rel_thresh |  >}}.
+      2. the autocorrelation estimate of the chain drops below the length of the chain divided by {{< var sampling.trust_fac >}}.
+  - after convergence, {{< var sampling.nsteps >}} samples (from the parallel walkers) were drawn that were spaced {{< var sampling.thin >}} steps apart, resulting in `num params x {{< var sampling.walkers_per_dim >}} x {{< var sampling.nsteps >}}` parameter samples.
+
+For every model, we compare the predicted prevalence of a certain scenario to how often this scenario is seen in the data. The considered scenarios are choosen to test if the models can take into account T-category, the correlation of ipsi- and contralateral involvement, and the primary tumor's lateralization (whether or not it extends over the mid-sagittal line).
+
+- [ ] list and describe the scenarios
 
 
 # Results
