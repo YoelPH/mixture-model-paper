@@ -46,7 +46,37 @@ half = full
 
 # Unilateral Model for Lymphatic Progression {#sec-unilateral}
 
-- what we previously did
+![Directed acyclic graph (DAG) representing the abstract lymphatic network in the head and neck region. Blue nodes are the LNLs' hidden random variables, the red node represents the tumor, and the orange square nodes depict the binary observed variables. Red and blue arcs symbolize the probability of lymphatic spread along that edge during one time-step. The orange arcs represent the sensitivity and specificity of the observational modality (e.g. CT, MRI, pathology, ...).](static/small-graph.png){#fig-small-graph width=60%}
+
+Our first model to predict the lymphatic progression of HNSCC was introduced using Bayesian networks [@pouymayou_bayesian_2019]. We subsequently extended this work to a hidden Markov model (HMM) [@ludwig_hidden_2020]. We will briefly summarize this HMM's formalism before building on it to include the contralateral spread in @sec-ext-to-contra.
+
+We model a patient's state of involvement at an abstract time-step $t$ as a vector of hidden binary random variables:
+
+$$
+\mathbf{X}[t] = \begin{pmatrix} X_v[t] \end{pmatrix} \qquad v \in \left\{ 1, 2, \ldots, V \right\}
+$$
+
+Here, $V$ is the number of LNLs the model considers. The values a LNL's hidden binary RV may take on are $X_v[t] = 0$ (`False`), meaning the LNL $v$ is healthy or free of metastatic disease, or $X_v[t] = 1$ (`True`), corresponding to some for of tumor presence (i.e., occult or clinical).
+
+Since the state vector $\mathbf{X}[t]$ is $V$-dimensional and binary, there are $2^V$ distinct possible lymphatic involvement patterns, which we enumerate from $\boldsymbol{\xi}_0 = \begin{pmatrix} 0 & 0 & \cdots & 0 \end{pmatrix}$ to $\boldsymbol{\xi}_{2^V} = \begin{pmatrix} 1 & 1 & \cdots & 1 \end{pmatrix}$.
+
+Any hidden Markov model is fully described by three quantities:
+
+1. A starting state $\mathbf{X}[t=0]$ at time $t=0$ just before the patient's tumor formed. In our case, this is always the state where all LNLs are still healthy $\boldsymbol{\xi}_0$.
+2. The *transition matrix*
+   $$
+   \mathbf{A} = \left( A_{ij} \right) = \big( P \left( \mathbf{X}[t+1] = \boldsymbol{\xi}_j \mid \mathbf{X}[t] = \boldsymbol{\xi}_i \right) \big)
+   $$
+   where the value at row $i$ and column $j$ represents the probability to transition from state $\boldsymbol{\xi}_i$ to $\boldsymbol{\xi}_j$ during the time-step from $t$ to $t+1$. Note that we prohibit self-healing, meaning that during a transition, no LNL may change their state from $X_v[t]=1$ to $X_v[t+1]=0$. This effectively masks large parts of the transition matrix to be zero.
+3. Lastly, the *observation matrix*
+   $$
+   \mathbf{B} = \left( B_{ij} \right) = \big( P \left( \mathbf{Z} = \boldsymbol{\zeta}_j \mid \mathbf{X}[t_D] = \boldsymbol{\xi}_i \right) \big)
+   $$
+   where in row $i$ and at column $j$ we find the probability to *observe* a lymphatic involvement pattern $\mathbf{Z} = \boldsymbol{\zeta}_j$, given that the true (but hidden) state of involvement at the time of diagnosis $t_D$ is $\mathbf{X}[t_D] = \boldsymbol{\xi}_i$.
+
+The transition matrix $\mathbf{A}$ is parametrized using the spread probabilities of a directed acyclic graph (DAG) that we define as the underlying mechanistic representation of the lymphatic network. An example of such a DAG is shown in @fig-small-graph.
+
+...
 
 $$
 P \left( \mathbf{X} \mid \mathbf{Z} \right) = \frac{P \left( \mathbf{Z} \mid \mathbf{X} \right) P \left( \mathbf{X} \right)}{P \left( \mathbf{Z} \right)}
@@ -66,7 +96,7 @@ $$ {#eq-lambda-matrix}
 The $n$-th row in this matrix corresponds to the distribution over hidden states after $t=n-1$ time-steps.
 
 
-# Extension to a Bilateral Model
+# Extension to a Bilateral Model {#sec-ext-to-contra}
 
 A naive approach to model the contralateral lymphatic spread would be to simply employ two independent unilateral models as introduced in @sec-unilateral. During training, one could even enforce some shared parameters between these two models, like the parameterization of the distributions over diagnose times or the spread among the LNLs. Additionally, we could think of an approach to incorporate the primary tumor's mid-sagittal extension as a risk factor.
 
