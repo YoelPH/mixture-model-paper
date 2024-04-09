@@ -1,2 +1,51 @@
 project: 
-  type: default
+  type: manuscript
+  render: 
+    - manuscript.qmd
+
+# define main manuscript file
+manuscript: 
+  article: manuscript.qmd
+
+# which formats should be rendered?
+format:
+  html: default
+  docx: default
+  jats: default
+  pdf:
+    keep-tex: true
+    include-in-header:
+    - text: |
+        \usepackage{multirow}
+        \usepackage{centernot}
+
+# how to execute the python code?
+jupyter: python3
+execute: 
+  cache: true
+  freeze: false
+  # activating freeze may be useful for writing without
+  # reproducing computations...
+
+# authors, affiliations, bibliography, ...
+authors:
+  - name: Roman Ludwig
+    orcid: 0000-0001-9434-328X
+    email: roman.ludwig@usz.ch
+  - name: Yoel Perez Haas
+    email: yoel.perezhaas@usz.ch
+  - name: Jan Unkelbach
+    orcid: 0000-0002-4275-990X
+    email: jan.unkelbach@usz.ch
+bibliography: references.bib
+crossref:
+  fig-prefix: "figure"
+  tbl-prefix: "table"
+  eq-prefix: "equation"
+  sec-prefix: "section"
+code-links:
+  - text: GitHub Repo
+    href: https://github.com/rmnldwg/bilateral-paper
+    icon: github
+resources: 
+  - data/reduced.csv

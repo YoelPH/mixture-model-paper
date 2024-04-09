@@ -6153,9 +6153,9 @@ stages:
     outs:
     - path: manuscript.pdf
       hash: md5
-      md5: e02f1417e17bf093b2b8f606ea2391a9
-      size: 119930
+      md5: d63b411660dd49c1ca738ea4fc5595ba
+      size: 119754
     - path: manuscript.tex
       hash: md5
-      md5: 1419beab5e49afaddef3af775081e7a6
+      md5: ca8899397faa6833dc9d5e901136a415
       size: 27544
