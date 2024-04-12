@@ -1,7 +1,10 @@
 project: 
   type: manuscript
   render: 
-    - manuscript.qmd
+    - "*.qmd"
+  preview: 
+    browser: false
+    port: 8000
 
 # define main manuscript file
 manuscript: 
@@ -9,7 +12,8 @@ manuscript:
 
 # which formats should be rendered?
 format:
-  html: default
+  html:
+    toc: true
   docx: default
   jats: default
   pdf:

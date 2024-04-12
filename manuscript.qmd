@@ -168,7 +168,7 @@ P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsy
 $$ {#eq-bilateral-marginal-algebra}
 
 
-## Incorporating Midline Crossing
+## Modelling Midline Extension {#sec-midline}
 
 To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized and at every time-step there is a finite probability $p_\epsilon$ that the tumor grows over the symmetry plane of the patient.
 
@@ -179,7 +179,7 @@ The probabilities to find a patient with a clearly lateralized tumor or one that
 $$
 \begin{aligned}
 P(\epsilon = \texttt{False} \mid t) &= (1 - p_\epsilon)^t \\
-P(\epsilon = \texttt{True} \mid t) &= 1 - (1 - p_\epsilon)^t
+P(\epsilon = \texttt{True} \mid t) &= 1 - P(\epsilon = \texttt{False} \mid t)
 \end{aligned}
 $$
 
@@ -200,7 +200,7 @@ In @fig-midext-evo, we visualize how the prior distribution over diagnose times 
 ```{python}
 #| echo: false
 #| label: fig-midext-evo
-#| fig-cap: The evolution of the probability for the tumor to remain lateralized (green) or to cross the mid-sagittal plane (red).
+#| fig-cap: The top panel shows the prior probability to get diagnosed at time-step $t$ for early and late T-category tumors as bars. Also in the top panel, we plot the conditional probability of the tumor's midline extension ($\epsilon=\texttt{True}$), given the time-step $t$ as a line plot. In the bottom panel, we show the joint probability of getting diagnosed in time-step $t$ *and* having a tumor that crosses the midline.
 t = np.linspace(0, 10, 11)
 p_midline = {
   "lateralized": (1 - midline_model.midext_prob)**t,
@@ -229,7 +229,7 @@ w = 0.3
 for label, p in p_midline.items():
   axes[0].plot(
     t, p_midline[label], "o-",
-    label=label,
+    label=f"cond. prob. $P(\epsilon={label=='extension'} \mid t)$",
     color=p_colors[label],
   )
   for i, t_stage in enumerate(["early", "late"]):
@@ -238,14 +238,14 @@ for label, p in p_midline.items():
         t + i*w - w/2, dist[t_stage],
         color=t_colors[t_stage],
         width=w,
-        label=f"{t_stage} T-cat.",
+        label=f"{t_stage} T-cat. prior $P(t)$",
       )
     axes[1].plot(
       t, p * dist[t_stage], "o-",
       c=p_colors[label],
       mfc=t_colors[t_stage],
       mec=t_colors[t_stage],
-      label=f"{label}, {t_stage}",
+      label=f"{label} ($\epsilon={label=='extension'}$) for {t_stage} T-cat.",
     )
 
 axes[0].set_ylim(0., 1.)
@@ -261,7 +261,7 @@ axes[1].set_xlabel("time-step $t$")
 
 axes[1].set_ylim(0., 0.25)
 axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
-axes[1].set_ylabel("probability")
+axes[1].set_ylabel("joint probability $P(\epsilon, t)$")
 axes[1].grid(axis="y", color=COLORS["gray"], alpha=0.5)
 
 axes[1].legend()
@@ -282,24 +282,22 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
    \end{aligned}
    $$ {#eq-symmetries}
    for all $v \leq V$ and $r \in \operatorname{pa}(v)$.
-2. The tumor's spread to the contralateral side in case of an extension over the midline is larger than if it was clearly lateralized, but smaller than its spread to the ipsilateral side. This assumption stems from a simple thought experiment: Consider moving the tumor from a clearly lateralized position accross the mid-sagittal plane to its mirror position. In the beginning we would have $b_v^\text{c} < b_v^\text{i}$, while in the end, the situation is reversed. If a tumor extends over the mid-sagittal line, its contralateral spread rate can be expected to be in between these two extremes. We encode this in a *mixing parameter* $\alpha$ that captures a "degree of asymmetry": \
+2. The tumor's spread to the contralateral side in case of an extension over the midline is larger than if it was clearly lateralized, but smaller than its spread to the ipsilateral side. This assumption stems from a simple thought experiment: Consider moving the tumor from a clearly lateralized position accross the mid-sagittal plane to the same position, but on the contralateral side. In the beginning we would have $b_v^\text{c} < b_v^\text{i}$, while in the end, the situation is reversed. If a tumor extends over the mid-sagittal line, its contralateral spread rate can be expected to be in between these two extremes. We encode this in a *mixing parameter* $\alpha$ that captures a "degree of asymmetry": \
    $$
-   b_v^\text{c,e} = \alpha \cdot b_v^\text{i} + (1 - \alpha) \cdot b_v^{\text{c},\centernot{\text{e}}}
+   b_v^{\text{c},\epsilon=\texttt{True}} = \alpha \cdot b_v^\text{i} + (1 - \alpha) \cdot b_v^{\text{c},\epsilon=\texttt{False}}
    $$ {#eq-mixing}
+   This means the model now uses three different sets of parameters to describe the spread from the tumor to the LNLs: $b^\text{i}_v$ for the spread to the ipsilateral LNLs, $b_v^{\text{c},\epsilon=\texttt{False}}$ for the spread to the contralateral LNLs as long as the tumor is clearly lateralized, and finally $b_v^{\text{c},\epsilon=\texttt{True}}$ when it crosses the midline. Note, however, that these three sets of spread rates only account for $2 \cdot 2^V + 1$ parameters, since they are coupled via the mixing parameter $\alpha$.
 
-
-## Tumors Extending Over the Mid-Sagittal Line {#sec-midline}
-
-- higher prevalence of contralateral involvement when tumor crosses the mid-sagittal plane
-- but still lower than on ipsilateral side
-- spread to contralateral side in case of midline extension may be describes as linear combination of ipsi- and contralateral spread in case of no midline extension.
-- only one additional "mixing parameter" $\alpha$
-- tumor's midline extension modelled as a binary RV (lateralized or crossing/extending)
+Together with the explicit modelling of the tumor's midline extension $\epsilon$ from @sec-midline, we now have a model that may be capable of capturing the higher prevalence of contralateral involvment that comes with tumors extending over the mid-sagittal line.
 
 
 # Detailed Data on Lymphatic Involvement
 
-- describe origin of data
+The data used to train our models consists of <!-- `{python} len(data)` --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status. Their patient records have been collected at four different instituions:
+
+1. <!-- `{python} len(usz_data)` --> patients from the University Hospital Zurich [@ludwig_dataset_2022].
+2. 
+
 - why is this data special?
 - mention [LyProX](https://lyprox.org)
 - visualize data, e.g. using upsetplots
