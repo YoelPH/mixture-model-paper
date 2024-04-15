@@ -5,8 +5,8 @@ stages:
     deps:
     - path: data/joined.csv
       hash: md5
-      md5: e25f019d04c64af7ab4b5312ec08f1aa
-      size: 900228
+      md5: 57ec7c9bafd298e5cd7868a779b5797c
+      size: 907688
     params:
       _variables.yml:
         modalities:
@@ -37,8 +37,8 @@ stages:
     outs:
     - path: data/enhanced.csv
       hash: md5
-      md5: 401e2c666493c55b132110ca80a37522
-      size: 1132442
+      md5: 5216e30936c3c5e32c90ced663fd4b7d
+      size: 1139902
   join:
     cmd: "lyscripts data join  -i data/2021-usz-oropharynx.csv data/2021-clb-oropharynx.csv
       data/2023-isb-multisite.csv data/2023-clb-multisite.csv data/2023-hvh-oropharynx.csv
@@ -50,8 +50,8 @@ stages:
       size: 92742
     - path: data/2021-usz-oropharynx.csv
       hash: md5
-      md5: 1b949c74081ac4b6224186ebbb9c90df
-      size: 159482
+      md5: f5ddc8334a2bee6e8457885a9f75a7d0
+      size: 166961
     - path: data/2023-clb-multisite.csv
       hash: md5
       md5: 9d72ee96af2c51033a2fb0bb8551e318
@@ -67,21 +67,21 @@ stages:
     outs:
     - path: data/joined.csv
       hash: md5
-      md5: e25f019d04c64af7ab4b5312ec08f1aa
-      size: 900228
+      md5: 57ec7c9bafd298e5cd7868a779b5797c
+      size: 907688
   filter:
     cmd: lyscripts data filter data/enhanced.csv data/filtered.csv --include-subsites
       C01 C09 C10
     deps:
     - path: data/enhanced.csv
       hash: md5
-      md5: 401e2c666493c55b132110ca80a37522
-      size: 1132442
+      md5: 5216e30936c3c5e32c90ced663fd4b7d
+      size: 1139902
     outs:
     - path: data/filtered.csv
       hash: md5
-      md5: 0c102461cf4e270ac69c9c48e720a289
-      size: 659555
+      md5: 1798d6a7d8524ea1bdf61355bdf95115
+      size: 667015
   sampling:
     cmd: "lyscripts sample --input data/filtered.csv --params params.yaml --output
       models/midline.hdf5 --history models/midline_history.csv --walkers-per-dim 10
@@ -112,8 +112,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     params:
       models/contra/params.yaml:
         graph:
@@ -188,8 +188,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     params:
       models/bilateral/params.yaml:
         graph:
@@ -267,8 +267,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     params:
       models/midline/params.yaml:
         graph:
@@ -349,8 +349,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     params:
       models/ipsi/params.yaml:
         graph:
@@ -422,8 +422,8 @@ stages:
     deps:
     - path: data/filtered.csv
       hash: md5
-      md5: 0c102461cf4e270ac69c9c48e720a289
-      size: 659555
+      md5: 1798d6a7d8524ea1bdf61355bdf95115
+      size: 667015
     - path: scripts/reduce.py
       hash: md5
       md5: 0472e153b1689d42e5b798961ff84dd3
@@ -431,8 +431,8 @@ stages:
     outs:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
   precompute-state-dists@ipsi:
     cmd: "lyscripts predict precompute --samples models/ipsi/samples.hdf5 --params
       models/ipsi/params.yaml --state-dists models/ipsi/distributions.hdf5\n"
@@ -4246,8 +4246,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     - path: models/ipsi/priors.hdf5
       hash: md5
       md5: 726c5b1fef3cda49262d46e6aed39ab7
@@ -4483,8 +4483,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     - path: models/contra/priors.hdf5
       hash: md5
       md5: af888f78c45daa843107b062f2666d1c
@@ -4720,8 +4720,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     - path: models/bilateral/priors.hdf5
       hash: md5
       md5: b5e3b29755049689c7784120975487bd
@@ -4960,8 +4960,8 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     - path: models/midline/priors.hdf5
       hash: md5
       md5: 93e0ae679f49beed4e079f02d4bc0397
@@ -6139,23 +6139,23 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: aa002de073d5623e88aa2a0bedbf3795
-      size: 550127
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: 25afd0828b7a564e5b50bdd545398893
-      size: 22370
+      md5: 2692d552d306d92a8bbf41c522ca2a20
+      size: 26721
     - path: models
       hash: md5
       md5: 3f39f815cc9106d11100769f69ee076e.dir
       size: 105165895
       nfiles: 32
     outs:
-    - path: manuscript.pdf
+    - path: _manuscript/_tex/manuscript.tex
       hash: md5
-      md5: d63b411660dd49c1ca738ea4fc5595ba
-      size: 119754
-    - path: manuscript.tex
+      md5: 7a479fbb0c1e74ab4277b1d47ca145c7
+      size: 31993
+    - path: _manuscript/manuscript.pdf
       hash: md5
-      md5: ca8899397faa6833dc9d5e901136a415
-      size: 27544
+      md5: 3465c2d32bd024eb22dc50259639e462
+      size: 228759

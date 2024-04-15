@@ -14,8 +14,6 @@ manuscript:
 format:
   html:
     toc: true
-  docx: default
-  jats: default
   pdf:
     keep-tex: true
     include-in-header:

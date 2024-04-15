@@ -201,3 +201,5 @@ manuscript.*
 # quarto
 /.quarto/
 _manuscript/
+manuscript*
+!*.qmd
