@@ -24,4 +24,4 @@ sampling:
   rel_thresh: 0.05
   nsteps: 10
   thin: 10
-  cores: null
+  cores: 12

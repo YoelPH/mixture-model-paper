@@ -469,7 +469,7 @@ fig, axes = plt.subplots(
   sharex=True,
 )
 
-for model in ["ipsi", "contra", "bilateral", "midline"]:
+for model in ["contra", "bilateral", "midline"]:
   history = pd.read_csv(f"models/{model}/history.csv").set_index("steps")
   for i, column in enumerate(history.columns):
     history.plot(y=column, ax=axes[i], label=model)
@@ -500,7 +500,7 @@ from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import draw, BetaPosterior, Histogram, COLORS
 
 model = shared.get_model(which="midline")
-scenarios_config = utils.load_yaml_params("scenarios.yaml")
+scenarios_config = utils.load_yaml_params("scenarios/base.yaml")
 scenarios = Scenario.list_from_params(scenarios_config)
 
 plt.rcParams.update(shared.get_fontsizes())
@@ -603,6 +603,10 @@ mi = pd.MultiIndex.from_product(
   names=midline_model.ext.ipsi.graph.lnls.keys(),
 )
 series = pd.Series(midline_model.ext.ipsi.state_dist(), index=mi)
-upsetplot.plot(series)
+upsetplot.plot(
+  series,
+  sort_by="cardinality",
+  sort_categories_by="-input",
+)
 plt.show()
 ```

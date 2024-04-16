@@ -107,8 +107,8 @@ stages:
   sampling@contra:
     cmd: "lyscripts sample --input data/reduced.csv --params models/contra/params.yaml
       --output models/contra/samples.hdf5 --history models/contra/history.csv --walkers-per-dim
-      16 --check-interval 50 --trust-fac 50.0 --rel-thresh 0.05 --nsteps 10 --thin
-      10\n"
+      12 --check-interval 50 --trust-fac 50.0 --rel-thresh 0.05 --nsteps 10 --thin
+      10 --cores 12\n"
     deps:
     - path: data/reduced.csv
       hash: md5
@@ -121,32 +121,14 @@ stages:
             T:
             - II
             - III
+            - IV
           lnl:
             II:
             - III
-            III: []
+            III:
+            - IV
+            IV: []
         modalities:
-          CT:
-          - 0.76
-          - 0.81
-          MRI:
-          - 0.63
-          - 0.81
-          PET:
-          - 0.86
-          - 0.79
-          FNA:
-          - 0.98
-          - 0.8
-          diagnostic_consensus:
-          - 0.86
-          - 0.81
-          pathology:
-          - 1.0
-          - 1.0
-          pCT:
-          - 0.86
-          - 0.81
           max_llh:
           - 1.0
           - 1.0
@@ -174,17 +156,17 @@ stages:
     outs:
     - path: models/contra/history.csv
       hash: md5
-      md5: 993c9fda9ab8c094eaa029db8bf517a6
-      size: 2732
+      md5: 99ab0a7dbd242862786064ca3d19f1bb
+      size: 4646
     - path: models/contra/samples.hdf5
       hash: md5
-      md5: 85320d04763d7cc226f68ed82b7613a2
-      size: 17953056
+      md5: 2f497f0672ac2ec0fbc4cdbf5a12c8e9
+      size: 31680288
   sampling@bilateral:
     cmd: "lyscripts sample --input data/reduced.csv --params models/bilateral/params.yaml
       --output models/bilateral/samples.hdf5 --history models/bilateral/history.csv
-      --walkers-per-dim 16 --check-interval 50 --trust-fac 50.0 --rel-thresh 0.05
-      --nsteps 10 --thin 10\n"
+      --walkers-per-dim 12 --check-interval 50 --trust-fac 50.0 --rel-thresh 0.05
+      --nsteps 10 --thin 10 --cores 12\n"
     deps:
     - path: data/reduced.csv
       hash: md5
@@ -197,32 +179,14 @@ stages:
             T:
             - II
             - III
+            - IV
           lnl:
             II:
             - III
-            III: []
+            III:
+            - IV
+            IV: []
         modalities:
-          CT:
-          - 0.76
-          - 0.81
-          MRI:
-          - 0.63
-          - 0.81
-          PET:
-          - 0.86
-          - 0.79
-          FNA:
-          - 0.98
-          - 0.8
-          diagnostic_consensus:
-          - 0.86
-          - 0.81
-          pathology:
-          - 1.0
-          - 1.0
-          pCT:
-          - 0.86
-          - 0.81
           max_llh:
           - 1.0
           - 1.0
@@ -253,17 +217,17 @@ stages:
     outs:
     - path: models/bilateral/history.csv
       hash: md5
-      md5: 30dcc122187850963b8a164714363e25
-      size: 2940
+      md5: bec96446925a61c565255ac908dcbe2d
+      size: 5516
     - path: models/bilateral/samples.hdf5
       hash: md5
-      md5: 6b5a1044dc124bc35cd4d3c4015194fd
-      size: 25002264
+      md5: e0ce16fdf89952af0b8800252c683421
+      size: 61000616
   sampling@midline:
     cmd: "lyscripts sample --input data/reduced.csv --params models/midline/params.yaml
       --output models/midline/samples.hdf5 --history models/midline/history.csv --walkers-per-dim
-      16 --check-interval 50 --trust-fac 50.0 --rel-thresh 0.05 --nsteps 10 --thin
-      10\n"
+      12 --check-interval 50 --trust-fac 50.0 --rel-thresh 0.05 --nsteps 10 --thin
+      10 --cores 12\n"
     deps:
     - path: data/reduced.csv
       hash: md5
@@ -276,32 +240,14 @@ stages:
             T:
             - II
             - III
+            - IV
           lnl:
             II:
             - III
-            III: []
+            III:
+            - IV
+            IV: []
         modalities:
-          CT:
-          - 0.76
-          - 0.81
-          MRI:
-          - 0.63
-          - 0.81
-          PET:
-          - 0.86
-          - 0.79
-          FNA:
-          - 0.98
-          - 0.8
-          diagnostic_consensus:
-          - 0.86
-          - 0.81
-          pathology:
-          - 1.0
-          - 1.0
-          pCT:
-          - 0.86
-          - 0.81
           max_llh:
           - 1.0
           - 1.0
@@ -335,12 +281,12 @@ stages:
     outs:
     - path: models/midline/history.csv
       hash: md5
-      md5: 9e07b3daa00e7540da54415143828941
-      size: 3739
+      md5: 310ad1451ef284a064b46d3e84536642
+      size: 6278
     - path: models/midline/samples.hdf5
       hash: md5
-      md5: 9b08740a63724322a90d8fdb3900e962
-      size: 48882192
+      md5: 6d5c0c9d18354f45b5fd47b42429dfa7
+      size: 95105824
   sampling@ipsi:
     cmd: "lyscripts sample --input data/reduced.csv --params models/ipsi/params.yaml
       --output models/ipsi/samples.hdf5 --history models/ipsi/history.csv --walkers-per-dim
@@ -6143,19 +6089,809 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: 5029d5f4cb07d8dad139434839b13f36
-      size: 28872
+      md5: 3ec84e1828d4b3bdca681abc15115eff
+      size: 30322
     - path: models
       hash: md5
-      md5: 3f39f815cc9106d11100769f69ee076e.dir
-      size: 105165895
-      nfiles: 32
+      md5: 17420350735072728701f86ceb951ab8.dir
+      size: 194955938
+      nfiles: 24
     outs:
     - path: _manuscript/_tex/manuscript.tex
       hash: md5
-      md5: a91aeed8033422d9c890bdfde431c5cd
-      size: 34269
+      md5: a34f58f5c9fb5bf18bc14ff1d0c9b696
+      size: 34686
     - path: _manuscript/manuscript.pdf
       hash: md5
-      md5: fc4c4670e814b87a168e744c2006fa48
-      size: 231860
+      md5: 06467f3369311f49df6aabe088ca2b29
+      size: 237071
+  compute-priors@contra-base:
+    cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
+      --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
+    deps:
+    - path: models/contra/samples.hdf5
+      hash: md5
+      md5: 2f497f0672ac2ec0fbc4cdbf5a12c8e9
+      size: 31680288
+    params:
+      models/contra/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Unilateral.binary
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          side: contra
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/base.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+    outs:
+    - path: models/contra/priors.hdf5
+      hash: md5
+      md5: 4962951e23121bda8344bd151845cc33
+      size: 105248
+  compute-priors@bilateral-base:
+    cmd: "lyscripts compute priors --samples models/bilateral/samples.hdf5 --priors
+      models/bilateral/priors.hdf5 --params models/bilateral/params.yaml --scenarios
+      scenarios/base.yaml\n"
+    deps:
+    - path: models/bilateral/samples.hdf5
+      hash: md5
+      md5: e0ce16fdf89952af0b8800252c683421
+      size: 61000616
+    params:
+      models/bilateral/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Bilateral.binary
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/base.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+    outs:
+    - path: models/bilateral/priors.hdf5
+      hash: md5
+      md5: e608c7b53d4125b0ea3ffae0c43c09a5
+      size: 1119008
+  compute-priors@midline-base:
+    cmd: "lyscripts compute priors --samples models/midline/samples.hdf5 --priors
+      models/midline/priors.hdf5 --params models/midline/params.yaml --scenarios scenarios/base.yaml\n"
+    deps:
+    - path: models/midline/samples.hdf5
+      hash: md5
+      md5: 6d5c0c9d18354f45b5fd47b42429dfa7
+      size: 95105824
+    params:
+      models/midline/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/base.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+    outs:
+    - path: models/midline/priors.hdf5
+      hash: md5
+      md5: 555866d4e95595bc715a56d80cb30dd9
+      size: 2716448
+  compute-prevalences@contra-base:
+    cmd: "lyscripts compute prevalences --priors models/contra/priors.hdf5 --prevalences
+      models/contra/prevalences.hdf5 --data data/reduced.csv --params models/contra/params.yaml
+      --scenarios scenarios/base.yaml\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
+    - path: models/contra/priors.hdf5
+      hash: md5
+      md5: 4962951e23121bda8344bd151845cc33
+      size: 105248
+    params:
+      models/contra/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Unilateral.binary
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          side: contra
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/base.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+    outs:
+    - path: models/contra/prevalences.hdf5
+      hash: md5
+      md5: 1a99375b2aca3322145f3917cc1169ef
+      size: 73152
+  compute-prevalences@bilateral-base:
+    cmd: "lyscripts compute prevalences --priors models/bilateral/priors.hdf5 --prevalences
+      models/bilateral/prevalences.hdf5 --data data/reduced.csv --params models/bilateral/params.yaml
+      --scenarios scenarios/base.yaml\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
+    - path: models/bilateral/priors.hdf5
+      hash: md5
+      md5: e608c7b53d4125b0ea3ffae0c43c09a5
+      size: 1119008
+    params:
+      models/bilateral/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Bilateral.binary
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/base.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+    outs:
+    - path: models/bilateral/prevalences.hdf5
+      hash: md5
+      md5: f26c47f4b5fdc445f2084df6508eba78
+      size: 90432
+  compute-prevalences@midline-base:
+    cmd: "lyscripts compute prevalences --priors models/midline/priors.hdf5 --prevalences
+      models/midline/prevalences.hdf5 --data data/reduced.csv --params models/midline/params.yaml
+      --scenarios scenarios/base.yaml\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
+    - path: models/midline/priors.hdf5
+      hash: md5
+      md5: 555866d4e95595bc715a56d80cb30dd9
+      size: 2716448
+    params:
+      models/midline/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/base.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II: true
+                III:
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III: true
+                IV:
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+          diagnosis:
+            ipsi:
+              max_llh: {}
+            contra:
+              max_llh:
+                II:
+                III:
+                IV: true
+    outs:
+    - path: models/midline/prevalences.hdf5
+      hash: md5
+      md5: 169950b374d25dcd06c5912a20ce7a39
+      size: 101952
