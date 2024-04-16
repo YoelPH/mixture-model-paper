@@ -4,6 +4,7 @@ title: "Probabilistic Model of Bilateral Lymphatic Spread in Head and Neck Cance
 
 ```{python}
 #| echo: false
+import re
 
 import pandas as pd
 import numpy as np
@@ -486,7 +487,10 @@ plt.show()
 
 ## Prevalence Comparisons
 
-Below we compare the predicted with the observed prevalence of some involvement patterns.
+First, we look at the prevalence of contralateral involvement for the LNLs II, III, and IV. This is plotted in @fig-prevalences, both for early and advanced T-category.
+
+- [ ] Run sampling for all LNLs
+- [ ] compute prevalences for set of interesting scenarios
 
 ```{python}
 #| echo: false
@@ -544,20 +548,38 @@ draw(
 #| echo: false
 #| label: tbl-midline-params
 #| tbl-cap: Mean sampled parameter estimates of the midline model and the respective standard deviation.
+def map_param_names(name: str) -> str:
+  """Make parameter names more readable."""
+  try:
+    return {
+      "midext_prob": "Mid. ext. probability",
+      "mixing": "Mixing ⍺",
+      "late_p": "late T-cat. binom. prob.",
+    }[name]
+  except KeyError:
+    return re.sub(
+      r"(ipsi|contra)_", r"\g<1>: ", name
+    ).replace(
+      "to", " ➜ "
+    ).replace(
+      "_spread", ""
+    )
+
 model = shared.get_model(which="midline", load_samples=True)
 samples = shared.get_samples(which="midline")
 
-names = list(model.get_params().keys())
+names = [map_param_names(p) for p in model.get_params()]
 means, stds = samples.mean(axis=0), samples.std(axis=0)
 
 early_midext_prob = model.state_dist(t_stage="early")[1].sum()
 late_midext_prob = model.state_dist(t_stage="late")[1].sum()
 
-params_table = pd.DataFrame({"name": names, "mean": means, "std": stds})
+params_table = pd.DataFrame({"Parameter": names, "Mean": means, "Std. Dev.": stds})
 (
   params_table.style
-  .format("{:.2%}", subset=["mean", "std"])
-  .apply(right_align, subset=["mean", "std"])
+  .format("{:.2%}", subset=["Mean"])
+  .format("± {:.2%}", subset=["Std. Dev."])
+  .apply(right_align, subset=["Mean", "Std. Dev."])
   .hide()
 )
 ```

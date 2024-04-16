@@ -49,118 +49,103 @@ stages:
     - data/reduced.csv
 
   sampling:
-    foreach:
-    - ipsi
-    - contra
-    - bilateral
-    - midline
-    do:
-      cmd: >
-        lyscripts sample
-        --input data/reduced.csv
-        --params models/${item}/params.yaml
-        --output models/${item}/samples.hdf5
-        --history models/${item}/history.csv
-        --walkers-per-dim ${sampling.walkers_per_dim}
-        --check-interval ${sampling.check_interval}
-        --trust-fac ${sampling.trust_fac}
-        --rel-thresh ${sampling.rel_thresh}
-        --nsteps ${sampling.nsteps}
-        --thin ${sampling.thin}
-      deps:
-      - data/reduced.csv
-      params:
-      - models/${item}/params.yaml:
-      outs:
-      - models/${item}/samples.hdf5
-      - models/${item}/history.csv:
-          cache: false
+    matrix:
+      model: [contra, bilateral, midline]
+    cmd: >
+      lyscripts sample
+      --input data/reduced.csv
+      --params models/${item.model}/params.yaml
+      --output models/${item.model}/samples.hdf5
+      --history models/${item.model}/history.csv
+      --walkers-per-dim ${sampling.walkers_per_dim}
+      --check-interval ${sampling.check_interval}
+      --trust-fac ${sampling.trust_fac}
+      --rel-thresh ${sampling.rel_thresh}
+      --nsteps ${sampling.nsteps}
+      --thin ${sampling.thin}
+      --cores ${sampling.cores}
+    deps:
+    - data/reduced.csv
+    params:
+    - models/${item.model}/params.yaml:
+    outs:
+    - models/${item.model}/samples.hdf5
+    - models/${item.model}/history.csv:
+        cache: false
 
   compute-priors:
-    foreach:
-    - ipsi
-    - contra
-    - bilateral
-    - midline
-    do:
-      cmd: >
-        lyscripts compute priors
-        --samples models/${item}/samples.hdf5
-        --priors models/${item}/priors.hdf5
-        --params models/${item}/params.yaml
-        --scenarios scenarios.yaml
-      deps:
-      - models/${item}/samples.hdf5
-      params:
-      - models/${item}/params.yaml:
-      - scenarios.yaml:
-      outs:
-      - models/${item}/priors.hdf5
+    matrix:
+      model: [contra, bilateral, midline]
+      scenario: [base]
+    cmd: >
+      lyscripts compute priors
+      --samples models/${item.model}/samples.hdf5
+      --priors models/${item.model}/priors.hdf5
+      --params models/${item.model}/params.yaml
+      --scenarios scenarios/${item.scenario}.yaml
+    deps:
+    - models/${item.model}/samples.hdf5
+    params:
+    - models/${item.model}/params.yaml:
+    - scenarios/${item.scenario}.yaml:
+    outs:
+    - models/${item.model}/priors.hdf5
 
-  compute-posteriors:
-    foreach:
-    - ipsi
-    - contra
-    - bilateral
-    - midline
-    do:
-      cmd: >
-        lyscripts compute posteriors
-        --priors models/${item}/priors.hdf5
-        --posteriors models/${item}/posteriors.hdf5
-        --params models/${item}/params.yaml
-        --scenarios scenarios.yaml
-      deps:
-      - models/${item}/priors.hdf5
-      params:
-      - models/${item}/params.yaml:
-      - scenarios.yaml:
-      outs:
-      - models/${item}/posteriors.hdf5
+  # compute-posteriors:
+  #   matrix:
+  #     model: [contra, bilateral, midline]
+  #     scenario: [base]
+  #   cmd: >
+  #     lyscripts compute posteriors
+  #     --priors models/${item.model}/priors.hdf5
+  #     --posteriors models/${item.model}/posteriors.hdf5
+  #     --params models/${item.model}/params.yaml
+  #     --scenarios scenarios/${item.scenario}.yaml
+  #   deps:
+  #   - models/${item.model}/priors.hdf5
+  #   params:
+  #   - models/${item.model}/params.yaml:
+  #   - scenarios/${item.scenario}.yaml:
+  #   outs:
+  #   - models/${item.model}/posteriors.hdf5
 
   compute-prevalences:
-    foreach:
-    - ipsi
-    - contra
-    - bilateral
-    - midline
-    do:
-      cmd: >
-        lyscripts compute prevalences
-        --priors models/${item}/priors.hdf5
-        --prevalences models/${item}/prevalences.hdf5
-        --data data/reduced.csv
-        --params models/${item}/params.yaml
-        --scenarios scenarios.yaml
-      deps:
-      - models/${item}/priors.hdf5
-      - data/reduced.csv
-      params:
-      - models/${item}/params.yaml:
-      - scenarios.yaml:
-      outs:
-      - models/${item}/prevalences.hdf5
+    matrix:
+      model: [contra, bilateral, midline]
+      scenario: [base]
+    cmd: >
+      lyscripts compute prevalences
+      --priors models/${item.model}/priors.hdf5
+      --prevalences models/${item.model}/prevalences.hdf5
+      --data data/reduced.csv
+      --params models/${item.model}/params.yaml
+      --scenarios scenarios/${item.scenario}.yaml
+    deps:
+    - models/${item.model}/priors.hdf5
+    - data/reduced.csv
+    params:
+    - models/${item.model}/params.yaml:
+    - scenarios/${item.scenario}.yaml:
+    outs:
+    - models/${item.model}/prevalences.hdf5
 
-  compute-risks:
-    foreach:
-    - ipsi
-    - contra
-    - bilateral
-    - midline
-    do:
-      cmd: >
-        lyscripts compute risks
-        --posteriors models/${item}/posteriors.hdf5
-        --risks models/${item}/risks.hdf5
-        --params models/${item}/params.yaml
-        --scenarios scenarios.yaml
-      deps:
-      - models/${item}/posteriors.hdf5
-      params:
-      - models/${item}/params.yaml:
-      - scenarios.yaml:
-      outs:
-      - models/${item}/risks.hdf5
+  # compute-risks:
+  #   matrix:
+  #     model: [contra, bilateral, midline]
+  #     scenario: [base]
+  #   cmd: >
+  #     lyscripts compute risks
+  #     --posteriors models/${item.model}/posteriors.hdf5
+  #     --risks models/${item.model}/risks.hdf5
+  #     --params models/${item.model}/params.yaml
+  #     --scenarios scenarios/${item.scenario}.yaml
+  #   deps:
+  #   - models/${item.model}/posteriors.hdf5
+  #   params:
+  #   - models/${item.model}/params.yaml:
+  #   - scenarios/${item.scenario}.yaml:
+  #   outs:
+  #   - models/${item.model}/risks.hdf5
 
   render-pdf:
     cmd: >

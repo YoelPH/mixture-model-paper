@@ -1,0 +1,39 @@
+# These scenarios are used to generally evaluate whether the three models
+# can describe the overall prevalence of contralateral involvmeent well.
+scenarios:
+  - t_stages: [early]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: true, III: null, IV: null}
+  - t_stages: [early]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: null, III: true, IV: null}
+  - t_stages: [early]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: null, III: null, IV: true}
+  - t_stages: [late]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: true, III: null, IV: null}
+  - t_stages: [late]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: null, III: true, IV: null}
+  - t_stages: [late]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: null, III: null, IV: true}
