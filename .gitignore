@@ -199,7 +199,7 @@ manuscript.*
 .vscode
 
 # quarto
-.quarto/
+/.quarto/
 _manuscript/
 manuscript*
 !*.qmd

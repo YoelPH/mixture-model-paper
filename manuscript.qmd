@@ -106,9 +106,31 @@ However, this approach lacks a way to describe the correlation between ipsi- and
 #| echo: false
 #| label: tbl-contra
 #| tbl-cap: Contralateral involvement depending on whether the primary tumor extends over the mid-sagittal line, the T-category, and whether the ipsilateral LNL III was involved or healthy.
-def right_align(column) -> str:
+def right_align(column: pd.Series) -> list[str]:
   """Right align some columns."""
   return ["text-align: right"] * len(column)
+
+def highlight_bool(
+  column: pd.Series,
+  c_false: str = COLORS["green"],
+  c_true: str = COLORS["red"],
+) -> list[str]:
+  """Make cell read (`False`) or green (`True`)."""
+  n = len(column)
+  trues = pd.Series([c_true] * n)
+  falses = pd.Series([c_false] * n)
+  colors = trues.where(column, falses)
+  return colors.map(lambda x: f"color: {x}")
+
+def highlight_t_stage(
+  column: pd.Series,
+  c_early: str = COLORS["green"],
+  c_late: str = COLORS["red"],
+) -> list[str]:
+  """Highlight `early` and `late`."""
+  is_early = column == "early"
+  return highlight_bool(is_early, c_false=c_late, c_true=c_early)
+
 
 raw = pd.read_csv(paths.data, header=[0,1,2])
 data = raw.copy()
@@ -140,7 +162,9 @@ involved.columns = pd.MultiIndex.from_product(
   .reset_index()
   .style
   .format(precision=2)
-  .apply(right_align, axis="index")
+  .apply(right_align, subset=involved.columns[0:])
+  .apply(highlight_bool, subset=["Mid. ext.", "ipsi III"])
+  .apply(highlight_t_stage, subset=["T-cat."])
   .hide()
 )
 ```
