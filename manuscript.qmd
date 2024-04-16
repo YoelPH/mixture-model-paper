@@ -136,9 +136,12 @@ involved.columns = pd.MultiIndex.from_product(
   names=["LNL", ""]
 )
 (
-  involved.style
+  involved
+  .reset_index()
+  .style
   .format(precision=2)
   .apply(right_align, axis="index")
+  .hide()
 )
 ```
 
@@ -294,59 +297,72 @@ Together with the explicit modelling of the tumor's midline extension $\epsilon$
 
 # Detailed Data on Lymphatic Involvement
 
-The data used to train our models consists of <!-- {python} len(data) --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status. Their patient records have been collected at four different instituions:
+The data used to train our models consists of <!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
+
+Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data. Note that the data from the Inselspital Bern and the Centre Léon Bérard only consists of patients treated with some form of neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset.
+
+The entire data, including additional patients with tumors in other primary locations than the oropharynx, is publicly available: It may be [downloaded from LyProX](https://lyprox.org/patients/dataset) where it may also be interactively explored, [from GitHub](https://github.com/rmnldwg/lydata), [from zenodo](https://zenodo.org/search?q=lydata), or via the *Data-in-Brief* publications @ludwig_dataset_2022 and @ludwig_multicentric_2023.
 
 ```{python}
 #| echo: false
 #| label: tbl-data
-
+#| tbl-cap: Overview over the five datasets from four different institutions used to train and evaluate our model. Here, we briefly characterize the total number of OPSCC patients from the respective institution, their median age, what proportion received some form of neck dissection, the N0 portion of patients, what percentage presented with early T-category, and the prevalence of primary tumor midline extension. For a much more detailed look at the data, visit [lyprox.org](https://lyprox.org).
 col_map = {
-  ("patient", "#", "institution"): ("Institution", lambda x: None),
-  ("patient", "#", "age"): ("Age", np.mean),
-  ("tumor", "1", "t_stage"): ("T-category", np.mean),
+  COL.inst: "Institution",
+  COL.age: "Age",
+  COL.nd: "Neck Dissection",
+  COL.t_stage: "T-category",
+  COL.n_stage: "N-category",
 }
-reduced = raw[col_map.keys()]
-reduced.columns = reduced.columns.get_level_values(2)
-renamed = (
-  reduced
-  .rename(columns={tpl[-1]: val[0] for tpl, val in col_map.items()})
-  .convert_dtypes()
+short_col_map = {tpl[-1]: val for tpl, val in col_map.items()}
+
+subdata = raw[col_map.keys()]
+subdata.columns = subdata.columns.get_level_values(2)
+subdata = (
+  subdata
+  .rename(columns=short_col_map)
+  .reset_index(drop=True)
 )
-grouped = renamed.groupby(by="Institution")
-aggregated = grouped.agg({
-  name: func for name, func in col_map.values()
-  if name != "Institution"
-})
+
+def n0_mean(n_stage: pd.Series) -> float:
+  """Compute portion of N0 patients."""
+  return (n_stage == 0).mean()
+
+def early_mean(t_stage: pd.Series) -> float:
+  """Compute early T-category portion."""
+  return t_stage.isin([0,1,2]).mean()
+
+grouped = (
+  raw.groupby(
+    by=COL.inst,
+  ).aggregate(**{
+    "Total": pd.NamedAgg(column=COL.age, aggfunc="count"),
+    "Age (median)": pd.NamedAgg(column=COL.age, aggfunc="median"),
+    "Neck Dissection": pd.NamedAgg(column=COL.nd, aggfunc="mean"),
+    "N0": pd.NamedAgg(column=COL.n_stage, aggfunc=n0_mean),
+    "Early T-Cat.": pd.NamedAgg(column=COL.t_stage, aggfunc=early_mean),
+    "Mid. Ext.": pd.NamedAgg(column=COL.midext, aggfunc="mean"),
+  }).convert_dtypes()
+)
+grouped.index.name = "Institution"
+(
+  grouped
+  .reset_index()
+  .style
+  .format(
+    formatter="{:>.0%}",
+    subset=["Neck Dissection", "N0", "Early T-Cat.", "Mid. Ext."],
+  )
+  .apply(
+    func=right_align,
+    axis="index",
+    subset=grouped.columns[0:],
+  )
+  .hide()
+)
 ```
 
-```{python}
-#| echo: false
-#| output: asis
-
-for i, institution in enumerate([
-  "University Hospital Zurich",
-  "Centre Léon Bérard",
-  "Inselspital Bern",
-  "Vall d'Hebron Barcelona Hospital",
-]):
-  is_from_institution = data["patient", "#", "institution"] == institution
-  inst_data = data.loc[is_from_institution]
-  locations = inst_data["tumor", "1", "location"].unique()
-  locations = locations[~pd.isna(locations)]
-
-  if len(locations) == 1:
-    locations_str = str(locations[0])
-  else:
-    locations_str = ", ".join(locations[:-1]) + ", and " + str(locations[-1])
-
-  print(f"{i}. {len(inst_data)} patients with newly diagnosed HNSCC in the {locations_str}, extracted at the {institution}.")
-```
-
-- why is this data special?
-- mention [LyProX](https://lyprox.org)
-- visualize data, e.g. using upsetplots
-
-To train our models, we used detailed tabular data specifying the lymphatic involvement of individual patients on a per LNL basis.
+To the best of our knowledge, this data still remains the only publicly available data on patterns of lymphatic progression containing this level of detail. It allows us to visualize these patterns in so-called *upset plots* [@lex_upset_2014] as shown in @fig-data-upset.
 
 ```{python}
 #| echo: false

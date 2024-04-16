@@ -1,5 +1,6 @@
 jupyter
 jupyter-cache
+joblib >= 1.4, < 2
 matplotlib >= 3, < 4
 multiprocess >= 0.70, < 0.71
 plotly >= 5, < 6

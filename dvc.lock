@@ -6143,8 +6143,8 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: 2692d552d306d92a8bbf41c522ca2a20
-      size: 26721
+      md5: 5029d5f4cb07d8dad139434839b13f36
+      size: 28872
     - path: models
       hash: md5
       md5: 3f39f815cc9106d11100769f69ee076e.dir
@@ -6153,9 +6153,9 @@ stages:
     outs:
     - path: _manuscript/_tex/manuscript.tex
       hash: md5
-      md5: 7a479fbb0c1e74ab4277b1d47ca145c7
-      size: 31993
+      md5: a91aeed8033422d9c890bdfde431c5cd
+      size: 34269
     - path: _manuscript/manuscript.pdf
       hash: md5
-      md5: 3465c2d32bd024eb22dc50259639e462
-      size: 228759
+      md5: fc4c4670e814b87a168e744c2006fa48
+      size: 231860
