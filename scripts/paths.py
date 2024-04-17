@@ -12,7 +12,7 @@ cache_dir = Path(".cache")
 
 def get_filename(
     model: Literal["ipsi", "contra", "bilateral", "midline"],
-    kind: Literal["params", "samples", "priors", "posteriors", "prevalences", "risks"],
+    kind: Literal["params", "samples", "priors"] | str,
 ) -> Path:
     """Get the filename of the samples of one of the four trained models."""
     return next((model_dir / model).glob(f"{kind}.*"))

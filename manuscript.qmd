@@ -541,13 +541,19 @@ for col, model in enumerate(["contra", "bilateral", "midline"]):
       color = next(color_cycle)
       content += [
         Histogram.from_hdf5(
-          filename=paths.get_filename(model=model, kind="prevalences"),
+          filename=paths.get_filename(
+            model=model,
+            kind="prevalences_overall",
+          ),
           dataname=scenario.md5_hash("prevalences"),
           color=color,
           label=f"contra LNL {next(lnls)}"
         ),
         BetaPosterior.from_hdf5(
-          filename=paths.get_filename(model=model, kind="prevalences"),
+          filename=paths.get_filename(
+            model=model,
+            kind="prevalences_overall",
+          ),
           dataname=scenario.md5_hash("prevalences"),
           color=color,
         ),
@@ -614,13 +620,19 @@ for col, model in enumerate(["contra", "bilateral", "midline"]):
       color = next(color_cycle)
       content += [
         Histogram.from_hdf5(
-          filename=paths.get_filename(model=model, kind="prevalences"),
+          filename=paths.get_filename(
+            model=model,
+            kind="prevalences_with_ipsi",
+          ),
           dataname=scenario.md5_hash("prevalences"),
           color=color,
           label=f"contra LNL {next(lnls)}"
         ),
         BetaPosterior.from_hdf5(
-          filename=paths.get_filename(model=model, kind="prevalences"),
+          filename=paths.get_filename(
+            model=model,
+            kind="prevalences_with_ipsi",
+          ),
           dataname=scenario.md5_hash("prevalences"),
           color=color,
         ),

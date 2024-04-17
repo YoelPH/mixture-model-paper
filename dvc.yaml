@@ -116,7 +116,7 @@ stages:
     cmd: >
       lyscripts compute prevalences
       --priors models/${item.model}/priors.hdf5
-      --prevalences models/${item.model}/prevalences.hdf5
+      --prevalences models/${item.model}/prevalences_${item.scenario}.hdf5
       --data data/reduced.csv
       --params models/${item.model}/params.yaml
       --scenarios scenarios/${item.scenario}.yaml
