@@ -1,0 +1,36 @@
+# In these scenarios, we look at the models' ability to take ipsilateral
+# involvement into account as a risk factor for contralateral involvement.
+scenarios:
+  - t_stages: [early]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        max_llh: {II: false, III: null, IV: null}
+      contra:
+        max_llh: {II: true, III: null, IV: null}
+  - t_stages: [early]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        max_llh: {II: true, III: null, IV: null}
+      contra:
+        max_llh: {II: true, III: null, IV: null}
+  - t_stages: [late]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        max_llh: {II: false, III: null, IV: null}
+      contra:
+        max_llh: {II: true, III: null, IV: null}
+  - t_stages: [late]
+    midext: null
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        max_llh: {II: true, III: null, IV: null}
+      contra:
+        max_llh: {II: true, III: null, IV: null}
+

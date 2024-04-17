@@ -190,7 +190,6 @@ pyrightconfig.json
 manuscript_files/
 manuscript.*
 !manuscript.qmd
-.quarto/
 
 # jupyter
 .jupyter_cache/
@@ -204,3 +203,4 @@ _manuscript/
 manuscript*
 !*.qmd
 site_libs/
+!/_freeze/*

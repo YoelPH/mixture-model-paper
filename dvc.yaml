@@ -76,7 +76,7 @@ stages:
   compute-priors:
     matrix:
       model: [contra, bilateral, midline]
-      scenario: [base]
+      scenario: [priors]
     cmd: >
       lyscripts compute priors
       --samples models/${item.model}/samples.hdf5
@@ -89,7 +89,7 @@ stages:
     - models/${item.model}/params.yaml:
     - scenarios/${item.scenario}.yaml:
     outs:
-    - models/${item.model}/priors.hdf5
+    - models/${item.model}/${item.scenario}.hdf5
 
   # compute-posteriors:
   #   matrix:
@@ -112,7 +112,7 @@ stages:
   compute-prevalences:
     matrix:
       model: [contra, bilateral, midline]
-      scenario: [base]
+      scenario: [overall, with_ipsi]
     cmd: >
       lyscripts compute prevalences
       --priors models/${item.model}/priors.hdf5
@@ -127,12 +127,12 @@ stages:
     - models/${item.model}/params.yaml:
     - scenarios/${item.scenario}.yaml:
     outs:
-    - models/${item.model}/prevalences.hdf5
+    - models/${item.model}/prevalences_${item.scenario}.hdf5
 
   # compute-risks:
   #   matrix:
   #     model: [contra, bilateral, midline]
-  #     scenario: [base]
+  #     scenario: [overall, with_ipsi]
   #   cmd: >
   #     lyscripts compute risks
   #     --posteriors models/${item.model}/posteriors.hdf5

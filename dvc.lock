@@ -6895,3 +6895,247 @@ stages:
       hash: md5
       md5: 169950b374d25dcd06c5912a20ce7a39
       size: 101952
+  compute-priors@contra-priors:
+    cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
+      --params models/contra/params.yaml --scenarios scenarios/priors.yaml\n"
+    deps:
+    - path: models/contra/samples.hdf5
+      hash: md5
+      md5: 2f497f0672ac2ec0fbc4cdbf5a12c8e9
+      size: 31680288
+    params:
+      models/contra/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Unilateral.binary
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          side: contra
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/priors.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+    outs:
+    - path: models/contra/priors.hdf5
+      hash: md5
+      md5: 4962951e23121bda8344bd151845cc33
+      size: 105248
+  compute-priors@bilateral-priors:
+    cmd: "lyscripts compute priors --samples models/bilateral/samples.hdf5 --priors
+      models/bilateral/priors.hdf5 --params models/bilateral/params.yaml --scenarios
+      scenarios/priors.yaml\n"
+    deps:
+    - path: models/bilateral/samples.hdf5
+      hash: md5
+      md5: e0ce16fdf89952af0b8800252c683421
+      size: 61000616
+    params:
+      models/bilateral/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Bilateral.binary
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/priors.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+    outs:
+    - path: models/bilateral/priors.hdf5
+      hash: md5
+      md5: e608c7b53d4125b0ea3ffae0c43c09a5
+      size: 1119008
+  compute-priors@midline-priors:
+    cmd: "lyscripts compute priors --samples models/midline/samples.hdf5 --priors
+      models/midline/priors.hdf5 --params models/midline/params.yaml --scenarios scenarios/priors.yaml\n"
+    deps:
+    - path: models/midline/samples.hdf5
+      hash: md5
+      md5: 6d5c0c9d18354f45b5fd47b42429dfa7
+      size: 95105824
+    params:
+      models/midline/params.yaml:
+        graph:
+          tumor:
+            T:
+            - II
+            - III
+            - IV
+          lnl:
+            II:
+            - III
+            III:
+            - IV
+            IV: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/priors.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext:
+          mode: HMM
+        - t_stages:
+          - late
+          midext:
+          mode: HMM
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+    outs:
+    - path: models/midline/priors.hdf5
+      hash: md5
+      md5: 555866d4e95595bc715a56d80cb30dd9
+      size: 2716448

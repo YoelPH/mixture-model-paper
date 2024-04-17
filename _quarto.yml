@@ -33,7 +33,7 @@ format:
 jupyter: python3
 execute: 
   cache: true
-  freeze: false
+  freeze: true
   # activating freeze may be useful for writing without
   # reproducing computations...
 
