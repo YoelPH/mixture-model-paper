@@ -6089,22 +6089,22 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: 3ec84e1828d4b3bdca681abc15115eff
-      size: 30322
+      md5: 383af4e113fd641a9fc58aeaf05576a3
+      size: 32727
     - path: models
       hash: md5
-      md5: 17420350735072728701f86ceb951ab8.dir
+      md5: 48a93dc9bf4d406ebdc6356ebe66a76d.dir
       size: 194955938
       nfiles: 24
     outs:
     - path: _manuscript/_tex/manuscript.tex
       hash: md5
-      md5: a34f58f5c9fb5bf18bc14ff1d0c9b696
-      size: 34686
+      md5: df1cd771296882ae7ffe3a355f46d80e
+      size: 36513
     - path: _manuscript/manuscript.pdf
       hash: md5
-      md5: 06467f3369311f49df6aabe088ca2b29
-      size: 237071
+      md5: 990dcf2bcdd0a08474f15230554ff21d
+      size: 257635
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -6622,7 +6622,7 @@ stages:
     outs:
     - path: models/contra/prevalences.hdf5
       hash: md5
-      md5: 1a99375b2aca3322145f3917cc1169ef
+      md5: 688f73f0fe9b18e772440b382b373e35
       size: 73152
   compute-prevalences@bilateral-base:
     cmd: "lyscripts compute prevalences --priors models/bilateral/priors.hdf5 --prevalences

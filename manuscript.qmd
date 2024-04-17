@@ -420,6 +420,8 @@ We compared three different aprroaches to modelling the contralateral involvemen
 2. The bilateral model as introduced in the sections up to and including @sec-params-symmetry. The involvement patterns of both sides enter this model, but not whether the tumors extended the midline.
 3. An additional bilateral model that tracks the midline extension of the patients' tumors as a random variable. This includes the formalism introduced up to and including @sec-midline. In contrast to the other two models, it does consider the reported midline extension in the data to attempt a more accurate prediction of the risk for contralateral occult disease.
 
+## MCMC Sampling {#sec-sampling}
+
 - all models initialized with the same settings
   - same graph
   - same data
@@ -487,58 +489,79 @@ plt.show()
 
 ## Prevalence Comparisons
 
-First, we look at the prevalence of contralateral involvement for the LNLs II, III, and IV. This is plotted in @fig-prevalences, both for early and advanced T-category.
+First, we look at the prevalence of contralateral involvement for the LNLs II, III, and IV. The three models' predictions are plotted against beta posteriors of the observed prevalence in the data in @fig-prevalences, both for early and advanced T-category.
 
-- [ ] Run sampling for all LNLs
-- [ ] compute prevalences for set of interesting scenarios
+The beta posteriors (drawn as lines in @fig-prevalences) are a convenient way of indicating not only the percentage of patients that presented with any given involvement, T-category, and/or other characteristics, which sits at the maximum of the beta distribution. It also shows the size of the population via its variance: If we observe e.g. 3 out of 10 patients to have contralateral LNL II involvement when the primary tumor is of advanced T-stage, then we cannot be particularly sure about that rate to be truly 30%. However, when we observe 300 out of 1000, we can be much more certain. A beta posterior intuitively reflects that in its width and is thus better suited to display such data than e.g. a vertical line only.
+
+The shaded histograms in @fig-prevalences show the corresponding prevalence as computed by one of our models. They are formed by computing the prevalence for a number of parameter samples drawn during the MCMC learning process, as detailed in @sec-sampling. If both the location and width of the histograms matches those of the beta posteriors, then our model is both accurate and precise enough to describe the data.
 
 ```{python}
 #| echo: false
 #| label: fig-prevalences
-#| fig-cap: Prevalences of different scenarios.
+#| fig-cap: Prevalences of contralateral LNL involvement for different scenarios and the three considered models. The colored histograms show the computed distribution over the prevalence of involvment in the contralateral levels II (blue), III (orange), and IV (red). Each model's prediction is shown in a separate column, while the rows show these prevalences computed for early (top row) and advanced T-category (bottom row) respectively. The lines depict beta-posteriors over the observed prevalence of the corresponding scenario using a uniform prior. Its maximum coincides with the percentage of patients with the involvement of interest and its width indicates how many patients were considered in total.
+from itertools import cycle
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import draw, BetaPosterior, Histogram, COLORS
 
-model = shared.get_model(which="midline")
 scenarios_config = utils.load_yaml_params("scenarios/base.yaml")
 scenarios = Scenario.list_from_params(scenarios_config)
 
+nrows, ncols = 2, 3
+
 plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(aspect_ratio=2., width=half))
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  width=full,
+))
 
-fig, ax = plt.subplots()
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex="col")
 
-content = []
-content += [
-  Histogram.from_hdf5(
-    filename=paths.get_filename(model="midline", kind="prevalences"),
-    dataname=scenarios[0].md5_hash("prevalences"),
-    color=COLORS["blue"],
-  ),
-  BetaPosterior.from_hdf5(
-    filename=paths.get_filename(model="midline", kind="prevalences"),
-    dataname=scenarios[0].md5_hash("prevalences"),
-    color=COLORS["blue"],
-  ),
-]
+axes[0,0].set_ylabel("early")
+axes[-1,0].set_ylabel("advanced")
 
-content += [
-  Histogram.from_hdf5(
-    filename=paths.get_filename(model="midline", kind="prevalences"),
-    dataname=scenarios[1].md5_hash("prevalences"),
-    color=COLORS["orange"],
-  ),
-  BetaPosterior.from_hdf5(
-    filename=paths.get_filename(model="midline", kind="prevalences"),
-    dataname=scenarios[1].md5_hash("prevalences"),
-    color=COLORS["orange"],
-  ),
-]
-draw(
-  axes=ax,
-  contents=content,
-  percent_lims=(2., 2.),
-)
+for col, model in enumerate(["contra", "bilateral", "midline"]):
+  axes[0,col].set_title(model)
+  axes[-1,col].set_xlabel("prevalence [%]")
+  for row, t_stage in enumerate(["early", "late"]):
+    content = []
+    color_cycle = cycle(COLORS.values())
+    lnls = iter(["II", "III", "IV"])
+    for scenario in scenarios:
+      if not t_stage in scenario.t_stages:
+        continue
+
+      if model == "contra":
+        scenario = scenario.from_dict(
+          scenario.as_dict("prevalences"),
+          is_uni=True,
+          side="contra",
+        )
+
+      color = next(color_cycle)
+      content += [
+        Histogram.from_hdf5(
+          filename=paths.get_filename(model=model, kind="prevalences"),
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+          label=f"contra LNL {next(lnls)}"
+        ),
+        BetaPosterior.from_hdf5(
+          filename=paths.get_filename(model=model, kind="prevalences"),
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+        ),
+      ]
+    draw(
+      axes=axes[row,col],
+      contents=content,
+      percent_lims=(2., 2.),
+      xlims=(0., 27.)
+    )
+    axes[row,col].set_yticks([])
+
+axes[0,0].legend(labelspacing=0.2)
+axes[-1,-1].legend(labelspacing=0.2)
 ```
 
 
