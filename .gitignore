@@ -187,20 +187,17 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
 
 # Quarto generated files
+/.quarto/
+_manuscript/
 manuscript_files/
+data_files/
 manuscript.*
 !manuscript.qmd
+data.*
+!data.qmd
 
 # jupyter
 .jupyter_cache/
 
 # VS Code
 .vscode
-
-# quarto
-/.quarto/
-_manuscript/
-manuscript*
-!*.qmd
-site_libs/
-!/_freeze/*

@@ -17,7 +17,7 @@ from lymph import models
 from lyscripts import utils
 from lyscripts.plot.utils import COLORS
 
-from scripts import shared, paths, COL, CONTRA_LNLS
+from scripts import shared, paths, COL, get_lnl_cols
 
 midline_model = shared.get_model("midline", load_samples=True)
 ```
@@ -43,6 +43,139 @@ half = full
 - ipsi- and contralateral side are correlated via time of diagnosis, which is correlated with T-category
 - tumor extension over mid-sagittal line is modelled as random variable
 - spread probabilities from tumor to contralateral LNLs in case of midline extesnion are linear combinations of these probabilities in case of ipsilateral spread and contralateral spread when tumor is clearly lateralized
+
+
+# Data on Lymphatic Progression Patterns
+
+We have collected a detailed dataset of <!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
+
+Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. Note that the data from the Inselspital Bern and the Centre Léon Bérard only consists of patients treated with some form of neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset.
+
+```{python}
+#| echo: false
+#| label: tbl-data-overview
+#| tbl-cap: Overview over the five datasets from four different institutions used to train and evaluate our model. Here, we briefly characterize the total number of OPSCC patients from the respective institution, their median age, what proportion received some form of neck dissection, the N0 portion of patients, what percentage presented with early T-category, and the prevalence of primary tumor midline extension. For a much more detailed look at the data, visit [lyprox.org](https://lyprox.org).
+from typing import Literal
+
+def align(
+  column: pd.Series,
+  where: Literal["right", "left", "center"],
+) -> list[str]:
+  """Align a column."""
+  return [f"text-align: {where}"] * len(column)
+
+def right_align(column: pd.Series) -> list[str]:
+  """Right align column."""
+  return align(column, where="right")
+
+def highlight_bool(
+  column: pd.Series,
+  c_false: str = COLORS["green"],
+  c_true: str = COLORS["red"],
+) -> list[str]:
+  """Make cell read (`False`) or green (`True`)."""
+  n = len(column)
+  trues = pd.Series([c_true] * n)
+  falses = pd.Series([c_false] * n)
+  colors = trues.where(column, falses)
+  return colors.map(lambda x: f"color: {x}")
+
+def highlight_t_stage(
+  column: pd.Series,
+  c_early: str = COLORS["green"],
+  c_late: str = COLORS["red"],
+) -> list[str]:
+  """Highlight `early` and `late`."""
+  is_early = column == "early"
+  return highlight_bool(is_early, c_false=c_late, c_true=c_early)
+
+
+col_map = {
+  COL.inst: "Institution",
+  COL.age: "Age",
+  COL.nd: "Neck Dissection",
+  COL.t_stage: "T-category",
+  COL.n_stage: "N-category",
+}
+short_col_map = {tpl[-1]: val for tpl, val in col_map.items()}
+
+raw = utils.load_patient_data(paths.data)
+subdata = raw[col_map.keys()]
+subdata.columns = subdata.columns.get_level_values(2)
+subdata = (
+  subdata
+  .rename(columns=short_col_map)
+  .reset_index(drop=True)
+)
+
+def n0_mean(n_stage: pd.Series) -> float:
+  """Compute portion of N0 patients."""
+  return (n_stage == 0).mean()
+
+def early_mean(t_stage: pd.Series) -> float:
+  """Compute early T-category portion."""
+  return t_stage.isin([0,1,2]).mean()
+
+grouped = (
+  raw.groupby(
+    by=COL.inst,
+  ).aggregate(**{
+    "Total": pd.NamedAgg(column=COL.age, aggfunc="count"),
+    "Age (median)": pd.NamedAgg(column=COL.age, aggfunc="median"),
+    "Neck Dissection": pd.NamedAgg(column=COL.nd, aggfunc="mean"),
+    "N0": pd.NamedAgg(column=COL.n_stage, aggfunc=n0_mean),
+    "Early T-Cat.": pd.NamedAgg(column=COL.t_stage, aggfunc=early_mean),
+    "Mid. Ext.": pd.NamedAgg(column=COL.midext, aggfunc="mean"),
+  }).convert_dtypes()
+)
+grouped.index.name = "Institution"
+(
+  grouped
+  .reset_index()
+  .style
+  .format(
+    formatter="{:>.0%}",
+    subset=["Neck Dissection", "N0", "Early T-Cat.", "Mid. Ext."],
+  )
+  .apply(
+    func=right_align,
+    axis="index",
+    subset=grouped.columns[0:],
+  )
+  .hide()
+)
+```
+
+
+## Contralateral Involvement Prevalence {#sec-data-strat}
+
+These datasets allow us to investigate correlations between the involvement of individual LNLs, or between risk factors and patterns of involvement. In @fig-data-strat, we have plotted the prevalence of each contralateral LNL's involvement, stratified by T-category, ipsilateral number of involved LNLs, and whether the tumor extended over the mid-sagittal line. A similar but more complete stratification is also tabulated in the appendix in @tbl-data-strat.
+
+{{< embed data.qmd#fig-data-strat >}}
+
+The left panel in @fig-data-strat indicates that T-category is correlated with contralateral involvement (as it is with overal involvement). This is simply because T-category may on average be considered a surrogate for the time between onset of disease and diagnosis. I.e., a patient with a T4 tumor was -- on average -- diagnosed later than a patient with a T1 tumor. Thus, the former did have more time to develop metastases.
+
+Similarly, ipsilateral involvement correlates with contralateral metastasis. The tumor of a patients with many metastases in ipsilateral LNLs was probably able to spread for longer (or faster) compared to a tumor in a patient with no nodal disease. This, too, may therefore be considered a surrogate for the duration of the disease. In rare cases, bulky nodal disease ipsilaterally may also redirect lymph fluids to the contralateral side. <!-- citation needed? -->
+
+Lastly, the right panel in @fig-data-strat shows that patients with a tumor crossing the mid-sagittal line show contralateral involvement vastly more often compared to patients with clearly lateralized tumors. This makes intutitive sense, because the lymphatic system in the head and neck region is typically symmetric and thus no major vessels cross the midline. Therefore, interstitial fluids from the primary tumor -- which we assume to carry living malignant cells -- may only reach the blind-ended lymphatic vessels in the contralateral neck via short-ranged diffusion. Which in turn is only possible when the primary tumor is close enough to the mid-sagittal line or crosses it. <!-- citation(s) needed? or is this intuition good enough? -->
+
+
+## Requirements for a Bilateral Model
+
+Based on the observations of the [previous section](#sec-data-strat), any potential model that aims to also predict the risk for contralateral nodal involvement, should be able to take the following into account:
+
+1. More advanced T-category should lead to higher risk for nodal disease. One approach to achieve this via the expected time of diagnosis has already been developed in the form of a hidden Markov model [@ludwig_hidden_2021].
+2. The degree of ipsilateral involvement should give the model information on the time that may have passed between onset and diagnosis of the disease. This should come in addition to what can be inferred about this time from T-category alone.
+3. A tumor that extends over the mid-sagittal line should yield contralateral metastases with much higher probability.
+
+Over the course of this work, we will first briefly recap the mentioned HMM in @sec-unilateral, which was so far used to model ipsilateral lymphatic progression only. Then, we intuitively extend it to include the contralateral side as well in @sec-ext-to-contra. In this section, we also introduce a way of modelling the tumor's midline extension as a random variable (@sec-midline) and lastly talk about how it may affect the contralateral spread in @sec-params-symmetry.
+
+<!-- TODO: Hint at methods and results... -->
+
+
+## Data Availability
+
+The entire data, including additional patients with tumors in other primary locations than the oropharynx, is publicly available: It may be [downloaded from LyProX](https://lyprox.org/patients/dataset) where it can be interactively explored too, [from GitHub](https://github.com/rmnldwg/lydata), [from zenodo](https://zenodo.org/search?q=lydata), or via the *Data-in-Brief* publications @ludwig_dataset_2022 and @ludwig_multicentric_2023. Although these publications do not include the most recent dataset addition from Vall d'Hebron Barcelona Hospital.
 
 
 # Unilateral Model for Lymphatic Progression {#sec-unilateral}
@@ -77,7 +210,13 @@ Any hidden Markov model is fully described by three quantities:
 
 The transition matrix $\mathbf{A}$ is parametrized using the spread probabilities of a directed acyclic graph (DAG) that we define as the underlying mechanistic representation of the lymphatic network. An example of such a DAG is shown in @fig-small-graph.
 
-...
+Using the introduced quantities, we can evolve the distribution of all possible hidden states from $\mathbf{X}[t=0] = \boldsymbol{\xi}_0$ step by step, by successively multiplying this vector with the transition matrix $\mathbf{A}$. At the time of the diagnosis, we multiply the result with the observation matrix $\mathbf{B}$. We may then look up the likelihood of a patient presenting with the diagnosis $\mathbf{Z}=\boldsymbol{\zeta}_i$ in the $i$-th entry of the final result.
+
+However, the remaining issue is that we do not know how many time-steps to apply. Although a time-step should be considered an abstract quantity that is relative to the tumor's time-frame, we have no way of measuring it directly. Hence, we rely on a surrogate: T-category depends mostly on the size of the tumor [@brierley_tnm_2017] and may therefore represent for how long it has been growing and also spreading lymphatically.
+
+We still want to allow for cases where early T-category tumors have already spread extesively to the lymph nodes or where advanced T-category patients present with an N0 neck. These cases may be relatively rare, but not implausible. Hence, we marginalize over the time of diagnosis and choose different distributions for different (groups of) T-categories.
+
+<!-- TODO: Explain here what role our model plays in a Bayesian context. -->
 
 $$
 P \left( \mathbf{X} \mid \mathbf{Z} \right) = \frac{P \left( \mathbf{Z} \mid \mathbf{X} \right) P \left( \mathbf{X} \right)}{P \left( \mathbf{Z} \right)}
@@ -101,74 +240,7 @@ The $n$-th row in this matrix corresponds to the distribution over hidden states
 
 A naive approach to model the contralateral lymphatic spread would be to simply employ two independent unilateral models as introduced in @sec-unilateral. During training, one could even enforce some shared parameters between these two models, like the parameterization of the distributions over diagnose times or the spread among the LNLs. Additionally, we could think of an approach to incorporate the primary tumor's mid-sagittal extension as a risk factor.
 
-However, this approach lacks a way to describe the correlation between ipsi- and contralateral involvement. This is displayed in @tbl-contra and shows how often the contralateral LNLs I, II, III, and IV were involved, given all possible combinations of midline extension, T-category, and ipsilateral LNL III involvement. Unsurprisingly, the prevalence for contralateral involvement is consistently higher when the tumor extends over the mid-sagittal line or is of later T-category. But it is also more frequent when the ipsilateral side shows more severe involvement, which is here shown via the surrogate LNL III.
-
-```{python}
-#| echo: false
-#| label: tbl-contra
-#| tbl-cap: Contralateral involvement depending on whether the primary tumor extends over the mid-sagittal line, the T-category, and whether the ipsilateral LNL III was involved or healthy.
-def right_align(column: pd.Series) -> list[str]:
-  """Right align some columns."""
-  return ["text-align: right"] * len(column)
-
-def highlight_bool(
-  column: pd.Series,
-  c_false: str = COLORS["green"],
-  c_true: str = COLORS["red"],
-) -> list[str]:
-  """Make cell read (`False`) or green (`True`)."""
-  n = len(column)
-  trues = pd.Series([c_true] * n)
-  falses = pd.Series([c_false] * n)
-  colors = trues.where(column, falses)
-  return colors.map(lambda x: f"color: {x}")
-
-def highlight_t_stage(
-  column: pd.Series,
-  c_early: str = COLORS["green"],
-  c_late: str = COLORS["red"],
-) -> list[str]:
-  """Highlight `early` and `late`."""
-  is_early = column == "early"
-  return highlight_bool(is_early, c_false=c_late, c_true=c_early)
-
-
-raw = pd.read_csv(paths.data, header=[0,1,2])
-data = raw.copy()
-data[COL.t_stage] = data[COL.t_stage].apply(lambda x: "early" if x <= 2 else "late")
-early_midext_data = (data.loc[data[COL.t_stage] == "early", COL.midext] == True).mean()
-late_midext_data = (data.loc[data[COL.t_stage] == "late", COL.midext] == True).mean()
-grouped = data.groupby(by=[COL.midext, COL.t_stage, COL.ipsi_III])
-
-total = grouped.count()[CONTRA_LNLS]["max_llh", "contra"]
-idx = total.index.rename(["Mid. ext.", "T-cat.", "ipsi III"])
-
-num_involved = grouped.sum()[CONTRA_LNLS]["max_llh", "contra"]
-percent_involved = num_involved / total
-total.index = idx
-num_involved.index = idx
-percent_involved.index = idx
-
-involved = num_involved.join(
-  100 * percent_involved,
-  rsuffix=" (%)",
-).sort_index(axis="columns")
-involved.columns = pd.MultiIndex.from_product(
-  [["I", "II", "III", "IV"],
-   ["n", "%"]],
-  names=["LNL", ""]
-)
-(
-  involved
-  .reset_index()
-  .style
-  .format(precision=2)
-  .apply(right_align, subset=involved.columns[0:])
-  .apply(highlight_bool, subset=["Mid. ext.", "ipsi III"])
-  .apply(highlight_t_stage, subset=["T-cat."])
-  .hide()
-)
-```
+However, this approach lacks a way to describe the correlation between ipsi- and contralateral involvement. This is displayed in @tbl-data-strat and shows how often the contralateral LNLs I, II, III, and IV were involved, given all possible combinations of midline extension, T-category, and ipsilateral LNL III involvement. Unsurprisingly, the prevalence for contralateral involvement is consistently higher when the tumor extends over the mid-sagittal line or is of later T-category. But it is also more frequent when the ipsilateral side shows more severe involvement, which is here shown via the surrogate LNL III.
 
 
 Thus, we attempt to extend the formalism in @sec-unilateral in such a way that the model's ipsi- and contralateral side evolve synchronously. To achieve that, we start by writing down the posterior distribution of involvement an analogy to @eq-uni-bayes-law, which is now a joint probability of an involvement $\mathbf{X}^\text{i}$ ipsilaterally *and* an involvement $\mathbf{X}^\text{c}$ contralaterally, given a diagnosis of the ipsilateral LNLs $\mathbf{Z}^\text{i}$ and of the contralateral ones $\mathbf{Z}^\text{c}$:
@@ -318,98 +390,6 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
    This means the model now uses three different sets of parameters to describe the spread from the tumor to the LNLs: $b^\text{i}_v$ for the spread to the ipsilateral LNLs, $b_v^{\text{c},\epsilon=\texttt{False}}$ for the spread to the contralateral LNLs as long as the tumor is clearly lateralized, and finally $b_v^{\text{c},\epsilon=\texttt{True}}$ when it crosses the midline. Note, however, that these three sets of spread rates only account for $2 \cdot 2^V + 1$ parameters, since they are coupled via the mixing parameter $\alpha$.
 
 Together with the explicit modelling of the tumor's midline extension $\epsilon$ from @sec-midline, we now have a model that may be capable of capturing the higher prevalence of contralateral involvment that comes with tumors extending over the mid-sagittal line.
-
-
-# Detailed Data on Lymphatic Involvement
-
-The data used to train our models consists of <!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
-
-Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data. Note that the data from the Inselspital Bern and the Centre Léon Bérard only consists of patients treated with some form of neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset.
-
-The entire data, including additional patients with tumors in other primary locations than the oropharynx, is publicly available: It may be [downloaded from LyProX](https://lyprox.org/patients/dataset) where it may also be interactively explored, [from GitHub](https://github.com/rmnldwg/lydata), [from zenodo](https://zenodo.org/search?q=lydata), or via the *Data-in-Brief* publications @ludwig_dataset_2022 and @ludwig_multicentric_2023.
-
-```{python}
-#| echo: false
-#| label: tbl-data
-#| tbl-cap: Overview over the five datasets from four different institutions used to train and evaluate our model. Here, we briefly characterize the total number of OPSCC patients from the respective institution, their median age, what proportion received some form of neck dissection, the N0 portion of patients, what percentage presented with early T-category, and the prevalence of primary tumor midline extension. For a much more detailed look at the data, visit [lyprox.org](https://lyprox.org).
-col_map = {
-  COL.inst: "Institution",
-  COL.age: "Age",
-  COL.nd: "Neck Dissection",
-  COL.t_stage: "T-category",
-  COL.n_stage: "N-category",
-}
-short_col_map = {tpl[-1]: val for tpl, val in col_map.items()}
-
-subdata = raw[col_map.keys()]
-subdata.columns = subdata.columns.get_level_values(2)
-subdata = (
-  subdata
-  .rename(columns=short_col_map)
-  .reset_index(drop=True)
-)
-
-def n0_mean(n_stage: pd.Series) -> float:
-  """Compute portion of N0 patients."""
-  return (n_stage == 0).mean()
-
-def early_mean(t_stage: pd.Series) -> float:
-  """Compute early T-category portion."""
-  return t_stage.isin([0,1,2]).mean()
-
-grouped = (
-  raw.groupby(
-    by=COL.inst,
-  ).aggregate(**{
-    "Total": pd.NamedAgg(column=COL.age, aggfunc="count"),
-    "Age (median)": pd.NamedAgg(column=COL.age, aggfunc="median"),
-    "Neck Dissection": pd.NamedAgg(column=COL.nd, aggfunc="mean"),
-    "N0": pd.NamedAgg(column=COL.n_stage, aggfunc=n0_mean),
-    "Early T-Cat.": pd.NamedAgg(column=COL.t_stage, aggfunc=early_mean),
-    "Mid. Ext.": pd.NamedAgg(column=COL.midext, aggfunc="mean"),
-  }).convert_dtypes()
-)
-grouped.index.name = "Institution"
-(
-  grouped
-  .reset_index()
-  .style
-  .format(
-    formatter="{:>.0%}",
-    subset=["Neck Dissection", "N0", "Early T-Cat.", "Mid. Ext."],
-  )
-  .apply(
-    func=right_align,
-    axis="index",
-    subset=grouped.columns[0:],
-  )
-  .hide()
-)
-```
-
-To the best of our knowledge, this data still remains the only publicly available data on patterns of lymphatic progression containing this level of detail. It allows us to visualize these patterns in so-called *upset plots* [@lex_upset_2014] as shown in @fig-data-upset.
-
-```{python}
-#| echo: false
-#| label: fig-data-upset
-#| fig-cap: Upset plot of the ipsilateral lymphatic involvement patterns [@lex_upset_2014]. Here, the horizontal bars depict the overall prevalence of LNL involvemen. I.e., LNL II is the only level that is involved in more than 500 patients. The vertical bar plots depict joint involvements. E.g., the fourth bar from the left depicts how often the LNLs II, III, and IV are jointly involved while level I and V are not. This is indicated by the light and dark shaded dots in the matrix underneath.
-#| warning: false
-lnls = ["I", "II", "III", "IV", "V"]
-
-indicator_data = upsetplot.from_indicators(lnls, data=data["max_llh", "ipsi"])
-upset = upsetplot.UpSet(
-  indicator_data,
-  sort_by="cardinality",
-  sort_categories_by="-input",
-  min_subset_size=10,
-  facecolor=COLORS["blue"],
-)
-upset.style_subsets(absent=lnls, facecolor=COLORS["green"], label="N0 (all healthy)")
-axes = upset.plot()
-axes["totals"].set_xlabel("Prevalence")
-axes["intersections"].set_ylabel("Scenario size")
-plt.show()
-```
 
 
 # Methods
@@ -576,7 +556,7 @@ At first, from @fig-prevalences-overall it appears as if the simpler, naive, uni
 
 This is mainly due to the early/advanced T-category split of the ipsi- and contralateral side: All models use two different distributions for early and advanced T-category to marginalize over the diagnose times (as introduced in the recap of @sec-unilateral). But only the two bilateral models need to balance these distributions to describe the ipsi- and contralateral involvement simultaneaously. As can be seen in the second and third column of @fig-prevalences-overall, the prevalence of e.g. contralateral LNL II involvement in the data (blue lines) increases from 8% (39 out of 473) to 24% (88 out of 360). Which is more than the model predicts (blue histograms). Ipsilaterally, however, the involvement of LNL II increases from 71% (343 out of 473) to only 76% (276 out of 360). This much weaker increase is well capured by the models.
 
-This issue is quickly resolved, though, as we consider other risk factors that correlate with T-category: Both the ipsilateral involvement and the tumor's extension over the mid-sagittal line influence -- the latter probably even causally -- the extent of contralateral involvement, as shown in @tbl-contra. Both these risk factors cannot be considered by the contralateral-only model. We should thus expect this naive model to perform worse, as soon as we investigate ipsilateral involvement and midline extension.
+This issue is quickly resolved, though, as we consider other risk factors that correlate with T-category: Both the ipsilateral involvement and the tumor's extension over the mid-sagittal line influence -- the latter probably even causally -- the extent of contralateral involvement, as shown in @tbl-data-strat. Both these risk factors cannot be considered by the contralateral-only model. We should thus expect this naive model to perform worse, as soon as we investigate ipsilateral involvement and midline extension.
 
 ```{python}
 #| echo: false
@@ -717,4 +697,56 @@ upsetplot.plot(
   sort_categories_by="-input",
 )
 plt.show()
+```
+
+
+# Acknowledgement {.appendix}
+
+This work was supported by:
+
+- the Clinical Research Priority Program "Artificial Intelligence in Oncological Imaging" of the University of Zurich
+- the Swiss Cancer Research Foundation under grant number KFS 5645-08-2022
+
+
+# Appendix {.appendix}
+
+```{python}
+#| echo: false
+#| label: tbl-data-strat
+#| tbl-cap: Contralateral involvement depending on whether the primary tumor extends over the mid-sagittal line, the T-category, and whether the ipsilateral LNL III was involved or healthy.
+data = raw.copy()
+data[COL.t_stage] = data[COL.t_stage].apply(lambda x: "early" if x <= 2 else "late")
+early_midext_data = (data.loc[data[COL.t_stage] == "early", COL.midext] == True).mean()
+late_midext_data = (data.loc[data[COL.t_stage] == "late", COL.midext] == True).mean()
+grouped = data.groupby(by=[COL.midext, COL.t_stage, COL.ipsi_III])
+
+lnl_cols = get_lnl_cols("contra", lnls=["I", "II", "III", "IV"])
+total = grouped.count()[lnl_cols]["max_llh", "contra"]
+idx = total.index.rename(["Mid. ext.", "T-cat.", "ipsi III"])
+
+num_involved = grouped.sum()[lnl_cols]["max_llh", "contra"]
+percent_involved = num_involved / total
+total.index = idx
+num_involved.index = idx
+percent_involved.index = idx
+
+involved = num_involved.join(
+  100 * percent_involved,
+  rsuffix=" (%)",
+).sort_index(axis="columns")
+involved.columns = pd.MultiIndex.from_product(
+  [["I", "II", "III", "IV"],
+   ["n", "%"]],
+  names=["LNL", ""]
+)
+(
+  involved
+  .reset_index()
+  .style
+  .format(precision=2)
+  .apply(right_align, subset=involved.columns[0:])
+  .apply(highlight_bool, subset=["Mid. ext.", "ipsi III"])
+  .apply(highlight_t_stage, subset=["T-cat."])
+  .hide()
+)
 ```
