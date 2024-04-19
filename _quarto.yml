@@ -11,6 +11,7 @@ manuscript:
   article: manuscript.qmd
   notebooks: 
     - notebook: data.qmd
+    - notebook: model.qmd
   environment: requirements.txt
   meca-bundle: true
   code-links:

@@ -298,77 +298,7 @@ $$
 
 In @fig-midext-evo, we visualize how the prior distribution over diagnose times $P(t)$, the conditional probability of midline extension $P(\epsilon \mid t)$, and their joint $P(\epsilon, t)$ evolve over the course of a patient evolution.
 
-```{python}
-#| echo: false
-#| label: fig-midext-evo
-#| fig-cap: The top panel shows the prior probability to get diagnosed at time-step $t$ for early and late T-category tumors as bars. Also in the top panel, we plot the conditional probability of the tumor's midline extension ($\epsilon=\texttt{True}$), given the time-step $t$ as a line plot. In the bottom panel, we show the joint probability of getting diagnosed in time-step $t$ *and* having a tumor that crosses the midline.
-t = np.linspace(0, 10, 11)
-p_midline = {
-  "lateralized": (1 - midline_model.midext_prob)**t,
-  "extension": 1 - (1 - midline_model.midext_prob)**t,
-}
-dist = {
-  "early": midline_model.get_distribution("early").pmf,
-  "late": midline_model.get_distribution("late").pmf,
-}
-p_colors = {"lateralized": COLORS["green"], "extension": COLORS["red"]}
-t_colors = {"early": COLORS["blue"], "late": COLORS["orange"]}
-markers = {}
-
-nrows, ncols = 2, 1
-plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(
-  nrows=nrows,
-  ncols=ncols,
-  width=half,
-  aspect_ratio=2.5,
-))
-
-fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=True)
-w = 0.3
-
-for label, p in p_midline.items():
-  axes[0].plot(
-    t, p_midline[label], "o-",
-    label=f"cond. prob. $P(\epsilon={label=='extension'} \mid t)$",
-    color=p_colors[label],
-  )
-  for i, t_stage in enumerate(["early", "late"]):
-    if label == "lateralized":
-      axes[0].bar(
-        t + i*w - w/2, dist[t_stage],
-        color=t_colors[t_stage],
-        width=w,
-        label=f"{t_stage} T-cat. prior $P(t)$",
-      )
-    axes[1].plot(
-      t, p * dist[t_stage], "o-",
-      c=p_colors[label],
-      mfc=t_colors[t_stage],
-      mec=t_colors[t_stage],
-      label=f"{label} ($\epsilon={label=='extension'}$) for {t_stage} T-cat.",
-    )
-
-axes[0].set_ylim(0., 1.)
-axes[0].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
-axes[0].set_ylabel("probability")
-axes[0].grid(axis="y", color=COLORS["gray"], alpha=0.5)
-
-axes[0].legend()
-
-axes[1].set_xlim(min(t), max(t))
-axes[1].set_xticks(t)
-axes[1].set_xlabel("time-step $t$")
-
-axes[1].set_ylim(0., 0.25)
-axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
-axes[1].set_ylabel("joint probability $P(\epsilon, t)$")
-axes[1].grid(axis="y", color=COLORS["gray"], alpha=0.5)
-
-axes[1].legend()
-
-plt.show()
-```
+{{< embed model.qmd#fig-model-midext-evo >}}
 
 
 ## Parameter Symmetries {#sec-params-symmetry}
@@ -512,11 +442,10 @@ for col, model in enumerate(["contra", "bilateral", "midline"]):
         continue
 
       if model == "contra":
-        scenario = scenario.from_dict(
-          scenario.as_dict("prevalences"),
-          is_uni=True,
-          side="contra",
-        )
+        scenario.side = "contra"
+        scenario.is_uni = True
+
+      print(scenario)
 
       color = next(color_cycle)
       content += [

@@ -1,8 +1,10 @@
 ---
-title: "Visualizing Contralateral Involvement"
+title: "Visualizing the Data"
 ---
 
-To motivate our bilateral model extension, we show how the contralateral nodal involvement in the data depends on ipsilateral involvement and the primary tumor's midline extension.
+# Contralateral Involvement Stratified by Risk Factors
+
+To motivate our bilateral model extension, we show how the contralateral nodal involvement in the data depends on T-category, the ipsilateral involvement, and midline extension of the primary tumor.
 
 ```{python}
 #| label: fig-data-strat
@@ -122,34 +124,62 @@ group_and_plot(
 )
 ```
 
-We also show an upsetplot
+
+# Involvement Patterns as UpSet Plots
+
+The joint involvement of different combinations of lymphatic involvements is best visualized using so-called *upset plots* [@lex_upset_2014].
+
+## Ipsilateral Involvement
 
 ```{python}
-#| label: fig-data-upset
+#| label: fig-data-upset-ipsi
 #| fig-cap: Upset plot of the ipsilateral lymphatic involvement patterns [@lex_upset_2014]. Here, the horizontal bars depict the overall prevalence of LNL involvement. I.e., LNL II is the only level that is involved in more than 500 patients. The vertical bar plots depict joint involvements. E.g., the fourth bar from the left depicts how often the LNLs II, III, and IV are jointly involved while level I and V are not. This is indicated by the light and dark shaded dots in the matrix underneath.
+from typing import Literal
 import upsetplot
 
-lnls = [tpl[-1] for tpl in get_lnl_cols("ipsi")]
-indicator_data = upsetplot.from_indicators(
-  indicators=lnls,
-  data=raw["max_llh", "ipsi"],
+def plot_involvement_upset(
+  df: pd.DataFrame,
+  lnls: list[str],
+) -> Axes:
+  """Plot involvement of `side` as upsetplot."""
+  indicator_data = upsetplot.from_indicators(
+    indicators=lnls,
+    data=df,
+  )
+  upset = upsetplot.UpSet(
+    indicator_data,
+    sort_by="cardinality",
+    sort_categories_by="-input",
+    min_subset_size=10,
+    facecolor=COLORS["blue"],
+  )
+  upset.style_subsets(
+    absent=lnls,
+    facecolor=COLORS["green"],
+    label="N0 (all healthy)",
+  )
+  axes = upset.plot()
+  axes["totals"].set_xlabel("Prevalence")
+  axes["intersections"].set_ylabel("Scenario size")
+  return axes
+
+axes = plot_involvement_upset(
+  df=raw["max_llh", "ipsi"],
+  lnls=[tpl[-1] for tpl in get_lnl_cols("ipsi")],
 )
-upset = upsetplot.UpSet(
-  indicator_data,
-  sort_by="cardinality",
-  sort_categories_by="-input",
-  min_subset_size=10,
-  facecolor=COLORS["blue"],
-)
-upset.style_subsets(
-  absent=lnls,
-  facecolor=COLORS["green"],
-  label="N0 (all healthy)",
-)
-axes = upset.plot()
-axes["totals"].set_xlabel("Prevalence")
-axes["intersections"].set_ylabel("Scenario size")
 plt.show()
 ```
 
 
+## Contralateral Involvement
+
+```{python}
+#| label: fig-data-upset-contra
+#| fig-cap: Upset plot of the contralateral lymphatic involvement patterns [@lex_upset_2014]. Here, the horizontal bars depict the overall prevalence of LNL involvement. I.e., LNL II is the only level that is involved in more than 100 patients. The vertical bar plots depict joint involvements. E.g., the thirs bar from the left depicts how often the LNLs II, and III are jointly involved while level I, IV, and V are not. This is indicated by the light and dark shaded dots in the matrix underneath.
+
+axes = plot_involvement_upset(
+  df=raw["max_llh", "contra"],
+  lnls=[tpl[-1] for tpl in get_lnl_cols("contra")],
+)
+plt.show()
+```
