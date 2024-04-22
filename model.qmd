@@ -36,7 +36,6 @@ plt.rcParams.update(shared.get_figsizes(
   nrows=nrows,
   ncols=ncols,
   width=17/2,
-  aspect_ratio=2.5,
 ))
 
 fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=True)
@@ -69,7 +68,7 @@ axes[0].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
 axes[0].set_ylabel("probability")
 axes[0].grid(axis="y", color=COLORS["gray"], alpha=0.5)
 
-axes[0].legend()
+axes[0].legend(labelspacing=0.2)
 
 axes[1].set_xlim(min(t), max(t))
 axes[1].set_xticks(t)
@@ -80,7 +79,7 @@ axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
 axes[1].set_ylabel("joint probability $P(\epsilon, t)$")
 axes[1].grid(axis="y", color=COLORS["gray"], alpha=0.5)
 
-axes[1].legend()
+axes[1].legend(labelspacing=0.2)
 
 plt.show()
 ```

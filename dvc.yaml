@@ -155,5 +155,5 @@ stages:
     - data/reduced.csv
     - manuscript.qmd
     outs:
-    - _manuscript/manuscript.pdf
-    - _manuscript/_tex/manuscript.tex
+    - .output/manuscript.pdf
+    - .output/_tex/manuscript.tex

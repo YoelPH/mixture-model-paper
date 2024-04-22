@@ -185,7 +185,7 @@ The entire data, including additional patients with tumors in other primary loca
 
 ![Directed acyclic graph (DAG) representing the abstract lymphatic network in the head and neck region. Blue nodes are the LNLs' hidden random variables, the red node represents the tumor, and the orange square nodes depict the binary observed variables. Red and blue arcs symbolize the probability of lymphatic spread along that edge during one time-step. The orange arcs represent the sensitivity and specificity of the observational modality (e.g. CT, MRI, pathology, ...).](static/small-graph.png){#fig-small-graph width=60%}
 
-Our first model to predict the lymphatic progression of HNSCC was introduced using Bayesian networks [@pouymayou_bayesian_2019]. We subsequently extended this work to a hidden Markov model (HMM) [@ludwig_hidden_2020]. We will briefly summarize this HMM's formalism before building on it to include the contralateral spread in @sec-ext-to-contra.
+Our first model to predict the lymphatic progression of HNSCC was introduced using Bayesian networks [@pouymayou_bayesian_2019]. We subsequently extended this work to a hidden Markov model (HMM) [@ludwig_hidden_2020] to allow an intuitive inclusion of T-category into the predictions. We will briefly summarize this HMM's formalism before building on it to include the contralateral spread in @sec-ext-to-contra.
 
 We model a patient's state of involvement at an abstract time-step $t$ as a vector of hidden binary random variables:
 
@@ -211,13 +211,43 @@ Any hidden Markov model is fully described by three quantities:
    $$
    where in row $i$ and at column $j$ we find the probability to *observe* a lymphatic involvement pattern $\mathbf{Z} = \boldsymbol{\zeta}_j$, given that the true (but hidden) state of involvement at the time of diagnosis $t_D$ is $\mathbf{X}[t_D] = \boldsymbol{\xi}_i$.
 
-The transition matrix $\mathbf{A}$ is parametrized using the spread probabilities of a directed acyclic graph (DAG) that we define as the underlying mechanistic representation of the lymphatic network. An example of such a DAG is shown in @fig-small-graph.
+Note that the transition matrix $\mathbf{A}$ is parametrized using the spread probabilities of a directed acyclic graph (DAG) that we define as the underlying mechanistic representation of the lymphatic network. An example of such a DAG is shown in @fig-small-graph.
 
-Using the introduced quantities, we can evolve the distribution of all possible hidden states from $\mathbf{X}[t=0] = \boldsymbol{\xi}_0$ step by step, by successively multiplying this vector with the transition matrix $\mathbf{A}$. At the time of the diagnosis, we multiply the result with the observation matrix $\mathbf{B}$. We may then look up the likelihood of a patient presenting with the diagnosis $\mathbf{Z}=\boldsymbol{\zeta}_i$ in the $i$-th entry of the final result.
+Using the introduced quantities, we can evolve the distribution of all possible hidden states from $\mathbf{X}[t=0] = \boldsymbol{\xi}_0$ step by step, by successively multiplying this vector with the transition matrix $\mathbf{A}$. At the time of the diagnosis $t_D$, we multiply the result with the observation matrix $\mathbf{B}$. We may then look up the likelihood of a patient presenting with the diagnosis $\mathbf{Z}=\boldsymbol{\zeta}_i$ in the $i$-th entry of the final result.
 
-However, the remaining issue is that we do not know how many time-steps to apply. Although a time-step should be considered an abstract quantity that is relative to the tumor's time-frame, we have no way of measuring it directly. Hence, we rely on a surrogate: T-category depends mostly on the size of the tumor [@brierley_tnm_2017] and may therefore represent for how long it has been growing and also spreading lymphatically.
+However, the remaining issue is that the value of $t_D$ is unknown, i.e. over how many time-steps the HMM should be evolved. We solve this problem by marginalizing over the time of diagnosis. Different distributions over the diagnosis times can then be choosen based on T-category. For instance, the mean of the time-prior to marginalize over the diagnosis time for early T-category patients $P\left( t_D \mid \text{early} \right)$ may be shifted towards earlier times than the one for advanced T-category patients $P\left( t_D \mid \text{early} \right)$. This gives us for example
 
-We still want to allow for cases where early T-category tumors have already spread extesively to the lymph nodes or where advanced T-category patients present with an N0 neck. These cases may be relatively rare, but not implausible. Hence, we marginalize over the time of diagnosis and choose different distributions for different (groups of) T-categories.
+$$
+P\left( \mathbf{X} \mid \text{T}x = \text{early} \right) = \sum_{t=0}^{t_\text{max}} P \left( \mathbf{X} \mid t \right) \cdot P(t \mid \text{early})
+$$
+
+In this work, we use binomial distributions $\mathfrak{B} \left( t_D, p_{\text{T}x} \right)$ as time-priors which have one free parameter $p_{\text{T}x}$ for each group of patients we differentiate based on T-category. Also, we fix $t_\text{max} = 10$, which means that the expected number of time-steps from the onset of a patient's disease to their diagnosis is $\mathbb{E}\left[ t_D \right] = 10 \cdot p_{\text{T}x}$.
+
+## Likelihood Function
+
+With the formalism introduced above, we can write the likelihood function for a patient to present with a diagnosis consisting of an observed state and a T-category $d = \left( \boldsymbol{\zeta}_i, \text{T}x \right)$ as follows:
+
+$$
+\ell = \sum_{t=0}^{t_\text{max}} \left[ \boldsymbol{\xi}_0 \cdot \mathbf{A} \cdot \mathbf{B} \right]_i \cdot P \left( t \mid \text{T}x \right)
+$$ {#eq-single-patient-llh}
+
+Note that it is also possible to account for missing involvement information: If a diagnosis (like fine needle aspiration (FNA)) is only available for a subset of all LNLs, we can sum over all those possible complete observed states $\boldsymbol{\zeta}_j$ that match the provided diagnosis.
+
+The quantity $\ell$ in @eq-single-patient-llh depends on the spread parameters shown in @fig-small-graph via the transition matrix $\mathbf{A}$ and on the binomial parameters $p_{\text{T}x}$ via time-priors. In this work, we will only differentiate between "early" (T1 & T2) and "advanced" (T3 & T4) T-categories. Therefore, our parameter space is:
+
+$$
+\boldsymbol{\theta} = \left( \left\{ b_v \right\}, \left\{ t_{vr} \right\}, \left\{p_\text{T}x \right\} \right) \quad \text{with} \quad \genfrac{}{}{0pt}{2}{v\leq V}{r\in\operatorname{pa}(v)}
+$$
+
+And it is our goal to infer the values of these parameters for a given dataset $\mathcal{D} = \left( d_1, d_2, \ldots, d_N \right)$ of OPSCC patients. The likelihood of these $N$ diagnoses is simply the product of their individual likelihoods as defined in @eq-single-patient-llh. For numerical reasons, we typically compute the data likelihood in log space:
+
+$$
+\log \mathcal{L} \left( \mathcal{D} \mid \boldsymbol{\theta} \right) = \sum_{i=1}^N \log \ell_i
+$$
+
+
+
+## Model Prediction in the Bayesian Context
 
 <!-- TODO: Explain here what role our model plays in a Bayesian context. -->
 
