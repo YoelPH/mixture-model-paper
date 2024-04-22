@@ -84,3 +84,53 @@ axes[1].legend()
 
 plt.show()
 ```
+
+
+# Sampling History
+
+For bookeeping, we also show how different quantities evolve during the burnin of the sampling. For example, the ratio of proposed samples that were accepted or the autocorrelation time.
+
+```{python}
+#| echo: false
+#| label: fig-model-burnin-history 
+#| fig-cap: Monitoring quantities during the burn-in phase of the parameter sampling.
+from collections import namedtuple
+import pandas as pd
+
+def custom(x, pos):
+  return "{:.1f}".format(x/1000)
+
+nrows, ncols = 1, 3
+label_map = {
+  "acor_times": "autocorrelation [steps]",
+  "accept_fracs": "acceptance fraction [%]",
+  "max_log_probs": r"max. log-likelihood [$\times 10^3$]",
+}
+
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  aspect_ratio=1.,
+  width=17,
+))
+
+fig, axes = plt.subplots(
+  nrows=nrows,
+  ncols=ncols,
+  sharex=True,
+)
+
+for model in ["contra", "bilateral", "midline"]:
+  history = pd.read_csv(f"models/{model}/history.csv").set_index("steps")
+  for i, column in enumerate(history.columns):
+    history.plot(y=column, ax=axes[i], label=model)
+    axes[i].autoscale(enable=True, tight=True, axis="x")
+    axes[i].set_ylabel(label_map[column])
+    axes[i].xaxis.set_major_formatter(ticker.FuncFormatter(custom))
+    axes[i].set_xlabel(r"steps [$\times 10^3$]")
+
+axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
+axes[2].yaxis.set_major_formatter(ticker.FuncFormatter(custom))
+plt.show()
+```

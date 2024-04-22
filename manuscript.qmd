@@ -4,6 +4,8 @@ title: "Probabilistic Model of Bilateral Lymphatic Spread in Head and Neck Cance
 
 ```{python}
 #| echo: false
+
+
 import re
 
 import pandas as pd
@@ -68,17 +70,18 @@ def right_align(column: pd.Series) -> list[str]:
   """Right align column."""
   return align(column, where="right")
 
+def highlight(column: pd.Series, mapping: dict) -> list[str]:
+  """Color based on `mapping`."""
+  colors = column.map(mapping)
+  return colors.map(lambda x: f"color: {x}")
+
 def highlight_bool(
   column: pd.Series,
   c_false: str = COLORS["green"],
   c_true: str = COLORS["red"],
 ) -> list[str]:
   """Make cell read (`False`) or green (`True`)."""
-  n = len(column)
-  trues = pd.Series([c_true] * n)
-  falses = pd.Series([c_false] * n)
-  colors = trues.where(column, falses)
-  return colors.map(lambda x: f"color: {x}")
+  return highlight(column, mapping={True: c_true, False: c_false})
 
 def highlight_t_stage(
   column: pd.Series,
@@ -296,7 +299,7 @@ $$
 P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m, \epsilon \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} P(\mathbf{t}, \epsilon) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
 $$
 
-In @fig-midext-evo, we visualize how the prior distribution over diagnose times $P(t)$, the conditional probability of midline extension $P(\epsilon \mid t)$, and their joint $P(\epsilon, t)$ evolve over the course of a patient evolution.
+In @fig-model-midext-evo, we visualize how the prior distribution over diagnose times $P(t)$, the conditional probability of midline extension $P(\epsilon \mid t)$, and their joint $P(\epsilon, t)$ evolve over the course of a patient evolution.
 
 {{< embed model.qmd#fig-model-midext-evo >}}
 
@@ -351,51 +354,9 @@ For every model, we compare the predicted prevalence of a certain scenario to ho
 
 # Results
 
-```{python}
-#| echo: false
-#| label: fig-burnin-history 
-#| fig-cap: Monitoring quantities during the burn-in phase of the parameter sampling.
-from collections import namedtuple
+{{< embed model.qmd#fig-model-burnin-history >}}
 
-def custom(x, pos):
-  return "{:.1f}".format(x/1000)
-
-nrows, ncols = 1, 3
-label_map = {
-  "acor_times": "autocorrelation [steps]",
-  "accept_fracs": "acceptance fraction [%]",
-  "max_log_probs": r"max. log-likelihood [$\times 10^3$]",
-}
-
-plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(
-  nrows=nrows,
-  ncols=ncols,
-  aspect_ratio=1.,
-  width=full,
-))
-
-fig, axes = plt.subplots(
-  nrows=nrows,
-  ncols=ncols,
-  sharex=True,
-)
-
-for model in ["contra", "bilateral", "midline"]:
-  history = pd.read_csv(f"models/{model}/history.csv").set_index("steps")
-  for i, column in enumerate(history.columns):
-    history.plot(y=column, ax=axes[i], label=model)
-    axes[i].autoscale(enable=True, tight=True, axis="x")
-    axes[i].set_ylabel(label_map[column])
-    axes[i].xaxis.set_major_formatter(ticker.FuncFormatter(custom))
-    axes[i].set_xlabel(r"steps [$\times 10^3$]")
-
-axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
-axes[2].yaxis.set_major_formatter(ticker.FuncFormatter(custom))
-plt.show()
-```
-
-@Fig-burnin-history is only a temporary placeholder for now.
+@fig-model-burnin-history is only a temporary placeholder for now.
 
 ## Prevalence Comparisons
 
@@ -444,8 +405,9 @@ for col, model in enumerate(["contra", "bilateral", "midline"]):
       if model == "contra":
         scenario.side = "contra"
         scenario.is_uni = True
-
-      print(scenario)
+      else:
+        scenario.side = "ipsi"
+        scenario.is_uni = False
 
       color = next(color_cycle)
       content += [
@@ -643,18 +605,21 @@ This work was supported by:
 #| echo: false
 #| label: tbl-data-strat
 #| tbl-cap: Contralateral involvement depending on whether the primary tumor extends over the mid-sagittal line, the T-category, and whether the ipsilateral LNL III was involved or healthy.
-data = raw.copy()
-data[COL.t_stage] = data[COL.t_stage].apply(lambda x: "early" if x <= 2 else "late")
-early_midext_data = (data.loc[data[COL.t_stage] == "early", COL.midext] == True).mean()
-late_midext_data = (data.loc[data[COL.t_stage] == "late", COL.midext] == True).mean()
-grouped = data.groupby(by=[COL.midext, COL.t_stage, COL.ipsi_III])
-
 lnl_cols = get_lnl_cols("contra", lnls=["I", "II", "III", "IV"])
-total = grouped.count()[lnl_cols]["max_llh", "contra"]
-idx = total.index.rename(["Mid. ext.", "T-cat.", "ipsi III"])
+num_ipsi_inv = raw[get_lnl_cols("ipsi")].sum(axis="columns")
 
-num_involved = grouped.sum()[lnl_cols]["max_llh", "contra"]
+contra_inv = raw[lnl_cols].copy()
+contra_inv.columns = contra_inv.columns.droplevel([0,1])
+contra_inv["t_stage"] = raw[COL.t_stage].apply(lambda x: "early" if x <= 2 else "advanced")
+contra_inv["ipsi"] = num_ipsi_inv.map(lambda x: str(x) if x <= 1 else "≥ 2")
+contra_inv["midext"] = raw[COL.midext]
+
+grouped = contra_inv.groupby(by=["t_stage", "ipsi", "midext"])
+num_involved = grouped.sum()
+total = grouped.count()
 percent_involved = num_involved / total
+idx = total.index.rename(["T-cat.", "ipsi", "Mid. ext."])
+
 total.index = idx
 num_involved.index = idx
 percent_involved.index = idx
@@ -668,14 +633,22 @@ involved.columns = pd.MultiIndex.from_product(
    ["n", "%"]],
   names=["LNL", ""]
 )
+involved["total", "n"] = total["I"]
 (
   involved
   .reset_index()
+  .sort_values("ipsi", ascending=True)
+  .sort_values("T-cat.", ascending=False)
   .style
   .format(precision=2)
   .apply(right_align, subset=involved.columns[0:])
-  .apply(highlight_bool, subset=["Mid. ext.", "ipsi III"])
   .apply(highlight_t_stage, subset=["T-cat."])
+  .apply(highlight_bool, subset=["Mid. ext."])
+  .apply(highlight, subset=["ipsi"], mapping={
+    "0": COLORS["green"],
+    "1": COLORS["orange"],
+    "≥ 2": COLORS["red"],
+  })
   .hide()
 )
 ```
