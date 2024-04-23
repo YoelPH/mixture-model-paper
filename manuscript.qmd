@@ -191,7 +191,7 @@ We model a patient's state of involvement at an abstract time-step $t$ as a vect
 
 $$
 \mathbf{X}[t] = \begin{pmatrix} X_v[t] \end{pmatrix} \qquad v \in \left\{ 1, 2, \ldots, V \right\}
-$$
+$$ {#eq-state-def}
 
 Here, $V$ is the number of LNLs the model considers. The values a LNL's hidden binary RV may take on are $X_v[t] = 0$ (`False`), meaning the LNL $v$ is healthy or free of metastatic disease, or $X_v[t] = 1$ (`True`), corresponding to some for of tumor presence (i.e., occult or clinical).
 
@@ -203,12 +203,12 @@ Any hidden Markov model is fully described by three quantities:
 2. The *transition matrix*
    $$
    \mathbf{A} = \left( A_{ij} \right) = \big( P \left( \mathbf{X}[t+1] = \boldsymbol{\xi}_j \mid \mathbf{X}[t] = \boldsymbol{\xi}_i \right) \big)
-   $$
+   $$ {#eq-trans-matrix}
    where the value at row $i$ and column $j$ represents the probability to transition from state $\boldsymbol{\xi}_i$ to $\boldsymbol{\xi}_j$ during the time-step from $t$ to $t+1$. Note that we prohibit self-healing, meaning that during a transition, no LNL may change their state from $X_v[t]=1$ to $X_v[t+1]=0$. This effectively masks large parts of the transition matrix to be zero.
 3. Lastly, the *observation matrix*
    $$
    \mathbf{B} = \left( B_{ij} \right) = \big( P \left( \mathbf{Z} = \boldsymbol{\zeta}_j \mid \mathbf{X}[t_D] = \boldsymbol{\xi}_i \right) \big)
-   $$
+   $$ {#eq-obs-matrix}
    where in row $i$ and at column $j$ we find the probability to *observe* a lymphatic involvement pattern $\mathbf{Z} = \boldsymbol{\zeta}_j$, given that the true (but hidden) state of involvement at the time of diagnosis $t_D$ is $\mathbf{X}[t_D] = \boldsymbol{\xi}_i$.
 
 Note that the transition matrix $\mathbf{A}$ is parametrized using the spread probabilities of a directed acyclic graph (DAG) that we define as the underlying mechanistic representation of the lymphatic network. An example of such a DAG is shown in @fig-small-graph.
@@ -221,41 +221,7 @@ $$
 P\left( \mathbf{X} \mid \text{T}x = \text{early} \right) = \sum_{t=0}^{t_\text{max}} P \left( \mathbf{X} \mid t \right) \cdot P(t \mid \text{early})
 $$
 
-In this work, we use binomial distributions $\mathfrak{B} \left( t_D, p_{\text{T}x} \right)$ as time-priors which have one free parameter $p_{\text{T}x}$ for each group of patients we differentiate based on T-category. Also, we fix $t_\text{max} = 10$, which means that the expected number of time-steps from the onset of a patient's disease to their diagnosis is $\mathbb{E}\left[ t_D \right] = 10 \cdot p_{\text{T}x}$.
-
-## Likelihood Function
-
-With the formalism introduced above, we can write the likelihood function for a patient to present with a diagnosis consisting of an observed state and a T-category $d = \left( \boldsymbol{\zeta}_i, \text{T}x \right)$ as follows:
-
-$$
-\ell = \sum_{t=0}^{t_\text{max}} \left[ \boldsymbol{\xi}_0 \cdot \mathbf{A} \cdot \mathbf{B} \right]_i \cdot P \left( t \mid \text{T}x \right)
-$$ {#eq-single-patient-llh}
-
-Note that it is also possible to account for missing involvement information: If a diagnosis (like fine needle aspiration (FNA)) is only available for a subset of all LNLs, we can sum over all those possible complete observed states $\boldsymbol{\zeta}_j$ that match the provided diagnosis.
-
-The quantity $\ell$ in @eq-single-patient-llh depends on the spread parameters shown in @fig-small-graph via the transition matrix $\mathbf{A}$ and on the binomial parameters $p_{\text{T}x}$ via time-priors. In this work, we will only differentiate between "early" (T1 & T2) and "advanced" (T3 & T4) T-categories. Therefore, our parameter space is:
-
-$$
-\boldsymbol{\theta} = \left( \left\{ b_v \right\}, \left\{ t_{vr} \right\}, \left\{p_\text{T}x \right\} \right) \quad \text{with} \quad \genfrac{}{}{0pt}{2}{v\leq V}{r\in\operatorname{pa}(v)}
-$$
-
-And it is our goal to infer the values of these parameters for a given dataset $\mathcal{D} = \left( d_1, d_2, \ldots, d_N \right)$ of OPSCC patients. The likelihood of these $N$ diagnoses is simply the product of their individual likelihoods as defined in @eq-single-patient-llh. For numerical reasons, we typically compute the data likelihood in log space:
-
-$$
-\log \mathcal{L} \left( \mathcal{D} \mid \boldsymbol{\theta} \right) = \sum_{i=1}^N \log \ell_i
-$$
-
-
-
-## Model Prediction in the Bayesian Context
-
-<!-- TODO: Explain here what role our model plays in a Bayesian context. -->
-
-$$
-P \left( \mathbf{X} \mid \mathbf{Z} \right) = \frac{P \left( \mathbf{Z} \mid \mathbf{X} \right) P \left( \mathbf{X} \right)}{P \left( \mathbf{Z} \right)}
-$$ {#eq-uni-bayes-law}
-
-Let us for later use define the matrices $\boldsymbol{\Lambda}$:
+For later use, we define at this point the matrices $\boldsymbol{\Lambda}$:
 
 $$
 \boldsymbol{\Lambda} = P \left( \mathbf{X} \mid \mathbf{t} \right) = \begin{pmatrix}
@@ -266,7 +232,51 @@ $$
 \end{pmatrix}
 $$ {#eq-lambda-matrix}
 
-The $n$-th row in this matrix corresponds to the distribution over hidden states after $t=n-1$ time-steps.
+Where the $k$-th row in this matrix corresponds to the distribution over hidden states after $t=k-1$ time-steps.
+
+In this work, we use binomial distributions $\mathfrak{B} \left( t_D, p_{\text{T}x} \right)$ as time-priors which have one free parameter $p_{\text{T}x}$ for each group of patients we differentiate based on T-category. Also, we fix $t_\text{max} = 10$, which means that the expected number of time-steps from the onset of a patient's disease to their diagnosis is $\mathbb{E}\left[ t_D \right] = 10 \cdot p_{\text{T}x}$.
+
+## Likelihood Function
+
+With the formalism introduced above, we can write the likelihood function for a patient to present with a diagnosis consisting of an observed state and a T-category $d = \left( \boldsymbol{\zeta}_i, \text{T}x \right)$ as follows:
+
+$$
+\ell = \sum_{t=0}^{t_\text{max}} \left[ \boldsymbol{\xi}_0 \cdot \mathbf{A} \cdot \mathbf{B} \right]_i \cdot P \left( t \mid \text{T}x \right)
+$$ {#eq-single-patient-llh}
+
+Above, the quantity inside $\left[ \ldots \right]_i$ denotes the $i$-th component of the vector that is the result of the vector and matrix multiplications in the square brackets. Note that it is also possible to account for missing involvement information: If a diagnosis (like fine needle aspiration (FNA)) is only available for a subset of all LNLs, we can sum over all those possible complete observed states $\boldsymbol{\zeta}_j$ that match the provided diagnosis.
+
+The single-patient likelihood $\ell$ in @eq-single-patient-llh depends on the spread parameters shown in @fig-small-graph via the transition matrix $\mathbf{A}$ and on the binomial parameters $p_{\text{T}x}$ via time-priors. In this work, we will only differentiate between "early" (T1 & T2) and "advanced" (T3 & T4) T-categories. Therefore, our parameter space is:
+
+$$
+\boldsymbol{\theta} = \left( \left\{ b_v \right\}, \left\{ t_{vr} \right\}, p_\text{early}, p_\text{adv.} \right) \quad \text{with} \quad \genfrac{}{}{0pt}{2}{v\leq V}{r\in\operatorname{pa}(v)}
+$$ {#eq-param-space}
+
+And it is our goal to infer the values of these parameters for a given dataset $\mathcal{D} = \left( d_1, d_2, \ldots, d_N \right)$ of OPSCC patients. The likelihood of these $N$ diagnoses is simply the product of their individual likelihoods as defined in @eq-single-patient-llh. For numerical reasons, we typically compute the data likelihood in log space:
+
+$$
+\log \mathcal{L} \left( \mathcal{D} \mid \boldsymbol{\theta} \right) = \sum_{i=1}^N \log \ell_i
+$$ {#eq-log-likelihood}
+
+The methodology we use to infer the model's parameters is detailed in @sec-sampling.
+
+
+## Model Prediction in the Bayesian Context
+
+Our stated goal is to compute the risk for a patient's true nodal involvement state $\mathbf{X}$, *given* their individual diagnosis $d = \left( \boldsymbol{\zeta}_k, \text{T}x \right)$. Using Bayes' law, this is written as:
+
+$$
+P \big( \mathbf{X} \mid \mathbf{Z}=\boldsymbol{\zeta}_k, \boldsymbol{\hat{\theta}}, \text{T}x \big) = \frac{P \left( \boldsymbol{\zeta}_k \mid \mathbf{X} \right) P \big( \mathbf{X} \mid \boldsymbol{\hat{\theta}}, \text{T}x \big)}{\sum_{i=0}^{2^V} P \left( \boldsymbol{\zeta}_k \mid \mathbf{X}=\boldsymbol{\xi}_i \right) P \big( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\hat{\theta}}, \text{T}x \big)}
+$$ {#eq-uni-bayes-law}
+
+The term $P \left( \boldsymbol{\zeta}_k \mid \mathbf{X} \right)$ is defined solely by sensitivity and specificity of the diagnostic modality. Terms like this already appeared in the definition of the observation matrx in @eq-obs-matrix. The *prior* $P \big( \mathbf{X} \mid \boldsymbol{\hat{\theta}} \big)$ in the above equation is the crucial term that is supplied by a trained model and its parameters $\boldsymbol{\hat{\theta}}$.
+
+It is possible to compute this *posterior* probability of true involvement not only for one fully defined state $\mathbf{X}$, but also for e.g. individual LNLs: For example, the risk for involvement in level IV would be a marginalization over all states $\boldsymbol{\xi}_i$, where $\xi_{i4}=1$. Formally:
+
+$$
+P \big( \text{IV} \mid \mathbf{Z}=\boldsymbol{\zeta}_k, \boldsymbol{\hat{\theta}}, \text{T}x  \big) = \sum_{k \, : \, \xi_{k4}=1} P \big( \mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\zeta}_k, \boldsymbol{\hat{\theta}}, \text{T}x  \big)
+$$ {#eq-marg-over-posterior}
+
 
 
 # Extension to a Bilateral Model {#sec-ext-to-contra}
@@ -280,7 +290,9 @@ Thus, we attempt to extend the formalism in @sec-unilateral in such a way that t
 
 $$
 P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \right) = \frac{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right)}{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \right)}
-$$
+$$ {#eq-bilateral-bayes}
+
+For the sake of brevity, we omit the dependency on the parameters and the T-category here.
 
 The likelihood of the diagnoses given a hidden state simply factorise: $P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) = P \left( \mathbf{Z}^\text{i} \mid \mathbf{X}^\text{i} \right) \cdot P \left( \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{c} \right)$. And the two factors are contained in the observation matrices $\mathbf{B}^\text{i}$ and $\mathbf{B}^\text{c}$.
 
