@@ -21,7 +21,7 @@ from lyscripts.plot.utils import COLORS
 
 from scripts import shared, paths, COL, get_lnl_cols
 
-midline_model = shared.get_model("midline", load_samples=True)
+simple_model = shared.get_model("simple", load_samples=True)
 ```
 
 ```{python}
@@ -329,6 +329,10 @@ P(\epsilon = \texttt{True} \mid t) &= 1 - P(\epsilon = \texttt{False} \mid t)
 \end{aligned}
 $$
 
+In @fig-model-midext-evo, we visualize how the prior distribution over diagnose times $P(t)$, the conditional probability of midline extension $P(\epsilon \mid t)$, and their joint $P(\epsilon, t)$ evolve over the course of a patient evolution.
+
+{{< embed model.qmd#fig-model-midext-evo >}}
+
 To get the joint probability over the ipsi- and contralateral hidden states, as well as the state of the tumor's midline extension $P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \right)$, we simply add the above terms to the marginalization in @eq-bilateral-marginal:
 
 $$
@@ -341,9 +345,9 @@ $$
 P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m, \epsilon \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} P(\mathbf{t}, \epsilon) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
 $$
 
-In @fig-model-midext-evo, we visualize how the prior distribution over diagnose times $P(t)$, the conditional probability of midline extension $P(\epsilon \mid t)$, and their joint $P(\epsilon, t)$ evolve over the course of a patient evolution.
+In @fig-midline-state-dist we plot the state distribution for a full midline model as two separate heatmaps. To keep it readable, this example model only considers the LNLs II, III, and IV ipsi- and contralaterally.
 
-{{< embed model.qmd#fig-model-midext-evo >}}
+{{< embed model.qmd#fig-midline-state-dist >}}
 
 
 ## Parameter Symmetries {#sec-params-symmetry}
@@ -400,167 +404,9 @@ For every model, we compare the predicted prevalence of a certain scenario to ho
 
 @fig-model-burnin-history is only a temporary placeholder for now.
 
-## Prevalence Comparisons
+## Prevalence Predictions
 
-First, we look at the prevalence of contralateral involvement for the LNLs II, III, and IV. The three models' predictions are plotted against beta posteriors of the observed prevalence in the data in @fig-prevalences-overall, both for early and advanced T-category.
-
-The beta posteriors (drawn as lines in @fig-prevalences-overall) are a convenient way of indicating not only the percentage of patients that presented with any given involvement, T-category, and/or other characteristics, which sits at the maximum of the beta distribution. It also shows the size of the population via its variance: If we observe e.g. 3 out of 10 patients to have contralateral LNL II involvement when the primary tumor is of advanced T-stage, then we cannot be particularly sure about that rate to be truly 30%. However, when we observe 300 out of 1000, we can be much more certain. A beta posterior intuitively reflects that in its width and is thus better suited to display such data than e.g. a vertical line only.
-
-The shaded histograms in @fig-prevalences-overall show the corresponding prevalence as computed by one of our models. They are formed by computing the prevalence for a number of parameter samples drawn during the MCMC learning process, as detailed in @sec-sampling. If both the location and width of the histograms matches those of the beta posteriors, then our model is both accurate and precise enough to describe the data.
-
-```{python}
-#| echo: false
-#| label: fig-prevalences-overall
-#| fig-cap: Prevalences of contralateral LNL involvement for different scenarios and the three considered models. The colored histograms show the computed distribution over the prevalence of involvment in the contralateral levels II (blue), III (orange), and IV (red). Each model's prediction is shown in a separate column, while the rows show these prevalences computed for early (top row) and advanced T-category (bottom row) respectively. The lines depict beta-posteriors over the observed prevalence of the corresponding scenario using a uniform prior. Its maximum coincides with the percentage of patients with the involvement of interest and its width indicates how many patients were considered in total.
-from itertools import cycle
-from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import draw, BetaPosterior, Histogram, COLORS
-
-scenarios_config = utils.load_yaml_params("scenarios/overall.yaml")
-scenarios = Scenario.list_from_params(scenarios_config)
-
-nrows, ncols = 2, 3
-
-plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(
-  nrows=nrows,
-  ncols=ncols,
-  width=full,
-))
-
-fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex="col")
-
-axes[0,0].set_ylabel("early")
-axes[-1,0].set_ylabel("advanced")
-
-for col, model in enumerate(["contra", "bilateral", "midline"]):
-  axes[0,col].set_title(model)
-  axes[-1,col].set_xlabel("prevalence [%]")
-  for row, t_stage in enumerate(["early", "late"]):
-    content = []
-    color_cycle = cycle(COLORS.values())
-    lnls = iter(["II", "III", "IV"])
-    for scenario in scenarios:
-      if not t_stage in scenario.t_stages:
-        continue
-
-      if model == "contra":
-        scenario.side = "contra"
-        scenario.is_uni = True
-      else:
-        scenario.side = "ipsi"
-        scenario.is_uni = False
-
-      color = next(color_cycle)
-      content += [
-        Histogram.from_hdf5(
-          filename=paths.get_filename(
-            model=model,
-            kind="prevalences_overall",
-          ),
-          dataname=scenario.md5_hash("prevalences"),
-          color=color,
-          label=f"contra LNL {next(lnls)}"
-        ),
-        BetaPosterior.from_hdf5(
-          filename=paths.get_filename(
-            model=model,
-            kind="prevalences_overall",
-          ),
-          dataname=scenario.md5_hash("prevalences"),
-          color=color,
-        ),
-      ]
-    draw(
-      axes=axes[row,col],
-      contents=content,
-      percent_lims=(2., 2.),
-      xlims=(0., 27.)
-    )
-    axes[row,col].set_yticks([])
-
-axes[0,0].legend(labelspacing=0.2)
-axes[-1,-1].legend(labelspacing=0.2)
-```
-
-At first, from @fig-prevalences-overall it appears as if the simpler, naive, unilateral-only model describes the prevalence of contralateral involvement better than the bilateral model and even the more complex model that tracks midline extension of the primary tumor.
-
-- [ ] make the data in the paragraph below dynamic
-
-This is mainly due to the early/advanced T-category split of the ipsi- and contralateral side: All models use two different distributions for early and advanced T-category to marginalize over the diagnose times (as introduced in the recap of @sec-unilateral). But only the two bilateral models need to balance these distributions to describe the ipsi- and contralateral involvement simultaneaously. As can be seen in the second and third column of @fig-prevalences-overall, the prevalence of e.g. contralateral LNL II involvement in the data (blue lines) increases from 8% (39 out of 473) to 24% (88 out of 360). Which is more than the model predicts (blue histograms). Ipsilaterally, however, the involvement of LNL II increases from 71% (343 out of 473) to only 76% (276 out of 360). This much weaker increase is well capured by the models.
-
-This issue is quickly resolved, though, as we consider other risk factors that correlate with T-category: Both the ipsilateral involvement and the tumor's extension over the mid-sagittal line influence -- the latter probably even causally -- the extent of contralateral involvement, as shown in @tbl-data-strat. Both these risk factors cannot be considered by the contralateral-only model. We should thus expect this naive model to perform worse, as soon as we investigate ipsilateral involvement and midline extension.
-
-```{python}
-#| echo: false
-#| label: fig-prevalences-ipsi
-#| fig-cap: Contralateral prevalences when taking ipsilateral invovlement into account.
-scenarios_config = utils.load_yaml_params("scenarios/with_ipsi.yaml")
-scenarios = Scenario.list_from_params(scenarios_config)
-
-nrows, ncols = 2, 3
-
-plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(
-  nrows=nrows,
-  ncols=ncols,
-  width=full,
-))
-
-fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex="col")
-
-axes[0,0].set_ylabel("early")
-axes[-1,0].set_ylabel("advanced")
-
-for col, model in enumerate(["contra", "bilateral", "midline"]):
-  axes[0,col].set_title(model)
-  axes[-1,col].set_xlabel("prevalence [%]")
-  for row, t_stage in enumerate(["early", "late"]):
-    content = []
-    color_cycle = cycle(COLORS.values())
-    lnls = iter(["II", "III", "IV"])
-    for scenario in scenarios:
-      if not t_stage in scenario.t_stages:
-        continue
-
-      if model == "contra":
-        scenario = scenario.from_dict(
-          scenario.as_dict("prevalences"),
-          is_uni=True,
-          side="contra",
-        )
-
-      color = next(color_cycle)
-      content += [
-        Histogram.from_hdf5(
-          filename=paths.get_filename(
-            model=model,
-            kind="prevalences_with_ipsi",
-          ),
-          dataname=scenario.md5_hash("prevalences"),
-          color=color,
-          label=f"contra LNL {next(lnls)}"
-        ),
-        BetaPosterior.from_hdf5(
-          filename=paths.get_filename(
-            model=model,
-            kind="prevalences_with_ipsi",
-          ),
-          dataname=scenario.md5_hash("prevalences"),
-          color=color,
-        ),
-      ]
-    draw(
-      axes=axes[row,col],
-      contents=content,
-      percent_lims=(2., 2.),
-      xlims=(0., 27.)
-    )
-    axes[row,col].set_yticks([])
-
-axes[0,0].legend(labelspacing=0.2)
-axes[-1,-1].legend(labelspacing=0.2)
-```
+Here we plot how well the model fits the data...
 
 
 ## Parameter Estimates
@@ -586,8 +432,8 @@ def map_param_names(name: str) -> str:
       "_spread", ""
     )
 
-model = shared.get_model(which="midline", load_samples=True)
-samples = shared.get_samples(which="midline")
+model = shared.get_model(which="simple", load_samples=True)
+samples = shared.get_samples(which="simple")
 
 names = [map_param_names(p) for p in model.get_params()]
 means, stds = samples.mean(axis=0), samples.std(axis=0)
@@ -620,10 +466,10 @@ In the data, the prevalence of midline extension for early T-category tumors is 
 plt.rcdefaults()
 
 mi = pd.MultiIndex.from_product(
-  [[False, True]] * len(midline_model.ext.ipsi.graph.lnls),
-  names=midline_model.ext.ipsi.graph.lnls.keys(),
+  [[False, True]] * len(simple_model.ext.ipsi.graph.lnls),
+  names=simple_model.ext.ipsi.graph.lnls.keys(),
 )
-series = pd.Series(midline_model.ext.ipsi.state_dist(), index=mi)
+series = pd.Series(simple_model.ext.ipsi.state_dist(), index=mi)
 upsetplot.plot(
   series,
   sort_by="cardinality",

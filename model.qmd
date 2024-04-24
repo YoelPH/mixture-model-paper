@@ -11,20 +11,21 @@ First, we illustrate how the prior distribution over diagnose times and the cond
 #| fig-cap: The top panel shows the prior probability to get diagnosed at time-step $t$ for early and late T-category tumors as bars. Also in the top panel, we plot the conditional probability of the tumor's midline extension ($\epsilon=\texttt{True}$), given the time-step $t$ as a line plot. In the bottom panel, we show the joint probability of getting diagnosed in time-step $t$ *and* having a tumor that crosses the midline.
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm
 from matplotlib import ticker
 from lyscripts.plot.utils import COLORS
 from scripts import shared
 
-midline_model = shared.get_model("midline", load_samples=True)
+model = shared.get_model("simple", load_samples=True)
 
 t = np.linspace(0, 10, 11)
 p_midline = {
-  "lateralized": (1 - midline_model.midext_prob)**t,
-  "extension": 1 - (1 - midline_model.midext_prob)**t,
+  "lateralized": (1 - model.midext_prob)**t,
+  "extension": 1 - (1 - model.midext_prob)**t,
 }
 dist = {
-  "early": midline_model.get_distribution("early").pmf,
-  "late": midline_model.get_distribution("late").pmf,
+  "early": model.get_distribution("early").pmf,
+  "late": model.get_distribution("late").pmf,
 }
 p_colors = {"lateralized": COLORS["green"], "extension": COLORS["red"]}
 t_colors = {"early": COLORS["blue"], "late": COLORS["orange"]}
@@ -120,7 +121,7 @@ fig, axes = plt.subplots(
   sharex=True,
 )
 
-for model in ["contra", "bilateral", "midline"]:
+for model in ["simple"]:
   history = pd.read_csv(f"models/{model}/history.csv").set_index("steps")
   for i, column in enumerate(history.columns):
     history.plot(y=column, ax=axes[i], label=model)
@@ -131,5 +132,62 @@ for model in ["contra", "bilateral", "midline"]:
 
 axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
 axes[2].yaxis.set_major_formatter(ticker.FuncFormatter(custom))
+plt.show()
+```
+
+
+# State Distribution of Midline Model
+
+It may be illustrative to look at the 3D state distribution of the midline model (at least if we only consider 3 LNLs).
+
+```{python}
+#| label: fig-midline-state-dist
+#| fig-cap: 3D state distribution of a midline model with 3 LNLs (II, III, and IV) in both sides of the neck.
+from matplotlib.colors import LinearSegmentedColormap
+from mpl_toolkits.axes_grid1 import AxesGrid
+
+model = shared.get_model(which="simple", load_samples=True)
+state_dist = 100 * model.state_dist(t_stage="late")
+vmin, vmax = np.min(state_dist), np.max(state_dist)
+
+nrows, ncols = 1, 2
+cmap = LinearSegmentedColormap.from_list(
+  name="custom",
+  colors=[COLORS["green"], COLORS["orange"], COLORS["red"]],
+)
+cmap.set_under(COLORS["gray"])
+
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  aspect_ratio=1.,
+  width=17,
+))
+
+fig = plt.figure()
+grid = AxesGrid(
+  fig, 111,
+  nrows_ncols=(nrows, ncols),
+  axes_pad=0.2,
+  share_all=True,
+  cbar_location="right",
+  cbar_mode="single",
+  cbar_size="8%"
+)
+noext, midext = grid
+
+im = noext.imshow(state_dist[0], cmap=cmap, vmin=100 * np.exp(-5), vmax=vmax)
+im = midext.imshow(state_dist[1], cmap=cmap, vmin=100 * np.exp(-5), vmax=vmax)
+grid.cbar_axes[0].colorbar(im)
+grid.cbar_axes[0].set_ylabel("Probability [%]")
+
+noext.set_title(r"tumor lateralized $\epsilon=\text{False}$")
+midext.set_title(r"midline extension $\epsilon=\text{True}$")
+
+noext.set_ylabel(r"ipsi state $\boldsymbol{\xi}^\text{i}_\ell$")
+noext.set_xlabel(r"contra state $\boldsymbol{\xi}^\text{c}_k$")
+midext.set_xlabel(r"contra state $\boldsymbol{\xi}^\text{c}_k$")
+
 plt.show()
 ```

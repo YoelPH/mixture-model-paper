@@ -50,7 +50,7 @@ stages:
 
   sampling:
     matrix:
-      model: [contra, bilateral, midline]
+      model: [simple, full]
     cmd: >
       lyscripts sample
       --input data/reduced.csv
@@ -75,7 +75,7 @@ stages:
 
   compute-priors:
     matrix:
-      model: [contra, bilateral, midline]
+      model: [simple, full]
       scenario: [priors]
     cmd: >
       lyscripts compute priors
@@ -93,7 +93,7 @@ stages:
 
   # compute-posteriors:
   #   matrix:
-  #     model: [contra, bilateral, midline]
+  #     model: [simple, full]
   #     scenario: [base]
   #   cmd: >
   #     lyscripts compute posteriors
@@ -111,7 +111,7 @@ stages:
 
   compute-prevalences:
     matrix:
-      model: [contra, bilateral, midline]
+      model: [simple, full]
       scenario: [overall, with_ipsi]
     cmd: >
       lyscripts compute prevalences
@@ -131,7 +131,7 @@ stages:
 
   # compute-risks:
   #   matrix:
-  #     model: [contra, bilateral, midline]
+  #     model: [simple, full]
   #     scenario: [overall, with_ipsi]
   #   cmd: >
   #     lyscripts compute risks

@@ -16,11 +16,14 @@ graph:
 ########################################################################################
 # Below are some parameters necessary for the model setup:
 model:
-  class: Bilateral.binary
+  class: Midline
   kwargs:
     is_symmetric:
       tumor_spread: false
       lnl_spread: true
+    use_central: false
+    use_midext_evo: true
+    use_mixing: true
   distributions:                # marginalize over diagnosis times. Keys are T-stages
     early:
       frozen: binomial
@@ -43,11 +46,4 @@ model:
 # sampling, everything that's not commented our here will be used for
 # inference.
 modalities:
-  # CT: [0.76, 0.81]
-  # MRI: [0.63, 0.81]
-  # PET: [0.86, 0.79]
-  # FNA: [0.98, 0.80]
-  # diagnostic_consensus: [0.86, 0.81]
-  # pathology: [1.0, 1.0]
-  # pCT: [0.86, 0.81]
   max_llh: [1.0, 1.0]
