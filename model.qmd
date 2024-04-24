@@ -136,7 +136,7 @@ plt.show()
 ```
 
 
-# State Distribution of Midline Model
+# Prior State Distribution of Midline Model
 
 It may be illustrative to look at the 3D state distribution of the midline model (at least if we only consider 3 LNLs).
 
@@ -191,3 +191,72 @@ midext.set_xlabel(r"contra state $\boldsymbol{\xi}^\text{c}_k$")
 
 plt.show()
 ```
+
+
+# Observed vs Predicted Prevalence
+
+To verify that the model does what it is supposed to, we compare how often some selected diagnoses appear in the data and how often the model predicts these diagnoses to be.
+
+```{python}
+#| label: fig-model-prevalences
+#| fig-cap: Comparison of predicted vs observed prevalences.
+from lyscripts.scenario import Scenario
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw
+from scripts import paths
+
+nrows, ncols = 2, 2
+
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  aspect_ratio=2.,
+  width=17,
+))
+
+fig, axes = plt.subplots(
+  nrows=nrows,
+  ncols=ncols,
+  sharex="col",
+  sharey="row",
+)
+
+for i, t_stage in enumerate(["early", "late"]):
+  axes[i,0].set_yticks([])
+  axes[i,0].set_ylabel(t_stage)
+  for j, midext in enumerate([False, True]):
+    content = []
+    for lnl, color in zip(
+      ["II"],
+      [COLORS["blue"]],
+    ):
+      scenario = Scenario(
+        t_stages=[t_stage],
+        midext=midext,
+        diagnosis={"contra": {"max_llh": {lnl: True}}}
+      )
+      content.append(
+        Histogram.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_overall.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+          label=f"{t_stage = }, {midext = }"
+        )
+      )
+      content.append(
+        BetaPosterior.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_overall.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+        )
+      )
+    draw(
+      axes=axes[i,j],
+      contents=content,
+      xlims=(0., 20.)
+    )
+    axes[i,j].legend()
+
+plt.show()
+```
+

@@ -111,7 +111,7 @@ stages:
 
   compute-prevalences:
     matrix:
-      model: [simple, full]
+      model: [full]
       scenario: [overall, with_ipsi]
     cmd: >
       lyscripts compute prevalences

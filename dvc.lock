@@ -6093,18 +6093,18 @@ stages:
       size: 34342
     - path: models
       hash: md5
-      md5: c1c4753279f804aeef5aff795b8f8616.dir
-      size: 432165557
-      nfiles: 17
+      md5: 8e3fc28d5d0b17feeb2c16a29b4cb428.dir
+      size: 430494645
+      nfiles: 14
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 9c0e903a8c14214445fa623537da74d5
+      md5: 6ea3fec94e24203d713324ccdf182ccf
       size: 44423
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 430fcc8fb58ea5781bc0886e98a6b499
-      size: 294924
+      md5: 915761c8a54a5b69bed57c94fae338ab
+      size: 385524
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -8545,81 +8545,41 @@ stages:
         scenarios:
         - t_stages:
           - early
-          midext:
+          midext: false
           mode: HMM
           diagnosis:
-            ipsi:
-              max_llh: {}
             contra:
               max_llh:
                 II: true
-                III:
-                IV:
-        - t_stages:
-          - early
-          midext:
-          mode: HMM
-          diagnosis:
-            ipsi:
-              max_llh: {}
-            contra:
-              max_llh:
-                II:
-                III: true
-                IV:
-        - t_stages:
-          - early
-          midext:
-          mode: HMM
-          diagnosis:
-            ipsi:
-              max_llh: {}
-            contra:
-              max_llh:
-                II:
-                III:
-                IV: true
         - t_stages:
           - late
-          midext:
+          midext: false
           mode: HMM
           diagnosis:
-            ipsi:
-              max_llh: {}
             contra:
               max_llh:
                 II: true
-                III:
-                IV:
         - t_stages:
-          - late
-          midext:
+          - early
+          midext: true
           mode: HMM
           diagnosis:
-            ipsi:
-              max_llh: {}
             contra:
               max_llh:
-                II:
-                III: true
-                IV:
+                II: true
         - t_stages:
           - late
-          midext:
+          midext: true
           mode: HMM
           diagnosis:
-            ipsi:
-              max_llh: {}
             contra:
               max_llh:
-                II:
-                III:
-                IV: true
+                II: true
     outs:
     - path: models/full/prevalences_overall.hdf5
       hash: md5
-      md5: 1de417b9ced0d0f2f0dca736136213f8
-      size: 136512
+      md5: b2b4111f8804ade4f7e4ebb07aae2732
+      size: 91264
   compute-prevalences@full-with_ipsi:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
       models/full/prevalences_with_ipsi.hdf5 --data data/reduced.csv --params models/full/params.yaml
@@ -8688,66 +8648,54 @@ stages:
         scenarios:
         - t_stages:
           - early
-          midext:
           mode: HMM
           diagnosis:
             ipsi:
               max_llh:
+                I: false
                 II: false
-                III:
-                IV:
+                III: false
+                IV: false
+                V: false
             contra:
               max_llh:
                 II: true
-                III:
-                IV:
         - t_stages:
           - early
-          midext:
           mode: HMM
           diagnosis:
             ipsi:
               max_llh:
                 II: true
-                III:
-                IV:
             contra:
               max_llh:
                 II: true
-                III:
-                IV:
         - t_stages:
           - late
-          midext:
           mode: HMM
           diagnosis:
             ipsi:
               max_llh:
+                I: false
                 II: false
-                III:
-                IV:
+                III: false
+                IV: false
+                V: false
             contra:
               max_llh:
                 II: true
-                III:
-                IV:
         - t_stages:
           - late
-          midext:
           mode: HMM
           diagnosis:
             ipsi:
               max_llh:
                 II: true
-                III:
-                IV:
             contra:
               max_llh:
                 II: true
-                III:
-                IV:
     outs:
     - path: models/full/prevalences_with_ipsi.hdf5
       hash: md5
-      md5: 685d3a036019e98f05375e5350d03a58
+      md5: eb480cd721b56841e93e441dd0ef6632
       size: 91264
