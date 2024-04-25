@@ -6089,22 +6089,22 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: 41e11bed9e74e47450df90b089a4c92c
-      size: 34342
+      md5: f6c46cfb6a7cea802366bf6be522b9be
+      size: 39329
     - path: models
       hash: md5
-      md5: 8e3fc28d5d0b17feeb2c16a29b4cb428.dir
-      size: 430494645
-      nfiles: 14
+      md5: 66c1ff306bcd54905ed5f3ea6ce9f8a2.dir
+      size: 432301269
+      nfiles: 17
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 6ea3fec94e24203d713324ccdf182ccf
-      size: 44423
+      md5: ae94d200738241b269bc1d72a06cee05
+      size: 50040
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 915761c8a54a5b69bed57c94fae338ab
-      size: 385524
+      md5: e09eace118c4a859bcd9b9780cb4d513
+      size: 336907
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -8552,8 +8552,48 @@ stages:
               max_llh:
                 II: true
         - t_stages:
+          - early
+          midext: false
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                III: true
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                IV: true
+        - t_stages:
           - late
           midext: false
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                II: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                III: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                IV: true
+        - t_stages:
+          - early
+          midext: true
           mode: HMM
           diagnosis:
             contra:
@@ -8566,7 +8606,15 @@ stages:
           diagnosis:
             contra:
               max_llh:
-                II: true
+                III: true
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                IV: true
         - t_stages:
           - late
           midext: true
@@ -8575,11 +8623,27 @@ stages:
             contra:
               max_llh:
                 II: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                III: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh:
+                IV: true
     outs:
     - path: models/full/prevalences_overall.hdf5
       hash: md5
-      md5: b2b4111f8804ade4f7e4ebb07aae2732
-      size: 91264
+      md5: d4b27ecedce052d9f29cb9cae44cb87b
+      size: 272224
   compute-prevalences@full-with_ipsi:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
       models/full/prevalences_with_ipsi.hdf5 --data data/reduced.csv --params models/full/params.yaml

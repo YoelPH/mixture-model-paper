@@ -241,7 +241,7 @@ In this work, we use binomial distributions $\mathfrak{B} \left( t_D, p_{\text{T
 With the formalism introduced above, we can write the likelihood function for a patient to present with a diagnosis consisting of an observed state and a T-category $d = \left( \boldsymbol{\zeta}_i, \text{T}x \right)$ as follows:
 
 $$
-\ell = \sum_{t=0}^{t_\text{max}} \left[ \boldsymbol{\xi}_0 \cdot \mathbf{A} \cdot \mathbf{B} \right]_i \cdot P \left( t \mid \text{T}x \right)
+\ell = P \left( \mathbf{Z} = \boldsymbol{\zeta}_i \mid \text{T}x \right) = \sum_{t=0}^{t_\text{max}} \left[ \boldsymbol{\xi}_0 \cdot \mathbf{A} \cdot \mathbf{B} \right]_i \cdot P \left( t \mid \text{T}x \right)
 $$ {#eq-single-patient-llh}
 
 Above, the quantity inside $\left[ \ldots \right]_i$ denotes the $i$-th component of the vector that is the result of the vector and matrix multiplications in the square brackets. Note that it is also possible to account for missing involvement information: If a diagnosis (like fine needle aspiration (FNA)) is only available for a subset of all LNLs, we can sum over all those possible complete observed states $\boldsymbol{\zeta}_j$ that match the provided diagnosis.
@@ -345,9 +345,9 @@ $$
 P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m, \epsilon \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} P(\mathbf{t}, \epsilon) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
 $$
 
-In @fig-midline-state-dist we plot the state distribution for a full midline model as two separate heatmaps. To keep it readable, this example model only considers the LNLs II, III, and IV ipsi- and contralaterally.
+In @fig-model-state-dist we plot the state distribution for a full midline model as two separate heatmaps. To keep it readable, this example model only considers the LNLs II, III, and IV ipsi- and contralaterally.
 
-{{< embed model.qmd#fig-midline-state-dist >}}
+{{< embed model.qmd#fig-model-state-dist >}}
 
 
 ## Parameter Symmetries {#sec-params-symmetry}
@@ -398,15 +398,49 @@ For every model, we compare the predicted prevalence of a certain scenario to ho
 - [ ] list and describe the scenarios
 
 
+## Computing the Observed and Predicted Prevalence of Involvement Patterns
+
+We want to assess the model's capability to approximate the distribution of lymphatic involvement patterns seen in the data. To that end, we compare the prevalence of some invovlement patterns under selected scenarios with the model's prediction for how often these involvements it expects to see, given these scenarios.
+
+In this context, a "scenario" includes the patient's T-category $\text{T}x$ and whether the patient's tumor extended over the mid-sagittal line, i.e. $\epsilon=\texttt{True}$ or $\epsilon=\texttt{False}$.
+
+An involvement pattern specifies for each ipsi- and contralateral LNL whether it is "healthy", "involved", or "masked". If it is "masked", we essentially state that we are not interested in the involvement of that LNL and the prevalence will be marginalized over this LNL's involvement.
+
+For example, we may be interested in the prevalence of contralateral LNL II involvement (i.e., contra LNL II "involved" and all other LNLs "masked") under the scenario of early T-category (T0-T2) and no midline extension ($\epsilon=\texttt{False}$). To compute this prevalence in the data, we select all patients of this scenario (in our data, this amounts to <!-- TODO: dyamically compute this --> patients). Of those, <!-- TODO: dynamically compute this --> were found to harbor metastases in their contralateral LNL II. Therefore, the prevalence is <!-- TODO: dynamically compute this -->.
+
+When displaying this data prevalence, we often choose to draw a *Beta posterior* over the "true" prevalence, hinting at the fact that our data merely represents a limited sample. The Beta posterior follows from a uniform Beta distribution as prior and a Bernoulli likelihood for the number of patients with the involvement of interest, given the parameer for the "true" prevalence. The resulting distribution has its maximum at the observed prevalence, but in addition gives a visual intuition for the variance of of the observed quantity. I.e., when we observe 3 out of 10 events, the Beta posterior is much wider than if we observe 300 out of 1000 for he same prevalence. It also allows us to check not inly if the model is accurate, but also whether it reflects the uncertainty contained in the data.
+
+Predicting the prevalence using our model amounts to computing the following probability:
+
+$$
+P \left( \text{II}^\text{c} \mid \epsilon=\texttt{False}, \text{T}x=\text{early} \right) = \frac{P \left( \text{II}^\text{c}, \epsilon=\texttt{False} \mid \text{T}x=\text{early} \right)}{P \left( \epsilon=\texttt{False} \mid \text{T}x=\text{early} \right)}
+$$
+
+In the enumator, we marginalize over all ipsi- and contralateral LNLs' involvements, except for LNL II contralaterally. This is similar to the marginalization in @eq-marg-over-posterior, although we are summing over different quantities. In the denominator, we can simply insert the joint distribution over midline extension and diagnose time $P \left( \epsilon, t \right)$ marginalized over $t$ using the early T-category's time-prior.
+
+Since we compare it to the data, which does not report true but only observed involvement -- although pathologically investigated LNLs may be as close as possible to the ground truth -- we do not consider posteriors of the form $P \left( \mathbf{X} \mid \mathbf{Z} \right)$ here. Instead, we compute probabilities of observed involvement $P \left( \mathbf{Z} \right)$, as in the likelihood @eq-single-patient-llh.
+
+When plotted, we usually display histograms over the model's predictions. Each of their values was computed from a different parameter set drawn during MCMC sampling, effectively giving us a distribution over the prevalences. Ideally, the histograms approximate the location and width of the Beta posteriors when attempting to describe the data they were trained on.
+
+
 # Results
 
 {{< embed model.qmd#fig-model-burnin-history >}}
 
 @fig-model-burnin-history is only a temporary placeholder for now.
 
+
 ## Prevalence Predictions
 
-Here we plot how well the model fits the data...
+<!-- NOTE: This should probably belong to the Methods/Formalism section(s) -->
+
+In @fig-model-prevalences, we plot the prevalence of contralateral involvement of the LNLs II, III, and IV for the four scenarios made up of the possible combinations of early and late T-category, as well as lateralized and midline extending tumors.
+
+{{< embed model.qmd#fig-model-prevalences >}}
+
+@Fig-model-prevalences shows nicely how the model is capable of accurately taking the most important risk factors, i.e. T-category and midline extension, into account. As observed in the data, the model predicts that the prevalence of contralateral LNL II involvement jumps from below 8% for early T-category lateralized tumors to almost 40% when the tumor is of advanced T-category and crosses the mid-sagittal line.
+
+However, for early T-category scenarios with midline extension, the model does seem to overestimate contralateral LNL II invovlement and underestimate the prevalence for metastases in LNL III. This likely stems from the the small sample size of this rare scenario as hinted at by the wide Beta posteriors.
 
 
 ## Parameter Estimates

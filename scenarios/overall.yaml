@@ -7,12 +7,36 @@ scenarios:
     diagnosis:
       contra:
         max_llh: {II: true}
+  - t_stages: [early]
+    midext: false
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {III: true}
+  - t_stages: [early]
+    midext: false
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {IV: true}
   - t_stages: [late]
     midext: false
     mode: "HMM"
     diagnosis:
       contra:
         max_llh: {II: true}
+  - t_stages: [late]
+    midext: false
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {III: true}
+  - t_stages: [late]
+    midext: false
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {IV: true}
 
   - t_stages: [early]
     midext: true
@@ -20,9 +44,33 @@ scenarios:
     diagnosis:
       contra:
         max_llh: {II: true}
+  - t_stages: [early]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {III: true}
+  - t_stages: [early]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {IV: true}
   - t_stages: [late]
     midext: true
     mode: "HMM"
     diagnosis:
       contra:
         max_llh: {II: true}
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {III: true}
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {IV: true}

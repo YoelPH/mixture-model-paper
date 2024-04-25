@@ -141,7 +141,7 @@ plt.show()
 It may be illustrative to look at the 3D state distribution of the midline model (at least if we only consider 3 LNLs).
 
 ```{python}
-#| label: fig-midline-state-dist
+#| label: fig-model-state-dist
 #| fig-cap: 3D state distribution of a midline model with 3 LNLs (II, III, and IV) in both sides of the neck.
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import AxesGrid
@@ -152,7 +152,7 @@ vmin, vmax = np.min(state_dist), np.max(state_dist)
 
 nrows, ncols = 1, 2
 cmap = LinearSegmentedColormap.from_list(
-  name="custom",
+  name="usz",
   colors=[COLORS["green"], COLORS["orange"], COLORS["red"]],
 )
 cmap.set_under(COLORS["gray"])
@@ -199,10 +199,15 @@ To verify that the model does what it is supposed to, we compare how often some 
 
 ```{python}
 #| label: fig-model-prevalences
-#| fig-cap: Comparison of predicted vs observed prevalences.
+#| fig-cap: Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown for the contralateral LNLs II (blue), III (orange), and IV (green). The top row shows scenarios with early T-category tumors, the bottom row for late T-category ones. The left column depicts scenarios where the primary tumor is clearly lateralized, the right column scenarios of tumors extending over the mid-sagittal line. 
+from matplotlib import gridspec
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw
 from scripts import paths
+
+def turn_axis_off(axes):
+  axes.set_xticks([])
+  axes.set_yticks([])
 
 nrows, ncols = 2, 2
 
@@ -214,21 +219,30 @@ plt.rcParams.update(shared.get_figsizes(
   width=17,
 ))
 
-fig, axes = plt.subplots(
-  nrows=nrows,
-  ncols=ncols,
-  sharex="col",
-  sharey="row",
+fig = plt.figure()
+gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
+axes = np.array([[fig.add_subplot(gs[i,j]) for j in range(ncols)] for i in range(nrows)])
+full = fig.add_subplot(gs[:,:], frame_on=False)
+turn_axis_off(full)
+
+full.set_title(
+  "Observed vs Predicted Prevalence of Contralateral Involvement",
+  pad=20.,
+  fontsize="large",
 )
 
+
 for i, t_stage in enumerate(["early", "late"]):
-  axes[i,0].set_yticks([])
-  axes[i,0].set_ylabel(t_stage)
+  axes[i,0].set_ylabel(f"{t_stage} T-cat.", fontweight="bold")
   for j, midext in enumerate([False, True]):
+    axes[0,j].set_title("Mid. ext." if midext else "Lateralized", fontweight="bold")
+    axes[0,j].set_xticks([])
+    axes[-1,j].set_xlabel("prevalence [%]")
+    axes[i,j].set_yticks([])
     content = []
     for lnl, color in zip(
-      ["II"],
-      [COLORS["blue"]],
+      ["II", "III", "IV"],
+      [COLORS["blue"], COLORS["orange"], COLORS["green"]],
     ):
       scenario = Scenario(
         t_stages=[t_stage],
@@ -240,7 +254,7 @@ for i, t_stage in enumerate(["early", "late"]):
           filename=paths.model_dir / "full" / "prevalences_overall.hdf5",
           dataname=scenario.md5_hash("prevalences"),
           color=color,
-          label=f"{t_stage = }, {midext = }"
+          label=f"contra LNL {lnl}"
         )
       )
       content.append(
@@ -253,9 +267,9 @@ for i, t_stage in enumerate(["early", "late"]):
     draw(
       axes=axes[i,j],
       contents=content,
-      xlims=(0., 20.)
+      xlims=(0., 15. if not midext else 45.),
     )
-    axes[i,j].legend()
+    axes[i,j].legend(labelspacing=0.1)
 
 plt.show()
 ```
