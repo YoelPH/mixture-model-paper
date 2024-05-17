@@ -354,3 +354,14 @@ shared.split_legends(
 
 plt.show()
 ```
+
+## Portion of Midline Extension
+
+Since we model the tumor's midline extension as a random variable we can predict its portion among early or late T-category patients and compare it with the observed prevalence in the data.
+
+```{python}
+#| label: fig-model-prevalence-midext
+#| fig-cap: "Comparing the predicted (histograms) and observed (lines depicting beta posteriors) prevalence of midline extension for early (blue) and late (orange) T-category."
+pass
+```
+

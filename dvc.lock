@@ -6093,9 +6093,9 @@ stages:
       size: 40761
     - path: models
       hash: md5
-      md5: b4cd6d6f4ba86a86adb79f450c1d9591.dir
-      size: 432131094
-      nfiles: 15
+      md5: 960f91ae2b59ab02e45a72e9d96ed8bb.dir
+      size: 432177110
+      nfiles: 16
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
@@ -6103,8 +6103,8 @@ stages:
       size: 53096
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 6bf858f99f363505af91e5185219410c
-      size: 361400
+      md5: a92983bb56a1e4d71a280a32e989500b
+      size: 361412
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -8763,3 +8763,88 @@ stages:
       hash: md5
       md5: dfbd8cde284ef047f2090b28d2a32fa4
       size: 91264
+  compute-prevalences@full-midext:
+    cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
+      models/full/prevalences_midext.hdf5 --data data/reduced.csv --params models/full/params.yaml
+      --scenarios scenarios/midext.yaml\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
+    - path: models/full/priors.hdf5
+      hash: md5
+      md5: 75932b01d8d94a662c6bbf7cc6f1b6dd
+      size: 66859808
+    params:
+      models/full/params.yaml:
+        graph:
+          tumor:
+            T:
+            - I
+            - II
+            - III
+            - IV
+            - V
+          lnl:
+            I:
+            - II
+            II:
+            - III
+            III:
+            - IV
+            IV:
+            - V
+            V: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/midext.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh: {}
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            contra:
+              max_llh: {}
+    outs:
+    - path: models/full/prevalences_midext.hdf5
+      hash: md5
+      md5: 0022309ff7760e1b8c3d244a74805a9d
+      size: 46016

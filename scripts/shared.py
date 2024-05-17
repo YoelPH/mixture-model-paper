@@ -8,7 +8,10 @@ from lyscripts import utils
 import numpy as np
 import pandas as pd
 
-from . import paths
+try:
+    from . import paths
+except ImportError:
+    import paths
 
 
 pd.options.mode.copy_on_write = False
@@ -17,7 +20,7 @@ GOLDEN_RATIO = 1.61803398875
 
 
 def get_model(
-    which: Literal["ipsi", "contra", "bilateral", "midline"],
+    which: str,
     load_samples: bool = True,
 ) -> types.Model:
     """Get one of the four trained models."""
@@ -35,7 +38,7 @@ def get_model(
 
 
 def get_samples(
-    which: Literal["ipsi", "contra", "bilateral", "midline"]
+    which: str
 ) -> np.ndarray:
     """Get the samples of one of the four trained models."""
     samples_path = paths.model_dir / which / "samples.hdf5"

@@ -112,7 +112,7 @@ stages:
   compute-prevalences:
     matrix:
       model: [full]
-      scenario: [overall, with_ipsi]
+      scenario: [overall, with_ipsi, midext]
     cmd: >
       lyscripts compute prevalences
       --priors models/${item.model}/priors.hdf5
