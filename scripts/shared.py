@@ -99,3 +99,29 @@ def get_figsizes(
         "savefig.bbox": "tight",
         "savefig.pad_inches": pad,
     }
+
+
+def split_legends(
+    ax,
+    titles: list[str],
+    locs: list[tuple[float, float]],
+    **kwargs,
+) -> None:
+    """Separate the legends of `ax` into separate ones with `titles` and at `locs`."""
+    legend_kwargs = {
+        "title_fontsize": "small",
+        "labelspacing": 0.1,
+    }
+    legend_kwargs.update(kwargs)
+
+    handles, labels = ax.get_legend_handles_labels()
+    for i, (title, loc) in enumerate(zip(titles, locs)):
+        legend = ax.legend(
+            handles[i * 2 : (i+1) * 2],
+            labels[i * 2 : (i+1) * 2],
+            loc="upper left",
+            bbox_to_anchor=loc,
+            title=title,
+            **legend_kwargs,
+        )
+        ax.add_artist(legend)

@@ -6089,22 +6089,22 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: f6c46cfb6a7cea802366bf6be522b9be
-      size: 39329
+      md5: 1567e4bf2a1a70ecbcae17120c26fceb
+      size: 40761
     - path: models
       hash: md5
-      md5: 3c14296e9d7b1b46fb8d5c4ab54bd1c5.dir
-      size: 430505429
-      nfiles: 12
+      md5: b4cd6d6f4ba86a86adb79f450c1d9591.dir
+      size: 432131094
+      nfiles: 15
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: c76edbbf2b073a41635978a306b887b7
-      size: 50040
+      md5: 1ee572d717ce6ef73617583d3acb4e92
+      size: 53096
     - path: .output/manuscript.pdf
       hash: md5
-      md5: ccdbed65adebae6df166818332df9f29
-      size: 320339
+      md5: 6bf858f99f363505af91e5185219410c
+      size: 361400
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -8642,7 +8642,7 @@ stages:
     outs:
     - path: models/full/prevalences_overall.hdf5
       hash: md5
-      md5: 9de224d2c87f26255d3f59ab8002aa54
+      md5: d4b27ecedce052d9f29cb9cae44cb87b
       size: 272224
   compute-prevalences@full-with_ipsi:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
@@ -8761,5 +8761,5 @@ stages:
     outs:
     - path: models/full/prevalences_with_ipsi.hdf5
       hash: md5
-      md5: 264c9e44833b281f9f687c9bda677fae
+      md5: dfbd8cde284ef047f2090b28d2a32fa4
       size: 91264

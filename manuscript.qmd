@@ -422,6 +422,8 @@ Since we compare it to the data, which does not report true but only observed in
 
 When plotted, we usually display histograms over the model's predictions. Each of their values was computed from a different parameter set drawn during MCMC sampling, effectively giving us a distribution over the prevalences. Ideally, the histograms approximate the location and width of the Beta posteriors when attempting to describe the data they were trained on.
 
+Note that we decided to omit the y-axis ticks and labels in these figures over prevalences and risks. The y-axis in these plots measures the probability density and its numerical values are not intuitively interpretable. Instead, we occasionally use the freed space to label e.g. rows of subplots.
+
 
 # Results
 
@@ -434,13 +436,22 @@ When plotted, we usually display histograms over the model's predictions. Each o
 
 <!-- NOTE: This should probably belong to the Methods/Formalism section(s) -->
 
-In @fig-model-prevalences, we plot the prevalence of contralateral involvement of the LNLs II, III, and IV for the four scenarios made up of the possible combinations of early and late T-category, as well as lateralized and midline extending tumors.
+In @fig-model-prevalences-overall, we plot the prevalence of contralateral involvement of the LNLs II, III, and IV for the four scenarios made up of the possible combinations of early and late T-category, as well as lateralized and midline extending tumors.
 
-{{< embed model.qmd#fig-model-prevalences >}}
+{{< embed model.qmd#fig-model-prevalences-overall >}}
 
-@Fig-model-prevalences shows nicely how the model is capable of accurately taking the most important risk factors, i.e. T-category and midline extension, into account. As observed in the data, the model predicts that the prevalence of contralateral LNL II involvement jumps from below 8% for early T-category lateralized tumors to almost 40% when the tumor is of advanced T-category and crosses the mid-sagittal line.
+@Fig-model-prevalences-overall shows nicely how the model is capable of accurately taking the most important risk factors, i.e. T-category and midline extension, into account. As observed in the data, the model predicts that the prevalence of contralateral LNL II involvement jumps from below 8% for early T-category lateralized tumors to almost 40% when the tumor is of advanced T-category and crosses the mid-sagittal line.
 
 However, for early T-category scenarios with midline extension, the model does seem to overestimate contralateral LNL II invovlement and underestimate the prevalence for metastases in LNL III. This likely stems from the the small sample size of this rare scenario as hinted at by the wide Beta posteriors.
+
+{{< embed model.qmd#fig-model-prevalences-with-ipsi >}}
+
+In @fig-model-prevalences-with-ipsi we display the model's ability to capture the correlation between ipsi- and contralateral involvement. It shows that the prevalence of metastases in the two sides of the neck is correlated via the time of diagnosis, despite the model not having any direct connections between the two side. However, there are some small discrepancies in the model's prediction: When considering the scenario of LNL II involvement in the ipsi- *and* contralateral side, it cannot quite capture the split between early and late T-category. The model slightly overestimates the prevalence of this scenario for early T-category patients and underestimates it for advanced T-category.
+
+
+## Prediction of Risk for Occult Disease
+
+- compute risks for occult disease, given diagnosis
 
 
 ## Parameter Estimates
@@ -511,6 +522,13 @@ upsetplot.plot(
 )
 plt.show()
 ```
+
+
+# Discussion
+
+- conceptually extended model to cover both sides of neck
+- explicitly models midline extension (also allows for easy marginalization)
+- midline extension intuitively causes contralateral spread to become more similar to ipsilateral spread
 
 
 # Acknowledgement {.appendix}
