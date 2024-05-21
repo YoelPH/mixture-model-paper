@@ -50,7 +50,7 @@ stages:
 
   sampling:
     matrix:
-      model: [contra, bilateral, midline]
+      model: [simple, full]
     cmd: >
       lyscripts sample
       --input data/reduced.csv
@@ -75,7 +75,7 @@ stages:
 
   compute-priors:
     matrix:
-      model: [contra, bilateral, midline]
+      model: [simple, full]
       scenario: [priors]
     cmd: >
       lyscripts compute priors
@@ -93,7 +93,7 @@ stages:
 
   # compute-posteriors:
   #   matrix:
-  #     model: [contra, bilateral, midline]
+  #     model: [simple, full]
   #     scenario: [base]
   #   cmd: >
   #     lyscripts compute posteriors
@@ -111,7 +111,7 @@ stages:
 
   compute-prevalences:
     matrix:
-      model: [contra, bilateral, midline]
+      model: [full]
       scenario: [overall, with_ipsi]
     cmd: >
       lyscripts compute prevalences
@@ -129,9 +129,20 @@ stages:
     outs:
     - models/${item.model}/prevalences_${item.scenario}.hdf5
 
+  compute-midext-prevalences:
+    cmd: >
+      python scripts/compute_midext_prevalences.py
+    deps:
+    - models/full/samples.hdf5
+    - data/reduced.csv
+    params:
+    - models/full/params.yaml:
+    outs:
+    - models/full/prevalences_midext.hdf5
+
   # compute-risks:
   #   matrix:
-  #     model: [contra, bilateral, midline]
+  #     model: [simple, full]
   #     scenario: [overall, with_ipsi]
   #   cmd: >
   #     lyscripts compute risks
@@ -155,5 +166,5 @@ stages:
     - data/reduced.csv
     - manuscript.qmd
     outs:
-    - _manuscript/manuscript.pdf
-    - _manuscript/_tex/manuscript.tex
+    - .output/manuscript.pdf
+    - .output/_tex/manuscript.tex

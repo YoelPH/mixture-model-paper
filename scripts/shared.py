@@ -8,7 +8,10 @@ from lyscripts import utils
 import numpy as np
 import pandas as pd
 
-from . import paths
+try:
+    from . import paths
+except ImportError:
+    import paths
 
 
 pd.options.mode.copy_on_write = False
@@ -17,7 +20,7 @@ GOLDEN_RATIO = 1.61803398875
 
 
 def get_model(
-    which: Literal["ipsi", "contra", "bilateral", "midline"],
+    which: str,
     load_samples: bool = True,
 ) -> types.Model:
     """Get one of the four trained models."""
@@ -35,7 +38,7 @@ def get_model(
 
 
 def get_samples(
-    which: Literal["ipsi", "contra", "bilateral", "midline"]
+    which: str
 ) -> np.ndarray:
     """Get the samples of one of the four trained models."""
     samples_path = paths.model_dir / which / "samples.hdf5"
@@ -99,3 +102,29 @@ def get_figsizes(
         "savefig.bbox": "tight",
         "savefig.pad_inches": pad,
     }
+
+
+def split_legends(
+    ax,
+    titles: list[str],
+    locs: list[tuple[float, float]],
+    **kwargs,
+) -> None:
+    """Separate the legends of `ax` into separate ones with `titles` and at `locs`."""
+    legend_kwargs = {
+        "title_fontsize": "small",
+        "labelspacing": 0.1,
+    }
+    legend_kwargs.update(kwargs)
+
+    handles, labels = ax.get_legend_handles_labels()
+    for i, (title, loc) in enumerate(zip(titles, locs)):
+        legend = ax.legend(
+            handles[i * 2 : (i+1) * 2],
+            labels[i * 2 : (i+1) * 2],
+            loc="upper left",
+            bbox_to_anchor=loc,
+            title=title,
+            **legend_kwargs,
+        )
+        ax.add_artist(legend)

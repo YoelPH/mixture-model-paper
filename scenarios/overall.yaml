@@ -2,50 +2,75 @@
 # can describe the overall prevalence of contralateral involvmeent well.
 scenarios:
   - t_stages: [early]
-    midext: null
+    midext: false
     mode: "HMM"
     diagnosis:
-      ipsi:
-        max_llh: {}
       contra:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
   - t_stages: [early]
-    midext: null
+    midext: false
     mode: "HMM"
     diagnosis:
-      ipsi:
-        max_llh: {}
       contra:
-        max_llh: {II: null, III: true, IV: null}
+        max_llh: {III: true}
   - t_stages: [early]
-    midext: null
+    midext: false
     mode: "HMM"
     diagnosis:
-      ipsi:
-        max_llh: {}
       contra:
-        max_llh: {II: null, III: null, IV: true}
+        max_llh: {IV: true}
   - t_stages: [late]
-    midext: null
+    midext: false
     mode: "HMM"
     diagnosis:
-      ipsi:
-        max_llh: {}
       contra:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
   - t_stages: [late]
-    midext: null
+    midext: false
     mode: "HMM"
     diagnosis:
-      ipsi:
-        max_llh: {}
       contra:
-        max_llh: {II: null, III: true, IV: null}
+        max_llh: {III: true}
   - t_stages: [late]
-    midext: null
+    midext: false
     mode: "HMM"
     diagnosis:
-      ipsi:
-        max_llh: {}
       contra:
-        max_llh: {II: null, III: null, IV: true}
+        max_llh: {IV: true}
+
+  - t_stages: [early]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: true}
+  - t_stages: [early]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {III: true}
+  - t_stages: [early]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {IV: true}
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {II: true}
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {III: true}
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      contra:
+        max_llh: {IV: true}

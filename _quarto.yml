@@ -1,14 +1,19 @@
 project: 
   type: manuscript
+  output-dir: .output
   render: 
     - "*.qmd"
   preview: 
     browser: false
     port: 8000
+    navigate: false
 
 # define main manuscript file
 manuscript: 
   article: manuscript.qmd
+  notebooks: 
+    - notebook: data.qmd
+    - notebook: model.qmd
   environment: requirements.txt
   meca-bundle: true
   code-links:
@@ -33,7 +38,7 @@ format:
 jupyter: python3
 execute: 
   cache: true
-  freeze: true
+  freeze: false
   # activating freeze may be useful for writing without
   # reproducing computations...
 

@@ -2,35 +2,31 @@
 # involvement into account as a risk factor for contralateral involvement.
 scenarios:
   - t_stages: [early]
-    midext: null
     mode: "HMM"
     diagnosis:
       ipsi:
-        max_llh: {II: false, III: null, IV: null}
+        max_llh: {I: false, II: false, III: false, IV: false, V: false}
       contra:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
   - t_stages: [early]
-    midext: null
     mode: "HMM"
     diagnosis:
       ipsi:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
       contra:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
   - t_stages: [late]
-    midext: null
     mode: "HMM"
     diagnosis:
       ipsi:
-        max_llh: {II: false, III: null, IV: null}
+        max_llh: {I: false, II: false, III: false, IV: false, V: false}
       contra:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
   - t_stages: [late]
-    midext: null
     mode: "HMM"
     diagnosis:
       ipsi:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
       contra:
-        max_llh: {II: true, III: null, IV: null}
+        max_llh: {II: true}
 
