@@ -448,6 +448,22 @@ However, for early T-category scenarios with midline extension, the model does s
 
 In @fig-model-prevalences-with-ipsi we display the model's ability to capture the correlation between ipsi- and contralateral involvement. It shows that the prevalence of metastases in the two sides of the neck is correlated via the time of diagnosis, despite the model not having any direct connections between the two side. However, there are some small discrepancies in the model's prediction: When considering the scenario of LNL II involvement in the ipsi- *and* contralateral side, it cannot quite capture the split between early and late T-category. The model slightly overestimates the prevalence of this scenario for early T-category patients and underestimates it for advanced T-category.
 
+{{< embed model.qmd#fig-model-prevalences-midext >}}
+
+Lastly, in @fig-model-prevalences-midext, we plot the prevalence of midline extension in the data versus our model's prediction. It is obvious the model cannot match the large spread between early and advanced T-category seen in the data. This is because to achieve that, it would need to increase the advanced T-category patient's prior distribution over diagnosis times and at the same time reduce the probability of the tumor to cross the midline during a time-step. But since the time-priors parameter is also coupled with the spread probabilities among the LNLs, the model does not have that freedom.
+
+<!-- Should the paragraphs below be part of the discussion? -->
+
+However, we do not consider this discrepancy a major limitation of the model: We will not realistically be interested in the probability of midline extension, as it is always possible to assess it with high certainty. That is also the reason why we initially modelled the midline extension *not* as a random variable, but as a global risk factor that would have been turned on or off from the onset of a patient's disease evolution. This, however, lead to overly high risks for contralateral involvement in advanced T-category patients with midline extension, because then the model assumes an increased spread to the contralateral side from the onset of the disease. Which is probably not true in a majority of those cases. Thus, treating it as a random variable that only becomes true during a patient's disease evolution resulted in a better description of the data.
+
+Formally, the wrong prediction of midline extension prevalence makes little difference, since it is always given: Instead of $P\left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \mid \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \right)$, we typically compute $P\left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c}, \epsilon \right)$, which does not suffer from the wrong probability of midline extension, as the distribution over hidden states is renormalized:
+
+$$
+P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c}, \epsilon \right) = \frac{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c} \mid \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \right) P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \right)}{P \left( \mathbf{Z}^\text{i}, \mathbf{Z}^\text{c}, \epsilon \right)}
+$$
+
+Note that a distribution over $\epsilon$ appears both in the enumerator and the denominator, which largely cancel each other, leaving only the midline extension's effect on the distribution over hidden states in the prediction.
+
 
 ## Prediction of Risk for Occult Disease
 

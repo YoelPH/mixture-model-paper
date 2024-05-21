@@ -146,6 +146,7 @@ It may be illustrative to look at the 3D state distribution of the midline model
 #| fig-cap: "3D state distribution of a midline model with 3 LNLs (II, III, and IV) in both sides of the neck."
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import AxesGrid
+from lyscripts.plot.utils import COLORS
 
 model = shared.get_model(which="simple", load_samples=True)
 state_dist = 100 * model.state_dist(t_stage="late")
@@ -207,7 +208,7 @@ We start witht the most commonly involved LNLs in the contralateral neck: II, II
 #| fig-cap: "Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown for the contralateral LNLs II (blue), III (orange), and IV (green). The top row shows scenarios with early T-category tumors, the bottom row for late T-category ones. The left column depicts scenarios where the primary tumor is clearly lateralized, the right column scenarios of tumors extending over the mid-sagittal line. This figure illustrates the model's ability to describe the prevalence of different combinations of scenarios involving the risk factors T-category and midline extension."
 from matplotlib import gridspec
 from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import Histogram, BetaPosterior, draw
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
 from scripts import paths, shared
 
 def turn_axis_off(axes):
@@ -304,8 +305,9 @@ plt.show()
 ```{python}
 #| label: fig-model-prevalences-with-ipsi
 #| fig-cap: "Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown are four scenarios, all including contralateral LNL II involvement: Early T-category and an ipsilateral N0 neck (green), early T-category and ipsilateral LNL II involvement (blue), as well as the same two scenarios but for advanced T-category (orange and red). The figure shows that the model is capable of describing the correlation between ipsi- and contralateral involvement. Although for the scenario of LNL II involvement in both sides, the prediction's split between early and advanced T-category is not large enough."
+import matplotlib.pyplot as plt
 from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import Histogram, BetaPosterior, draw
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
 from scripts import paths, shared
 
 plt.rcParams.update(shared.get_fontsizes())
@@ -360,8 +362,50 @@ plt.show()
 Since we model the tumor's midline extension as a random variable we can predict its portion among early or late T-category patients and compare it with the observed prevalence in the data.
 
 ```{python}
-#| label: fig-model-prevalence-midext
-#| fig-cap: "Comparing the predicted (histograms) and observed (lines depicting beta posteriors) prevalence of midline extension for early (blue) and late (orange) T-category."
-pass
+#| label: fig-model-prevalences-midext
+#| fig-cap: "Comparing the predicted (histograms) and observed (lines depicting beta posteriors) prevalence of midline extension for early (blue) and late (orange) T-category. While the prevalence is predicted correctly when marginalizing over T-category, the model cannot capture the degree of separation observed in the data. Since the tumor's midline extension is virtually always part of the diagnosis and hence *given* when predicting a patient's risk, we do not consider this discrepancy a major issue."
+import matplotlib.pyplot as plt
+from lyscripts.scenario import Scenario
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
+from scripts import paths, shared
+
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(width=17./2.))
+
+fig, ax = plt.subplots()
+content = []
+colors = iter([COLORS[c] for c in ["blue", "orange"]])
+
+for t_stage in ["early", "late"]:
+  color = next(colors)
+  content.append(
+    Histogram.from_hdf5(
+      filename=paths.model_dir / "full" / "prevalences_midext.hdf5",
+      dataname=t_stage,
+      color=color,
+      label="prediction"
+    )
+  )
+  beta_post = BetaPosterior.from_hdf5(
+    filename=paths.model_dir / "full" / "prevalences_midext.hdf5",
+    dataname=t_stage,
+    color=color,
+  )
+  beta_post.kwargs["label"] = f"data: {beta_post.num_success} of {beta_post.num_total}"
+  content.append(beta_post)
+
+draw(ax, content, xlims=(0., 55.))
+ax.set_title("Observed vs Predicted Prevalence\nof Midline Extension")
+ax.set_yticks([])
+ax.set_ylim(top=0.4)
+ax.set_xlabel("prevalence [%]")
+
+shared.split_legends(
+  ax=ax,
+  titles=["early T-cat.", "late T-cat."],
+  locs=[(0.05, 0.99), (0.6, 0.99)],
+)
+
+plt.show()
 ```
 

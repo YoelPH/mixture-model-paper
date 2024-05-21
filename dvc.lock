@@ -6089,22 +6089,22 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: 1567e4bf2a1a70ecbcae17120c26fceb
-      size: 40761
+      md5: d29f06467a872d729dab1273d76bd3c3
+      size: 43474
     - path: models
       hash: md5
-      md5: 960f91ae2b59ab02e45a72e9d96ed8bb.dir
-      size: 432177110
+      md5: 22926c2f3580e9a8f769bb57de8ff5ec.dir
+      size: 432136406
       nfiles: 16
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 1ee572d717ce6ef73617583d3acb4e92
-      size: 53096
+      md5: 146b3fdbf4a2f570c9fe13303b33e98f
+      size: 56520
     - path: .output/manuscript.pdf
       hash: md5
-      md5: a92983bb56a1e4d71a280a32e989500b
-      size: 361412
+      md5: bb8f33252d391b93ab62e7cc4df74bec
+      size: 377995
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -8848,3 +8848,70 @@ stages:
       hash: md5
       md5: 0022309ff7760e1b8c3d244a74805a9d
       size: 46016
+  compute-midext-prevalences:
+    cmd: "python scripts/compute_midext_prevalences.py\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: 4013638719b10c5c5c1c1015259ace2a
+      size: 557587
+    - path: models/full/samples.hdf5
+      hash: md5
+      md5: 866fe9e0d3f012f79c7b13d58b2b445a
+      size: 265441352
+    params:
+      models/full/params.yaml:
+        graph:
+          tumor:
+            T:
+            - I
+            - II
+            - III
+            - IV
+            - V
+          lnl:
+            I:
+            - II
+            II:
+            - III
+            III:
+            - IV
+            IV:
+            - V
+            V: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+    outs:
+    - path: models/full/prevalences_midext.hdf5
+      hash: md5
+      md5: 038d9c527202c63eccfa6cddeb907358
+      size: 5312

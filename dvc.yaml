@@ -112,7 +112,7 @@ stages:
   compute-prevalences:
     matrix:
       model: [full]
-      scenario: [overall, with_ipsi, midext]
+      scenario: [overall, with_ipsi]
     cmd: >
       lyscripts compute prevalences
       --priors models/${item.model}/priors.hdf5
@@ -128,6 +128,17 @@ stages:
     - scenarios/${item.scenario}.yaml:
     outs:
     - models/${item.model}/prevalences_${item.scenario}.hdf5
+
+  compute-midext-prevalences:
+    cmd: >
+      python scripts/compute_midext_prevalences.py
+    deps:
+    - models/full/samples.hdf5
+    - data/reduced.csv
+    params:
+    - models/full/params.yaml:
+    outs:
+    - models/full/prevalences_midext.hdf5
 
   # compute-risks:
   #   matrix:

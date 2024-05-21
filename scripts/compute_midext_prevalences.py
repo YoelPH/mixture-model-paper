@@ -29,7 +29,7 @@ def main():
         predicted["late"].append(model.marginalize(t_stage="late", midext=True))
 
     with h5py.File(
-        paths.model_dir / "full" / "prevalence_midext.hdf5",
+        paths.model_dir / "full" / "prevalences_midext.hdf5",
         mode="w",
     ) as h5_file:
         h5_file["early"] = predicted["early"]
