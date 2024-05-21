@@ -444,9 +444,15 @@ In @fig-model-prevalences-overall, we plot the prevalence of contralateral invol
 
 However, for early T-category scenarios with midline extension, the model does seem to overestimate contralateral LNL II invovlement and underestimate the prevalence for metastases in LNL III. This likely stems from the the small sample size of this rare scenario as hinted at by the wide Beta posteriors.
 
+
+### Correlation between Ipsi- and Contralateral Involvement
+
 {{< embed model.qmd#fig-model-prevalences-with-ipsi >}}
 
 In @fig-model-prevalences-with-ipsi we display the model's ability to capture the correlation between ipsi- and contralateral involvement. It shows that the prevalence of metastases in the two sides of the neck is correlated via the time of diagnosis, despite the model not having any direct connections between the two side. However, there are some small discrepancies in the model's prediction: When considering the scenario of LNL II involvement in the ipsi- *and* contralateral side, it cannot quite capture the split between early and late T-category. The model slightly overestimates the prevalence of this scenario for early T-category patients and underestimates it for advanced T-category.
+
+
+### Midline Extension
 
 {{< embed model.qmd#fig-model-prevalences-midext >}}
 

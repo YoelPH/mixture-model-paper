@@ -395,7 +395,7 @@ for t_stage in ["early", "late"]:
   content.append(beta_post)
 
 draw(ax, content, xlims=(0., 55.))
-ax.set_title("Observed vs Predicted Prevalence\nof Midline Extension")
+ax.set_title("Observed vs Predicted Prevalence\nof Midline Extension $\epsilon$")
 ax.set_yticks([])
 ax.set_ylim(top=0.4)
 ax.set_xlabel("prevalence [%]")
