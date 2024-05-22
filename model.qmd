@@ -8,13 +8,13 @@ First, we illustrate how the prior distribution over diagnose times and the cond
 
 ```{python}
 #| label: fig-model-midext-evo
-#| fig-cap: The top panel shows the prior probability to get diagnosed at time-step $t$ for early and late T-category tumors as bars. Also in the top panel, we plot the conditional probability of the tumor's midline extension ($\epsilon=\texttt{True}$), given the time-step $t$ as a line plot. In the bottom panel, we show the joint probability of getting diagnosed in time-step $t$ *and* having a tumor that crosses the midline.
+#| fig-cap: "The top panel shows the prior probability to get diagnosed at time-step $t$ for early and late T-category tumors as bars. Also in the top panel, we plot the conditional probability of the tumor's midline extension ($\epsilon=\texttt{True}$), given the time-step $t$ as a line plot. In the bottom panel, we show the joint probability of getting diagnosed in time-step $t$ *and* having a tumor that crosses the midline."
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm
 from matplotlib import ticker
 from lyscripts.plot.utils import COLORS
-from scripts import shared
+from scripts import shared, paths
 
 model = shared.get_model("simple", load_samples=True)
 
@@ -83,6 +83,7 @@ axes[1].grid(axis="y", color=COLORS["gray"], alpha=0.5)
 
 axes[1].legend(labelspacing=0.2)
 
+plt.savefig(paths.figure_dir / "fig-model-midext-evo.png", dpi=400)
 plt.show()
 ```
 
@@ -97,6 +98,7 @@ For bookeeping, we also show how different quantities evolve during the burnin o
 #| fig-cap: "Monitoring quantities during the burn-in phase of the parameter sampling."
 from collections import namedtuple
 import pandas as pd
+from scripts import shared, paths
 
 def custom(x, pos):
   return "{:.1f}".format(x/1000)
@@ -133,6 +135,8 @@ for model in ["simple"]:
 
 axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
 axes[2].yaxis.set_major_formatter(ticker.FuncFormatter(custom))
+
+plt.savefig(paths.figure_dir / "fig-model-burnin-history.png", dpi=400)
 plt.show()
 ```
 
@@ -147,6 +151,7 @@ It may be illustrative to look at the 3D state distribution of the midline model
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import AxesGrid
 from lyscripts.plot.utils import COLORS
+from scripts import shared, paths
 
 model = shared.get_model(which="simple", load_samples=True)
 state_dist = 100 * model.state_dist(t_stage="late")
@@ -191,6 +196,7 @@ noext.set_ylabel(r"ipsi state $\boldsymbol{\xi}^\text{i}_\ell$")
 noext.set_xlabel(r"contra state $\boldsymbol{\xi}^\text{c}_k$")
 midext.set_xlabel(r"contra state $\boldsymbol{\xi}^\text{c}_k$")
 
+plt.savefig(paths.figure_dir / "fig-model-state-dist.png", dpi=400)
 plt.show()
 ```
 
@@ -297,6 +303,7 @@ shared.split_legends(
   locs=[(0.64, 0.99), (0.4, 0.6), (0.16, 0.99)],
 )
 
+plt.savefig(paths.figure_dir / "fig-model-prevalences-overall.png", dpi=400)
 plt.show()
 ```
 
@@ -354,6 +361,7 @@ shared.split_legends(
   locs=[(0.23, 0.65), (0.1, 0.99), (0.6, 0.65), (0.45, 0.99)],
 )
 
+plt.savefig(paths.figure_dir / "fig-model-prevalences-with-ipsi.png", dpi=400)
 plt.show()
 ```
 
@@ -406,6 +414,7 @@ shared.split_legends(
   locs=[(0.05, 0.99), (0.6, 0.99)],
 )
 
+plt.savefig(paths.figure_dir / "fig-model-prevalences-midext.png", dpi=400)
 plt.show()
 ```
 
