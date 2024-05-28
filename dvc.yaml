@@ -165,6 +165,8 @@ stages:
     - models
     - data/reduced.csv
     - manuscript.qmd
+    - data.qmd
+    - model.qmd
     outs:
     - .output/manuscript.pdf
     - .output/_tex/manuscript.tex

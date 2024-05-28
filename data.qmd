@@ -122,6 +122,9 @@ group_and_plot(
   axes=left,
   colors=[COLORS["blue"], COLORS["orange"]],
 )
+
+plt.savefig(paths.figure_dir / "fig-data-strat.png", dpi=400)
+plt.show()
 ```
 
 
@@ -136,6 +139,7 @@ The joint involvement of different combinations of lymphatic involvements is bes
 #| fig-cap: Upset plot of the ipsilateral lymphatic involvement patterns [@lex_upset_2014]. Here, the horizontal bars depict the overall prevalence of LNL involvement. I.e., LNL II is the only level that is involved in more than 500 patients. The vertical bar plots depict joint involvements. E.g., the fourth bar from the left depicts how often the LNLs II, III, and IV are jointly involved while level I and V are not. This is indicated by the light and dark shaded dots in the matrix underneath.
 from typing import Literal
 import upsetplot
+from scripts import paths
 
 def plot_involvement_upset(
   df: pd.DataFrame,
@@ -167,6 +171,8 @@ axes = plot_involvement_upset(
   df=raw["max_llh", "ipsi"],
   lnls=[tpl[-1] for tpl in get_lnl_cols("ipsi")],
 )
+
+plt.savefig(paths.figure_dir / "fig-data-upset-ipsi.png", dpi=400)
 plt.show()
 ```
 
@@ -176,10 +182,13 @@ plt.show()
 ```{python}
 #| label: fig-data-upset-contra
 #| fig-cap: Upset plot of the contralateral lymphatic involvement patterns [@lex_upset_2014]. Here, the horizontal bars depict the overall prevalence of LNL involvement. I.e., LNL II is the only level that is involved in more than 100 patients. The vertical bar plots depict joint involvements. E.g., the thirs bar from the left depicts how often the LNLs II, and III are jointly involved while level I, IV, and V are not. This is indicated by the light and dark shaded dots in the matrix underneath.
+from scripts import paths
 
 axes = plot_involvement_upset(
   df=raw["max_llh", "contra"],
   lnls=[tpl[-1] for tpl in get_lnl_cols("contra")],
 )
+
+plt.savefig(paths.figure_dir / "fig-data-upset-contra.png", dpi=400)
 plt.show()
 ```
