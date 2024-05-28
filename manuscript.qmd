@@ -371,26 +371,33 @@ Together with the explicit modelling of the tumor's midline extension $\epsilon$
 
 # Methods
 
-In this section, we detail how the experiments were performed and how they may be reproduced.
+<!-- Maybe I should break this apart into separate chapters on data, sampling, etc. -->
+
+In this section, we detail how the experiments were performed. Every figure, table, and result is fully reproducible via the GitHub repository [`rmnldwg/bilateral-paper`]. It also contains the raw manuscript and instructions on how to recreate all figures, tables, and the final document.
+
+[`rmnldwg/bilateral-paper`]: https://github.com/rmnldwg/bilateral-paper
+
+
+## Involvement Data Consensus
+
+It is possible to provide our model with multiple different diagnostic modalities, each being characterized by different pairs of sensitivity and specificity. However, we instead chose to combine them into a single "consensus" diagnosis before parameter inference. We opted for this because the literature values of sensitivity and specificity [@debondt_detection_2007] of imaging modalities like MRI and CT do not plausibly match some of our observations: In the USZ cohort, 78% of OPSCC patients where diagnosed with ipsilateral LNL II involvement via diagnostic imaging. This is virtually impossible with sensitivities around 80% and specificities lower than 100%.
+
+Our pre-training consensus was formed by considering all reported diagnostic information for a particular patient and LNL. When conflicts arose, we computed the *most likely* true state of involvement using the literature sensitivity and specificity values [@debondt_detection_2007].
 
 
 ## MCMC Sampling {#sec-sampling}
 
-- all models initialized with the same settings
-  - same graph
-  - same data
-  - same distributions over diagnose time
-- parameter samples were drawn for all three models:
-  - the sampling used {{< var sampling.walkers_per_dim >}} walkers per parameter space dimension.
-  - Every {{< var sampling.check_interval >}} steps, convergence was checked
-  - convergence was reached when two criteria were met:
-      1. the relative difference between subsequent autocorrelation estimates of the chain does not change more than {{< var sampling.rel_thresh |  >}}.
-      2. the autocorrelation estimate of the chain drops below the length of the chain divided by {{< var sampling.trust_fac >}}.
-  - after convergence, {{< var sampling.nsteps >}} samples (from the parallel walkers) were drawn that were spaced {{< var sampling.thin >}} steps apart, resulting in `num params x {{< var sampling.walkers_per_dim >}} x {{< var sampling.nsteps >}}` parameter samples.
+For parameter inference, we used the Python package [`emcee`] [@foreman-mackey_emcee_2013]. It implements efficient MCMC sampling algorithms that employ multiple parallel samplers for affine invariance and better performance on multi-core CPUs. The [`emcee`] library was provided with the likelihood implemented by our [`lymph-model`] Python package.
 
-For every model, we compare the predicted prevalence of a certain scenario to how often this scenario is seen in the data. The considered scenarios are choosen to test if the models can take into account T-category, the correlation of ipsi- and contralateral involvement, and the primary tumor's lateralization (whether or not it extends over the mid-sagittal line).
+For each dimension in the parameter space of the model, we initialized {{< var sampling.walkers_per_dim >}} of these parallel samplers, called "walkers", with random values in the unit cube. Every time all of these walkers advanced {{< var sampling.check_interval >}} steps, the autocorrelation time of the chains was estimated. For short chains, this estimate is not trustworthy, but stabilizes for longer chains. We therefore considered a sampling to be converged when two criteria where met:
 
-- [ ] list and describe the scenarios
+1. The change in the autocorrelation time was less then {{< var sampling.rel_thresh >}}.
+2. The estimate of the autocorrelation dropped below $n$ / {{< var sampling.trust_fac >}} where $n$ is the length of the chain up to that point.
+
+All samples up to this convergence - called the *burn-in phase* - were discarded. We only kept another {{< var sampling.nsteps >}} samples after that, which were spaced {{< var sampling.thin >}} steps apart.
+
+[`emcee`]: https://emcee.readthedocs.io/en/stable/
+[`lymph-model`]: https://lymph-model.readthedocs.io/en/stable/
 
 
 ## Computing the Observed and Predicted Prevalence of Involvement Patterns
