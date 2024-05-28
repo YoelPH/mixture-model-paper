@@ -371,7 +371,7 @@ Together with the explicit modelling of the tumor's midline extension $\epsilon$
 
 # Methods
 
-In this section, we 
+In this section, we detail how the experiments were performed and how they may be reproduced.
 
 
 ## MCMC Sampling {#sec-sampling}

@@ -28,8 +28,6 @@ format:
   html:
     toc: true
   nature-pdf:
-    classoption:
-    - lineno
     journal:
       cite-style: sn-mathphys-num
     cite-method: natbib

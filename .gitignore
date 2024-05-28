@@ -198,7 +198,7 @@ data.*
 model.*
 !model.qmd
 /sn-*
-/site-libs/
+/site_libs/
 
 # jupyter
 .jupyter_cache/
