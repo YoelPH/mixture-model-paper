@@ -99,22 +99,34 @@ For bookeeping, we also show how different quantities evolve during the burnin o
 from collections import namedtuple
 import pandas as pd
 from scripts import shared, paths
+import matplotlib.pyplot as plt
+from matplotlib import ticker
+
+params = shared.get_params()
 
 def custom(x, pos):
   return "{:.1f}".format(x/1000)
 
-nrows, ncols = 1, 3
-label_map = {
-  "acor_times": "autocorrelation [steps]",
-  "accept_fracs": "acceptance fraction [%]",
-  "max_log_probs": r"max. log-likelihood [$\times 10^3$]",
+PlotConfig = namedtuple("PlotConfig", ["title", "ylabel", "label"])
+
+nrows, ncols = 1, 2
+config_map = {
+  "acor_times": PlotConfig(
+    title="Estimated Autocorrelation Time",
+    ylabel="steps",
+    label="Autocorrelation Time",
+  ),
+  "accept_fracs": PlotConfig(
+    title="Average Acceptance Fraction of Walkers",
+    ylabel=None,
+    label=None,
+  ),
 }
 
 plt.rcParams.update(shared.get_fontsizes())
 plt.rcParams.update(shared.get_figsizes(
   nrows=nrows,
   ncols=ncols,
-  aspect_ratio=1.,
   width=17,
 ))
 
@@ -124,17 +136,25 @@ fig, axes = plt.subplots(
   sharex=True,
 )
 
-for model in ["simple"]:
+for model in ["full"]:
   history = pd.read_csv(f"models/{model}/history.csv").set_index("steps")
-  for i, column in enumerate(history.columns):
-    history.plot(y=column, ax=axes[i], label=model)
+  for i, (column, config) in enumerate(config_map.items()):
+    axes[i].set_title(config.title, fontweight="bold")
+    axes[i].plot(history.index, history[column], label=config.label)
     axes[i].autoscale(enable=True, tight=True, axis="x")
-    axes[i].set_ylabel(label_map[column])
+    axes[i].set_ylabel(config.ylabel)
     axes[i].xaxis.set_major_formatter(ticker.FuncFormatter(custom))
     axes[i].set_xlabel(r"steps [$\times 10^3$]")
 
+axes[0].plot(
+  history.index,
+  history.index / params["sampling"]["trust_fac"],
+  "--",
+  color="black",
+  label="Trust Threshold",
+)
+axes[0].legend()
 axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
-axes[2].yaxis.set_major_formatter(ticker.FuncFormatter(custom))
 
 plt.savefig(paths.figure_dir / "fig-model-burnin-history.png", dpi=400)
 plt.show()

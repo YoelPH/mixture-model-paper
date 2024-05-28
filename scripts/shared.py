@@ -19,6 +19,11 @@ CM_TO_INCH = 0.393701
 GOLDEN_RATIO = 1.61803398875
 
 
+def get_params() -> dict[str, Any]:
+    """Get the parameters."""
+    return utils.load_yaml_params(paths.params)
+
+
 def get_model(
     which: str,
     load_samples: bool = True,

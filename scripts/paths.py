@@ -9,6 +9,7 @@ data = data_dir / "reduced.csv"
 model_dir = Path("models")
 cache_dir = Path(".cache")
 figure_dir = Path("figures")
+params = Path("_variables.yml")
 
 
 def get_filename(
