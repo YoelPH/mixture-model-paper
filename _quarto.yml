@@ -27,7 +27,13 @@ manuscript:
 format:
   html:
     toc: true
-  pdf:
+  nature-pdf:
+    classoption:
+    - lineno
+    journal:
+      cite-style: sn-mathphys-num
+    cite-method: natbib
+    csl: ./_extensions/christopherkenny/nature/csl/springer-mathphys-brackets.csl
     keep-tex: true
     include-in-header:
     - text: |
@@ -47,11 +53,34 @@ authors:
   - name: Roman Ludwig
     orcid: 0000-0001-9434-328X
     email: roman.ludwig@usz.ch
+    corresponding: true
+    affiliations:
+      - ref: 1
+      - ref: 2
   - name: Yoel Perez Haas
     email: yoel.perezhaas@usz.ch
+    corresponsing: false
+    affiliations:
+      - ref: 1
+      - ref: 2
   - name: Jan Unkelbach
     orcid: 0000-0002-4275-990X
     email: jan.unkelbach@usz.ch
+    corresponsing: false
+    affiliations:
+      - ref: 1
+      - ref: 2
+affiliations:
+  - id: 1
+    department: Department of Physics
+    name: University of Zurich
+    city: Zurich
+    country: Switzerland
+  - id: 2
+    department: Radiation Oncology
+    name: University Hospital Zurich
+    city: Zurich
+    country: Switzerland
 bibliography: references.bib
 crossref:
   fig-prefix: "figure"

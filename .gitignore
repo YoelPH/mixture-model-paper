@@ -197,6 +197,7 @@ data.*
 !data.qmd
 model.*
 !model.qmd
+/sn-*
 
 # jupyter
 .jupyter_cache/
