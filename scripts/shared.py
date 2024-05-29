@@ -1,6 +1,7 @@
 """
 Some shared and reused functions for the scripts.
 """
+
 from typing import Any, Literal
 
 from lymph import types
@@ -42,9 +43,7 @@ def get_model(
     return model
 
 
-def get_samples(
-    which: str
-) -> np.ndarray:
+def get_samples(which: str) -> np.ndarray:
     """Get the samples of one of the four trained models."""
     samples_path = paths.model_dir / which / "samples.hdf5"
     return utils.load_model_samples(samples_path)
@@ -125,8 +124,8 @@ def split_legends(
     handles, labels = ax.get_legend_handles_labels()
     for i, (title, loc) in enumerate(zip(titles, locs)):
         legend = ax.legend(
-            handles[i * 2 : (i+1) * 2],
-            labels[i * 2 : (i+1) * 2],
+            handles[i * 2 : (i + 1) * 2],
+            labels[i * 2 : (i + 1) * 2],
             loc="upper left",
             bbox_to_anchor=loc,
             title=title,

@@ -347,10 +347,11 @@ content = []
 colors = iter([COLORS[c] for c in ["orange", "green", "red", "blue"]])
 
 for t_stage in ["early", "late"]:
-  for diagnosis in [{"II": True}, {lnl: False for lnl in ["I", "II", "III", "IV", "V"]}]:
+  for diagnosis in [{"III": True}, {lnl: False for lnl in ["I", "II", "III", "IV", "V"]}]:
     color = next(colors)
     scenario = Scenario(
       t_stages=[t_stage],
+      midext=True,
       diagnosis={
         "ipsi": {"max_llh": diagnosis},
         "contra": {"max_llh": {"II": True}},
