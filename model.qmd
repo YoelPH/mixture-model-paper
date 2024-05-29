@@ -232,7 +232,9 @@ We start witht the most commonly involved LNLs in the contralateral neck: II, II
 ```{python}
 #| label: fig-model-prevalences-overall
 #| fig-cap: "Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown for the contralateral LNLs II (blue), III (orange), and IV (green). The top row shows scenarios with early T-category tumors, the bottom row for late T-category ones. The left column depicts scenarios where the primary tumor is clearly lateralized, the right column scenarios of tumors extending over the mid-sagittal line. This figure illustrates the model's ability to describe the prevalence of different combinations of scenarios involving the risk factors T-category and midline extension."
+import matplotlib.pyplot as plt
 from matplotlib import gridspec
+import numpy as np
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
 from scripts import paths, shared
