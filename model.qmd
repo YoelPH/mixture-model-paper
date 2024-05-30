@@ -335,53 +335,103 @@ plt.show()
 #| label: fig-model-prevalences-with-ipsi
 #| fig-cap: "Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown are four scenarios, all including contralateral LNL II involvement: Early T-category and an ipsilateral N0 neck (green), early T-category and ipsilateral LNL II involvement (blue), as well as the same two scenarios but for advanced T-category (orange and red). The figure shows that the model is capable of describing the correlation between ipsi- and contralateral involvement. Although for the scenario of LNL II involvement in both sides, the prediction's split between early and advanced T-category is not large enough."
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
+import numpy as np
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
 from scripts import paths, shared
+from scripts.marginalize_midext import (
+  compute_possible_observed_prevalences,
+  SummedBetaPosterior,
+)
+
+def turn_axis_off(axes):
+  axes.set_xticks([])
+  axes.set_yticks([])
+
+nrows, ncols = 2, 2
 
 plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(width=17./2.))
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  aspect_ratio=2.,
+  width=17,
+))
 
-fig, ax = plt.subplots()
-content = []
-colors = iter([COLORS[c] for c in ["orange", "green", "red", "blue"]])
+fig = plt.figure()
+gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
+axes = np.array([[fig.add_subplot(gs[i,j]) for j in range(ncols)] for i in range(nrows)])
+full = fig.add_subplot(gs[:,:], frame_on=False)
+turn_axis_off(full)
 
-for t_stage in ["early", "late"]:
-  for diagnosis in [{"III": True}, {lnl: False for lnl in ["I", "II", "III", "IV", "V"]}]:
-    color = next(colors)
-    scenario = Scenario(
-      t_stages=[t_stage],
-      midext=True,
-      diagnosis={
-        "ipsi": {"max_llh": diagnosis},
-        "contra": {"max_llh": {"II": True}},
-      }
-    )
-    content.append(
-      Histogram.from_hdf5(
+full.set_title(
+  "Observed vs Predicted Prevalence of Contralateral LNL II Involvement\nDependent on Ipsilateral Involvement",
+  pad=20.,
+  fontsize="large",
+)
+
+for i, t_stage in enumerate(["early", "late"]):
+  axes[i,0].set_ylabel(f"{t_stage} T-cat.", fontweight="bold")
+  for j, midext in enumerate([False, True]):
+    axes[0,j].set_title("Mid. ext." if midext else "Lateralized", fontweight="bold")
+    axes[0,j].set_xticks([])
+    axes[-1,j].set_xlabel("prevalence [%]")
+    axes[i,j].set_yticks([])
+    content = []
+    for ipsi, color in zip(
+      [{"I": False, "II": False, "III": False, "IV": False, "V": False}, {"III": True}],
+      [COLORS["blue"], COLORS["orange"]],
+    ):
+      scenario = Scenario(
+        t_stages=[t_stage],
+        midext=midext,
+        diagnosis={
+          "ipsi": {"max_llh": ipsi},
+          "contra": {"max_llh": {"II": True}},
+        }
+      )
+      content.append(
+        Histogram.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+          label="prediction",
+        )
+      )
+      beta_post = BetaPosterior.from_hdf5(
         filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
         dataname=scenario.md5_hash("prevalences"),
         color=color,
-        label="prediction"
       )
+      beta_post.kwargs["label"] = f"data: {beta_post.num_success} of {beta_post.num_total}"
+      content.append(beta_post)
+    draw(
+      axes=axes[i,j],
+      contents=content,
+      xlims=(0., 30. if midext else 10.),
     )
-    beta_post = BetaPosterior.from_hdf5(
-      filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
-      dataname=scenario.md5_hash("prevalences"),
-      color=color,
-    )
-    beta_post.kwargs["label"] = f"data: {beta_post.num_success} of {beta_post.num_total}"
-    content.append(beta_post)
 
-draw(ax, content, xlims=(0., 25.))
-ax.set_title("Observed vs Predicted Prevalence\nof Contralateral LNL II Involvement")
-ax.set_yticks([])
-ax.set_xlabel("prevalence [%]")
-
+# manually place legends
 shared.split_legends(
-  ax=ax,
-  titles=["early with ipsi II", "early ipsi N0", "late with ipsi II", "late with ipsi N0"],
-  locs=[(0.23, 0.65), (0.1, 0.99), (0.6, 0.65), (0.45, 0.99)],
+  ax=axes[0,0],
+  titles=["ipsi N0", "ipsi LNL III"],
+  locs=[(0.3, 0.99), (0.45, 0.55)],
+)
+shared.split_legends(
+  ax=axes[0,1],
+  titles=["ipsi N0", "ipsi LNL III"],
+  locs=[(0.3, 0.99), (0.5, 0.55)],
+)
+shared.split_legends(
+  ax=axes[1,0],
+  titles=["ipsi N0", "ipsi LNL III"],
+  locs=[(0.2, 0.99), (0.55, 0.99)],
+)
+shared.split_legends(
+  ax=axes[1,1],
+  titles=["ipsi N0", "ipsi LNL III"],
+  locs=[(0.2, 0.99), (0.65, 0.99)],
 )
 
 plt.savefig(paths.figure_dir / "fig-model-prevalences-with-ipsi.png", dpi=400)
