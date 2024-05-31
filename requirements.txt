@@ -316,7 +316,7 @@ lymph-model==1.2.1
     # via
     #   -r requirements.in
     #   lyscripts
-lyscripts==1.0.0a2
+lyscripts @ git+https://github.com/rmnldwg/lyscripts@e4ed78aecf846a51b89a27d803bbd7e9a760f93e
     # via -r requirements.in
 markdown-it-py==3.0.0
     # via rich
