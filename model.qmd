@@ -236,7 +236,7 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
 
 def turn_axis_off(axes):
@@ -304,23 +304,23 @@ for i, t_stage in enumerate(["early", "late"]):
     )
 
 # manually place legends
-shared.split_legends(
-  ax=axes[0,0],
+split_legends(
+  axes=axes[0,0],
   titles=["LNL II", "LNL III", "LNL IV"],
   locs=[(0.57, 0.55), (0.48, 0.99), (0.15, 0.99)],
 )
-shared.split_legends(
-  ax=axes[0,1],
+split_legends(
+  axes=axes[0,1],
   titles=["LNL II", "LNL III", "LNL IV"],
   locs=[(0.67, 0.99), (0.27, 0.6), (0.1, 0.99)],
 )
-shared.split_legends(
-  ax=axes[1,0],
+split_legends(
+  axes=axes[1,0],
   titles=["LNL II", "LNL III", "LNL IV"],
   locs=[(0.64, 0.99), (0.27, 0.6), (0.24, 0.99)],
 )
-shared.split_legends(
-  ax=axes[1,1],
+split_legends(
+  axes=axes[1,1],
   titles=["LNL II", "LNL III", "LNL IV"],
   locs=[(0.64, 0.99), (0.4, 0.6), (0.16, 0.99)],
 )
@@ -338,7 +338,7 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
 from scripts.marginalize_midext import (
   compute_possible_observed_prevalences,
@@ -371,6 +371,8 @@ full.set_title(
   fontsize="large",
 )
 
+data = shared.get_data()
+
 for i, t_stage in enumerate(["early", "late"]):
   axes[i,0].set_ylabel(f"{t_stage} T-cat.", fontweight="bold")
   for j, midext in enumerate([False, True]):
@@ -399,13 +401,22 @@ for i, t_stage in enumerate(["early", "late"]):
           label="prediction",
         )
       )
-      beta_post = BetaPosterior.from_hdf5(
-        filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
-        dataname=scenario.md5_hash("prevalences"),
-        color=color,
+      content.append(
+        BetaPosterior.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+          label="beta",
+        )
       )
-      beta_post.kwargs["label"] = f"data: {beta_post.num_success} of {beta_post.num_total}"
-      content.append(beta_post)
+      num_success, num_total = compute_possible_observed_prevalences(data, scenario).T
+      content.append(
+          SummedBetaPosterior(
+          num_success=num_success,
+          num_total=num_total,
+          kwargs={"color": "red"},
+        )
+      )
     draw(
       axes=axes[i,j],
       contents=content,
@@ -413,23 +424,23 @@ for i, t_stage in enumerate(["early", "late"]):
     )
 
 # manually place legends
-shared.split_legends(
-  ax=axes[0,0],
+split_legends(
+  axes=axes[0,0],
   titles=["ipsi N0", "ipsi LNL III"],
   locs=[(0.3, 0.99), (0.45, 0.55)],
 )
-shared.split_legends(
-  ax=axes[0,1],
+split_legends(
+  axes=axes[0,1],
   titles=["ipsi N0", "ipsi LNL III"],
   locs=[(0.3, 0.99), (0.5, 0.55)],
 )
-shared.split_legends(
-  ax=axes[1,0],
+split_legends(
+  axes=axes[1,0],
   titles=["ipsi N0", "ipsi LNL III"],
   locs=[(0.2, 0.99), (0.55, 0.99)],
 )
-shared.split_legends(
-  ax=axes[1,1],
+split_legends(
+  axes=axes[1,1],
   titles=["ipsi N0", "ipsi LNL III"],
   locs=[(0.2, 0.99), (0.65, 0.99)],
 )
@@ -447,8 +458,9 @@ Since we model the tumor's midline extension as a random variable we can predict
 #| fig-cap: "Comparing the predicted (histograms) and observed (lines depicting beta posteriors) prevalence of midline extension for early (blue) and late (orange) T-category. While the prevalence is predicted correctly when marginalizing over T-category, the model cannot capture the degree of separation observed in the data. Since the tumor's midline extension is virtually always part of the diagnosis and hence *given* when predicting a patient's risk, we do not consider this discrepancy a major issue."
 import matplotlib.pyplot as plt
 from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
+from scripts.marginalize_midext import compute_match_total_combinations, SummedBetaPosterior
 
 plt.rcParams.update(shared.get_fontsizes())
 plt.rcParams.update(shared.get_figsizes(width=17./2.))
@@ -457,7 +469,16 @@ fig, ax = plt.subplots()
 content = []
 colors = iter([COLORS[c] for c in ["blue", "orange"]])
 
+data = shared.get_data()
+has_unknown_midext = data.ly.midext.isna()
+
 for t_stage in ["early", "late"]:
+  has_t_stage = data.ly.t_stage.isin([t_stage])
+  scenario = Scenario(
+    t_stages=[t_stage],
+    midext=True,
+    diagnosis={"ipsi": {"max_llh": {"II": None}}},
+  )
   color = next(colors)
   content.append(
     Histogram.from_hdf5(
@@ -472,8 +493,20 @@ for t_stage in ["early", "late"]:
     dataname=t_stage,
     color=color,
   )
-  beta_post.kwargs["label"] = f"data: {beta_post.num_success} of {beta_post.num_total}"
-  content.append(beta_post)
+  base_match = beta_post.num_success
+  base_total = beta_post.num_total
+  num_success, num_total = compute_match_total_combinations(
+    base_match=base_match,
+    base_total=base_total,
+    unknown_match=(has_unknown_midext & has_t_stage).sum(),
+    unknown_total=(has_unknown_midext & has_t_stage).sum(),
+  ).T
+  content.append(
+    SummedBetaPosterior(
+      num_success=num_success,
+      num_total=num_total,
+    )
+  )
 
 draw(ax, content, xlims=(0., 55.))
 ax.set_title("Observed vs Predicted Prevalence\nof Midline Extension $\epsilon$")
@@ -481,8 +514,8 @@ ax.set_yticks([])
 ax.set_ylim(top=0.4)
 ax.set_xlabel("prevalence [%]")
 
-shared.split_legends(
-  ax=ax,
+split_legends(
+  axes=ax,
   titles=["early T-cat.", "late T-cat."],
   locs=[(0.05, 0.99), (0.6, 0.99)],
 )
