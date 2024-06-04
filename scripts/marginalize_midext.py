@@ -187,7 +187,9 @@ class SummedBetaPosterior(BetaPosterior):
 
         plot_kwargs = defaults["plot"].copy()
         plot_kwargs.update(self.kwargs)
-        plot_kwargs["label"] = self.label
+
+        if self.label is not None:
+            plot_kwargs["label"] = self.label
 
         return axes.plot(x, y, **plot_kwargs)
 
