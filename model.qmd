@@ -470,7 +470,7 @@ import matplotlib.pyplot as plt
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
-from scripts.marginalize_midext import compute_match_total_combinations, SummedBetaPosterior
+from scripts.marginalize_midext import possible_combinations, SummedBetaPosterior
 
 plt.rcParams.update(shared.get_fontsizes())
 plt.rcParams.update(shared.get_figsizes(width=17./2.))
@@ -489,6 +489,7 @@ for t_stage in ["early", "late"]:
     midext=True,
     diagnosis={"ipsi": {"max_llh": {"II": None}}},
   )
+  unknowns = (has_unknown_midext & has_t_stage).sum()
   color = next(colors)
   content.append(
     Histogram.from_hdf5(
@@ -504,19 +505,19 @@ for t_stage in ["early", "late"]:
     color=color,
   )
   content.append(beta_post)
-  num_success, num_total = compute_match_total_combinations(
-    base_match=beta_post.num_success,
-    base_total=beta_post.num_total,
-    unknown_match=(has_unknown_midext & has_t_stage).sum(),
-    unknown_total=(has_unknown_midext & has_t_stage).sum(),
-  ).T
+  combs = possible_combinations(
+    matches=unknowns,
+    max_total=unknowns,
+  )
   content.append(
     SummedBetaPosterior(
-      num_success=num_success,
-      num_total=num_total,
-      kwargs={"linestyle": "--", "label": None},
+      num_success=combs.matches.values + beta_post.num_success,
+      num_total=combs.total.values + beta_post.num_total,
+      permutations=combs.permutations.values,
+      kwargs={"linestyle": "--", "label": None, "color": "red"},
     )
   )
+  print(f"{unknowns = }, {beta_post.num_success = }, {beta_post.num_total = }")
 
 draw(ax, content, xlims=(0., 55.))
 ax.set_title("Observed vs Predicted Prevalence\nof Midline Extension $\epsilon$")
