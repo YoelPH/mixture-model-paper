@@ -417,7 +417,6 @@ for i, t_stage in enumerate(["early", "late"]):
           filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
           dataname=scenario.md5_hash("prevalences"),
           color=color,
-          label="beta",
         )
       )
       num_success, num_total = compute_possible_observed_prevalences(data, scenario).T
@@ -425,7 +424,7 @@ for i, t_stage in enumerate(["early", "late"]):
           SummedBetaPosterior(
           num_success=num_success,
           num_total=num_total,
-          kwargs={"linestyle": "--"},
+          kwargs={"linestyle": "--", "label": None},
         )
       )
     draw(
