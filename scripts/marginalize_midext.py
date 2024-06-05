@@ -4,7 +4,7 @@ Marginalize over *observd* midline extension status using sums of beta posterior
 
 import math
 from dataclasses import dataclass
-from typing import Any, TypeVar
+from typing import Any, Generator, TypeVar
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes as MPLAxes
 import pandas as pd
@@ -27,10 +27,7 @@ def max_possible_matches(num_match: int, num_total: int) -> int:
     return min(num_total, num_match) + 1
 
 def min_possible_matches(num_not_match: int, num_total: int) -> int:
-    """Minimum number of additional possible matches.
-
-    TODO: I think there's an error here.
-    """
+    """Minimum number of additional possible matches."""
     return min(num_total, max(0, num_total - num_not_match))
 
 
@@ -40,7 +37,7 @@ def possible_prevalence_combinations(
     """Extract possible combinations of prevalences.
 
     Essentially, this computes the prevalence of a scenario in all the data where
-    midline extension is known. To this is adds the `possible_combinations` of the
+    midline extension is known. To this is adds the `possible_combinations()` of the
     prevalence in the data where midline extension is unknown.
     """
     base_num_match, base_num_total = compute_observed_prevalence(data, scenario)
@@ -62,6 +59,19 @@ def possible_prevalence_combinations(
     return combs
 
 
+def _possible_combinations(matches: int, max_total: int) -> Generator[dict, None, None]:
+    for possible_total in range(max_total + 1):
+        for possible_matches in range(
+            min_possible_matches(max_total - matches, possible_total),
+            max_possible_matches(matches, possible_total),
+        ):
+            yield {
+                "matches": possible_matches,
+                "total": possible_total,
+                "permutations": math.comb(possible_total, possible_matches),
+            }
+
+
 def possible_combinations(matches: int, max_total: int) -> pd.DataFrame:
     """Tabulate possible combinations of matches, totals, and num of permutations.
 
@@ -69,6 +79,13 @@ def possible_combinations(matches: int, max_total: int) -> pd.DataFrame:
     the respective combo has) of the number of matches in a possible total. This total
     may range from 0 to ``max_total``, while the number of matches may range from
     `min_possible_matches` to `max_possible_matches`.
+
+    Essentially, one can imagine an experiment where two coins A and B are flipped
+    ``max_total`` times, but only the results of coin B are recorded. We record
+    ``matches`` number of heads in coin B and are interested in the number of heads in
+    coin B, *given* coin A showed heads. This function computes all possible
+    combinations of the number of heads in coin B, given the number of heads in coin A
+    and how many permutations each combination has.
 
     >>> combs = possible_combinations(2, 5)
     >>> combs
@@ -86,25 +103,10 @@ def possible_combinations(matches: int, max_total: int) -> pd.DataFrame:
     10        2      4             6
     11        2      5            10
     """
-    combinations = pd.DataFrame(columns=["matches", "total", "permutations"])
-    idx = 0
-
-    for possible_total in range(max_total + 1):
-        for possible_matches in range(
-            min_possible_matches(max_total - matches, possible_total),
-            max_possible_matches(matches, possible_total),
-        ):
-            combinations.loc[idx] = {
-                "matches": possible_matches,
-                "total": possible_total,
-                "permutations": math.comb(possible_total, possible_matches),
-            }
-            idx += 1
-
-    return combinations
+    return pd.DataFrame(_possible_combinations(matches, max_total))
 
 
-def prepare_betas(
+def _prepare_betas(
     matches: np.ndarray,
     total: np.ndarray,
 ):
@@ -122,26 +124,27 @@ def prepare_betas(
 def summed_beta_pdf(
     x: np.ndarray,
     matches: np.ndarray,
-    total: np.ndarray,
+    max_total: np.ndarray,
     permutations: np.ndarray,
 ) -> np.ndarray:
-    """Sum beta PDFs and normalize them.
+    """Normalized sum of beta PDFs using `possible_combinations()`.
 
-    >>> x = np.linspace(0, 1, 100)
+    >>> x = np.linspace(0, 1, 1000)
     >>> combs = possible_combinations(2, 5)
     >>> result = summed_beta_pdf(
     ...     x,
     ...     combs.matches.values,
     ...     combs.total.values,
     ...     combs.permutations.values
-    ... ).sum()
-    >>> np.isclose(result, 1)
+    ... )
+    >>> from scipy.integrate import trapz
+    >>> np.isclose(trapz(result, x), 1.0)
     True
     """
     if len(x.shape) == 1:
         x = x[:, None]
 
-    beta_pdfs = prepare_betas(matches, total).pdf(x)
+    beta_pdfs = _prepare_betas(matches, max_total).pdf(x)
     summed_pdfs = beta_pdfs @ permutations
     return summed_pdfs / permutations.sum()
 
@@ -149,26 +152,26 @@ def summed_beta_pdf(
 def summed_beta_cdf(
     x: np.ndarray,
     matches: np.ndarray,
-    total: np.ndarray,
+    max_total: np.ndarray,
     permutations: np.ndarray,
 ) -> np.ndarray:
-    """Sum beta CDFs.
+    """Normalized sum of beta CDFs using `possible_combinations()`.
 
-    >>> x = np.linspace(0, 1, 100)
+    >>> x = np.linspace(0, 1, 1001)
     >>> combs = possible_combinations(2, 5)
     >>> result = summed_beta_cdf(
     ...     x,
     ...     combs.matches.values,
     ...     combs.total.values,
     ...     combs.permutations.values
-    ... )[-1]
-    >>> np.isclose(result, 1)
+    ... )
+    >>> np.isclose(result[-1], 1)
     True
     """
     if len(x.shape) == 1:
         x = x[:, None]
 
-    beta_cdfs = prepare_betas(matches, total).cdf(x)
+    beta_cdfs = _prepare_betas(matches, max_total).cdf(x)
     summed_cdfs = beta_cdfs @ permutations
     return summed_cdfs / summed_cdfs[-1]
 
@@ -178,12 +181,12 @@ FloatOrArrayT = TypeVar("FloatOrArrayT", float, np.ndarray)
 def summed_beta_ppf(
     q: FloatOrArrayT,
     matches: np.ndarray,
-    total: np.ndarray,
+    max_total: np.ndarray,
     permutations: np.ndarray,
 ) -> FloatOrArrayT:
-    """PPF of summed CDFs."""
+    """Inverse of normalized sum of beta CDFs using `possible_combinations()`."""
     x = np.linspace(0, 1, 1000)
-    y = summed_beta_cdf(x, matches, total, permutations)
+    y = summed_beta_cdf(x, matches, max_total, permutations)
 
     return np.interp(q, y, x)
 
@@ -202,12 +205,12 @@ class SummedBetaPosterior(BetaPosterior):
 
     def _get_label(self) -> str:
         min_success = self.num_success.min()
-        max_success = self.num_success.max()
+        diff_success = self.num_success.max() - min_success
         min_total = self.num_total.min()
-        max_total = self.num_total.max()
+        diff_total = self.num_total.max() - min_total
         return (
-            f"data: {min_success} to {max_success} "
-            f"of {min_total} to {max_total}"
+            f"data: {min_success}(+{diff_success}) "
+            f"/ {min_total}(+{diff_total})"
         )
 
     @property
@@ -218,7 +221,7 @@ class SummedBetaPosterior(BetaPosterior):
         return summed_beta_pdf(
             (x - self.offset) / self.scale,
             matches=self.num_success,
-            total=self.num_total,
+            max_total=self.num_total,
             permutations=self.permutations,
         ) / self.scale
 
@@ -226,7 +229,7 @@ class SummedBetaPosterior(BetaPosterior):
         return summed_beta_ppf(
             percent / 100.,
             matches=self.num_success,
-            total=self.num_total,
+            max_total=self.num_total,
             permutations=self.permutations,
         ) * self.scale + self.offset
 
@@ -234,7 +237,7 @@ class SummedBetaPosterior(BetaPosterior):
         return summed_beta_ppf(
             1 - (percent / 100.),
             matches=self.num_success,
-            total=self.num_total,
+            max_total=self.num_total,
             permutations=self.permutations,
         ) * self.scale + self.offset
 

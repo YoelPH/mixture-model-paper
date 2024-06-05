@@ -238,7 +238,7 @@ import numpy as np
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
-from scripts.marginalize_midext import compute_possible_observed_prevalences, SummedBetaPosterior
+from scripts.marginalize_midext import possible_prevalence_combinations, SummedBetaPosterior
 
 def turn_axis_off(axes):
   axes.set_xticks([])
@@ -293,19 +293,20 @@ for i, t_stage in enumerate(["early", "late"]):
           label="prediction",
         )
       )
-      content.append(
-        BetaPosterior.from_hdf5(
-          filename=paths.model_dir / "full" / "prevalences_overall.hdf5",
-          dataname=scenario.md5_hash("prevalences"),
-          color=color,
-        )
-      )
-      num_success, num_total = compute_possible_observed_prevalences(data, scenario).T
+      # content.append(
+      #   BetaPosterior.from_hdf5(
+      #     filename=paths.model_dir / "full" / "prevalences_overall.hdf5",
+      #     dataname=scenario.md5_hash("prevalences"),
+      #     color=color,
+      #   )
+      # )
+      combs = possible_prevalence_combinations(data, scenario)
       content.append(
         SummedBetaPosterior(
-          num_success=num_success,
-          num_total=num_total,
-          kwargs={"label": None, "linestyle": "--"},
+          num_success=combs.matches.values,
+          num_total=combs.total.values,
+          permutations=combs.permutations.values,
+          kwargs={"color": color},
         )
       )
     draw(
@@ -318,22 +319,23 @@ for i, t_stage in enumerate(["early", "late"]):
 split_legends(
   axes=axes[0,0],
   titles=["LNL II", "LNL III", "LNL IV"],
-  locs=[(0.57, 0.55), (0.48, 0.99), (0.15, 0.99)],
+  locs=[(0.53, 0.6), (0.55, 0.99), (0.12, 0.99)],
 )
 split_legends(
   axes=axes[0,1],
   titles=["LNL II", "LNL III", "LNL IV"],
-  locs=[(0.67, 0.99), (0.27, 0.6), (0.1, 0.99)],
+  locs=[(0.55, 0.99), (0.27, 0.6), (0.1, 0.99)],
 )
+axes[1,0].set_ylim(top=1.4)
 split_legends(
   axes=axes[1,0],
   titles=["LNL II", "LNL III", "LNL IV"],
-  locs=[(0.64, 0.99), (0.27, 0.6), (0.24, 0.99)],
+  locs=[(0.54, 0.99), (0.24, 0.6), (0.11, 0.99)],
 )
 split_legends(
   axes=axes[1,1],
   titles=["LNL II", "LNL III", "LNL IV"],
-  locs=[(0.64, 0.99), (0.4, 0.6), (0.16, 0.99)],
+  locs=[(0.54, 0.99), (0.4, 0.6), (0.12, 0.99)],
 )
 
 plt.savefig(paths.figure_dir / "fig-model-prevalences-overall.png", dpi=400)
@@ -352,7 +354,7 @@ from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
 from scripts.marginalize_midext import (
-  compute_possible_observed_prevalences,
+  possible_prevalence_combinations,
   SummedBetaPosterior,
 )
 
@@ -412,19 +414,20 @@ for i, t_stage in enumerate(["early", "late"]):
           label="prediction",
         )
       )
+      # content.append(
+      #   BetaPosterior.from_hdf5(
+      #     filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
+      #     dataname=scenario.md5_hash("prevalences"),
+      #     color=color,
+      #   )
+      # )
+      combs = possible_prevalence_combinations(data, scenario)
       content.append(
-        BetaPosterior.from_hdf5(
-          filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
-          dataname=scenario.md5_hash("prevalences"),
-          color=color,
-        )
-      )
-      num_success, num_total = compute_possible_observed_prevalences(data, scenario).T
-      content.append(
-          SummedBetaPosterior(
-          num_success=num_success,
-          num_total=num_total,
-          kwargs={"linestyle": "--", "label": None},
+        SummedBetaPosterior(
+          num_success=combs.matches.values,
+          num_total=combs.total.values,
+          permutations=combs.permutations.values,
+          kwargs={"color": color},
         )
       )
     draw(
@@ -437,7 +440,7 @@ for i, t_stage in enumerate(["early", "late"]):
 split_legends(
   axes=axes[0,0],
   titles=["ipsi N0", "ipsi LNL III"],
-  locs=[(0.3, 0.99), (0.45, 0.55)],
+  locs=[(0.3, 0.99), (0.5, 0.55)],
 )
 split_legends(
   axes=axes[0,1],
@@ -447,12 +450,12 @@ split_legends(
 split_legends(
   axes=axes[1,0],
   titles=["ipsi N0", "ipsi LNL III"],
-  locs=[(0.2, 0.99), (0.55, 0.99)],
+  locs=[(0.16, 0.99), (0.53, 0.55)],
 )
 split_legends(
   axes=axes[1,1],
   titles=["ipsi N0", "ipsi LNL III"],
-  locs=[(0.2, 0.99), (0.65, 0.99)],
+  locs=[(0.13, 0.55), (0.5, 0.99)],
 )
 
 plt.savefig(paths.figure_dir / "fig-model-prevalences-with-ipsi.png", dpi=400)
@@ -499,25 +502,13 @@ for t_stage in ["early", "late"]:
       label="prediction"
     )
   )
-  beta_post = BetaPosterior.from_hdf5(
-    filename=paths.model_dir / "full" / "prevalences_midext.hdf5",
-    dataname=t_stage,
-    color=color,
-  )
-  content.append(beta_post)
-  combs = possible_combinations(
-    matches=unknowns,
-    max_total=unknowns,
-  )
   content.append(
-    SummedBetaPosterior(
-      num_success=combs.matches.values + beta_post.num_success,
-      num_total=combs.total.values + beta_post.num_total,
-      permutations=combs.permutations.values,
-      kwargs={"linestyle": "--", "label": None, "color": "red"},
+    BetaPosterior.from_hdf5(
+      filename=paths.model_dir / "full" / "prevalences_midext.hdf5",
+      dataname=t_stage,
+      color=color,
     )
   )
-  print(f"{unknowns = }, {beta_post.num_success = }, {beta_post.num_total = }")
 
 draw(ax, content, xlims=(0., 55.))
 ax.set_title("Observed vs Predicted Prevalence\nof Midline Extension $\epsilon$")
