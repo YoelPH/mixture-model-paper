@@ -526,3 +526,66 @@ plt.savefig(paths.figure_dir / "fig-model-prevalences-midext.png", dpi=400)
 plt.show()
 ```
 
+
+# Risk Predictions
+
+Now, we want to make actual use of the model and predict the risk for occult diease given some diagnoses.
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import gridspec
+from lyscripts.scenario import Scenario
+from lyscripts.plot.utils import Histogram, draw, COLORS, split_legends
+from scripts import paths, shared
+
+def turn_axis_off(axes):
+  axes.set_xticks([])
+  axes.set_yticks([])
+
+all_false = {lnl: False for lnl in ["I", "II", "III", "IV", "V"]}
+
+nrows, ncols = 2, 2
+
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  aspect_ratio=2.,
+  width=17,
+))
+
+fig = plt.figure()
+gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
+axes = np.array([[fig.add_subplot(gs[i,j]) for j in range(ncols)] for i in range(nrows)])
+full = fig.add_subplot(gs[:,:], frame_on=False)
+turn_axis_off(full)
+
+for i, t_stage in enumerate(["early", "late"]):
+  for j, midext in enumerate([False, True]):
+    contents = []
+    for diagnosis in [
+      {"III": True},
+      all_false,
+    ]:
+      scenario = Scenario(
+        t_stages=[t_stage],
+        midext=midext,
+        diagnosis={
+          "ipsi": {"CT": diagnosis},  # Somehow, this does not seem to have any effect
+          "contra": {"CT": all_false},
+        },
+        involvement={"contra": {"II": True}},
+      )
+      print(scenario.md5_hash("risks"))
+      contents.append(
+        Histogram.from_hdf5(
+          filename=paths.model_dir / "full" / "risks.hdf5",
+          dataname=scenario.md5_hash("risks"),
+        )
+      )
+    draw(axes[i,j], contents, xlims=(0., 50.))
+
+plt.savefig(paths.figure_dir / "fig-model-risks.png", dpi=400)
+plt.show()
+```

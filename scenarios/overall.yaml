@@ -1,4 +1,4 @@
-# These scenarios are used to generally evaluate whether the three models
+# These scenarios are used to generally evaluate whether the model
 # can describe the overall prevalence of contralateral involvmeent well.
 scenarios:
   - t_stages: [early]

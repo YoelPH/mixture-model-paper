@@ -140,23 +140,35 @@ stages:
     outs:
     - models/full/prevalences_midext.hdf5
 
-  # compute-risks:
-  #   matrix:
-  #     model: [simple, full]
-  #     scenario: [overall, with_ipsi]
-  #   cmd: >
-  #     lyscripts compute risks
-  #     --posteriors models/${item.model}/posteriors.hdf5
-  #     --risks models/${item.model}/risks.hdf5
-  #     --params models/${item.model}/params.yaml
-  #     --scenarios scenarios/${item.scenario}.yaml
-  #   deps:
-  #   - models/${item.model}/posteriors.hdf5
-  #   params:
-  #   - models/${item.model}/params.yaml:
-  #   - scenarios/${item.scenario}.yaml:
-  #   outs:
-  #   - models/${item.model}/risks.hdf5
+  compute-posteriors:
+    cmd: >
+      lyscripts compute posteriors
+      --priors models/full/priors.hdf5
+      --posteriors models/full/posteriors.hdf5
+      --params models/full/params.yaml
+      --scenarios scenarios/risks.yaml
+    deps:
+    - models/full/priors.hdf5
+    params:
+    - models/full/params.yaml:
+    - scenarios/risks.yaml:
+    outs:
+    - models/full/posteriors.hdf5
+
+  compute-risks:
+    cmd: >
+      lyscripts compute risks
+      --posteriors models/full/posteriors.hdf5
+      --risks models/full/risks.hdf5
+      --params models/full/params.yaml
+      --scenarios scenarios/risks.yaml
+    deps:
+    - models/full/posteriors.hdf5
+    params:
+    - models/full/params.yaml:
+    - scenarios/risks.yaml:
+    outs:
+    - models/full/risks.hdf5
 
   render-pdf:
     cmd: >

@@ -6097,22 +6097,22 @@ stages:
       size: 47462
     - path: model.qmd
       hash: md5
-      md5: 9f93e70b9d44a3c07bf0502c8956d9b0
-      size: 17387
+      md5: 55ade79eba1d297e7b8dadb05f411620
+      size: 17418
     - path: models
       hash: md5
-      md5: cc9b6d319a016df682c6ef36a5f058f4.dir
-      size: 432226902
-      nfiles: 16
+      md5: 3e21b36e93f494f97d48c9abd2b40c9e.dir
+      size: 564525142
+      nfiles: 15
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 32f1170028acce47b3b45275e2b4a336
+      md5: 55110a800d621508b461353446823045
       size: 57289
     - path: .output/manuscript.pdf
       hash: md5
-      md5: db5f2287c887dc3c5e5f685745cd8f1e
-      size: 1236160
+      md5: 2a9b55b280eff2cbdf0f8382d539b446
+      size: 1258488
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -8650,7 +8650,7 @@ stages:
     outs:
     - path: models/full/prevalences_overall.hdf5
       hash: md5
-      md5: d4b27ecedce052d9f29cb9cae44cb87b
+      md5: 9de224d2c87f26255d3f59ab8002aa54
       size: 272224
   compute-prevalences@full-with_ipsi:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
@@ -8825,7 +8825,7 @@ stages:
     outs:
     - path: models/full/prevalences_with_ipsi.hdf5
       hash: md5
-      md5: d3bea0a60e7d1f162201f02594ab5572
+      md5: 24a4e7ea37ccb1d33c4afbf2bebab509
       size: 181760
   compute-prevalences@full-midext:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
@@ -8977,5 +8977,457 @@ stages:
     outs:
     - path: models/full/prevalences_midext.hdf5
       hash: md5
-      md5: 038d9c527202c63eccfa6cddeb907358
+      md5: 0d6a61143c492d0937830286cb5f8f43
       size: 5312
+  compute-posteriors:
+    cmd: "lyscripts compute posteriors --priors models/full/priors.hdf5 --posteriors
+      models/full/posteriors.hdf5 --params models/full/params.yaml --scenarios scenarios/risks.yaml\n"
+    deps:
+    - path: models/full/priors.hdf5
+      hash: md5
+      md5: 75932b01d8d94a662c6bbf7cc6f1b6dd
+      size: 66859808
+    params:
+      models/full/params.yaml:
+        graph:
+          tumor:
+            T:
+            - I
+            - II
+            - III
+            - IV
+            - V
+          lnl:
+            I:
+            - II
+            II:
+            - III
+            III:
+            - IV
+            IV:
+            - V
+            V: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/risks.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+    outs:
+    - path: models/full/posteriors.hdf5
+      hash: md5
+      md5: 631ff3d1eb0d4993eee982d93476947a
+      size: 133743392
+  compute-risks:
+    cmd: "lyscripts compute risks --posteriors models/full/posteriors.hdf5 --risks
+      models/full/risks.hdf5 --params models/full/params.yaml --scenarios scenarios/risks.yaml\n"
+    deps:
+    - path: models/full/posteriors.hdf5
+      hash: md5
+      md5: 631ff3d1eb0d4993eee982d93476947a
+      size: 133743392
+    params:
+      models/full/params.yaml:
+        graph:
+          tumor:
+            T:
+            - I
+            - II
+            - III
+            - IV
+            - V
+          lnl:
+            I:
+            - II
+            II:
+            - III
+            III:
+            - IV
+            IV:
+            - V
+            V: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/risks.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - early
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - early
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+    outs:
+    - path: models/full/risks.hdf5
+      hash: md5
+      md5: 572fcfd7bae298b256d890d7f8948195
+      size: 180512
