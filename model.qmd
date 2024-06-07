@@ -554,14 +554,7 @@ defaults = {
   "alpha": 0.7,
   "bins": 50,
 }
-patches = {
-  "early T-cat.": [],
-  "advanced": [],
-  "lateralized": [],
-  "midline ext.": [],
-  "ipsi N0": [],
-  "≥ ipsi LNL III": [],
-}
+
 
 scenario = Scenario(
   t_stages=["early"],
@@ -572,14 +565,12 @@ scenario = Scenario(
   },
   involvement={"contra": {"II": True}},
 )
-_v, bins, patch = Histogram.from_hdf5(
+contents.append(Histogram.from_hdf5(
   filename=paths.model_dir / "full" / "risks.hdf5",
   dataname=scenario.md5_hash("risks"),
-).draw(ax, hist=defaults)
-
-patches["early T-cat."].append(*patch)
-patches["lateralized"].append(*patch)
-patches["ipsi N0"].append(*patch)
+  color=COLORS["green"],
+  label="early, lateralized; N0",
+))
 
 
 scenario = Scenario(
@@ -591,14 +582,12 @@ scenario = Scenario(
   },
   involvement={"contra": {"II": True}},
 )
-_v, bins, patch = Histogram.from_hdf5(
+contents.append(Histogram.from_hdf5(
   filename=paths.model_dir / "full" / "risks.hdf5",
   dataname=scenario.md5_hash("risks"),
-).draw(ax, hist=defaults)
-
-patches["advanced"].append(*patch)
-patches["lateralized"].append(*patch)
-patches["≥ ipsi LNL III"].append(*patch)
+  color=COLORS["blue"],
+  label="advanced, lateralized; ipsi LNL III",
+))
 
 
 scenario = Scenario(
@@ -610,14 +599,12 @@ scenario = Scenario(
   },
   involvement={"contra": {"II": True}},
 )
-_v, bins, patch = Histogram.from_hdf5(
+contents.append(Histogram.from_hdf5(
   filename=paths.model_dir / "full" / "risks.hdf5",
   dataname=scenario.md5_hash("risks"),
-).draw(ax, hist=defaults)
-
-patches["early T-cat."].append(*patch)
-patches["midline ext."].append(*patch)
-patches["ipsi N0"].append(*patch)
+  color=COLORS["orange"],
+  label="early, midline extension; N0",
+))
 
 
 scenario = Scenario(
@@ -629,29 +616,17 @@ scenario = Scenario(
   },
   involvement={"contra": {"II": True}},
 )
-_v, bins, patch = Histogram.from_hdf5(
+contents.append(Histogram.from_hdf5(
   filename=paths.model_dir / "full" / "risks.hdf5",
   dataname=scenario.md5_hash("risks"),
-).draw(ax, hist=defaults)
+  color=COLORS["red"],
+  label="advanced, midline extension; ipsi LNL III",
+))
 
-patches["advanced"].append(*patch)
-patches["midline ext."].append(*patch)
-patches["≥ ipsi LNL III"].append(*patch)
-
-for label in patches:
-  handle = tuple(patches[label])
-  patches[label] = handle
-
-ax.legend(
-  handles=patches.values(),
-  labels=patches.keys(),
-  handler_map={tuple: HandlerTuple(ndivide=None, pad=0.2)},
-  handlelength=2.2,
-  handletextpad=0.4,
-  ncols=3,
-  labelspacing=0.3,
-  columnspacing=1.,
-)
+draw(ax, contents, xlims=(0., 15.))
+ax.legend(labelspacing=0.3)
+ax.set_xlabel("risk [%]")
+ax.set_yticks([])
 
 plt.savefig(paths.figure_dir / "fig-model-risks.png", dpi=400)
 plt.show()

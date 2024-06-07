@@ -522,7 +522,7 @@ Note that a distribution over $\epsilon$ appears both in the enumerator and the 
 
 In this section, we briefly investigate how the model may be applied clinically: We want to estimate the risk for occult disease in some or all LNLs, given the patient's individual diagnosis. In terms of our model, this diagnosis consists of the T-category, the lateralization of the tumor (does it extend over the mid-sagittal line?), and which LNLs are clinically involved, e.g. because some lymph nodes appear enlarged in an MRI scan or show increased glycolytic activity on an FDG PET/CT scan.
 
-![Histograms over the predicted risk of contralateral LNL II invovlement, shown for all eight possible combinations of the risk factors T-category (early: top row, advanced: bottom row), midline extension (absent: left column, present: right column), and ipsilateral diagnosis (ipsilateral N0: blue, ipsilateral at least LNL III diagnosed: orange). The provided diagnosis always included a clinically node negative contralateral neck. Each of the three risk factors significantly increase the predicted risk for occult disease](figures/fig-model-risks.png){#fig-model-risks}
+![Histograms over the predicted risk of occult contralateral LNL II invovlement, shown for some combinations of T-category, tumor lateralization, and ipsilateral clinical involvement. The contralateral side was always assumed to be clinically negative.](figures/fig-model-risks.png){#fig-model-risks width=50%}
 
 
 ## Distributions over States
