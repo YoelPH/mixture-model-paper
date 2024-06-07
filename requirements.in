@@ -8,4 +8,4 @@ corner
 dvc
 scipy
 lymph-model == 1.2.1
-lyscripts @ git+https://github.com/rmnldwg/lyscripts@bb47b8270c6337a1814e55f855392047242a15b1
+lyscripts @ git+https://github.com/rmnldwg/lyscripts@ea49ecc1a6ca8ef15256727fb8759867141d1871

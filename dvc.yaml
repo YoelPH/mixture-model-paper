@@ -91,24 +91,6 @@ stages:
     outs:
     - models/${item.model}/${item.scenario}.hdf5
 
-  # compute-posteriors:
-  #   matrix:
-  #     model: [simple, full]
-  #     scenario: [base]
-  #   cmd: >
-  #     lyscripts compute posteriors
-  #     --priors models/${item.model}/priors.hdf5
-  #     --posteriors models/${item.model}/posteriors.hdf5
-  #     --params models/${item.model}/params.yaml
-  #     --scenarios scenarios/${item.scenario}.yaml
-  #   deps:
-  #   - models/${item.model}/priors.hdf5
-  #   params:
-  #   - models/${item.model}/params.yaml:
-  #   - scenarios/${item.scenario}.yaml:
-  #   outs:
-  #   - models/${item.model}/posteriors.hdf5
-
   compute-prevalences:
     matrix:
       model: [full]
@@ -145,12 +127,12 @@ stages:
       lyscripts compute posteriors
       --priors models/full/priors.hdf5
       --posteriors models/full/posteriors.hdf5
-      --params models/full/params.yaml
+      --params models/full/params_risks.yaml
       --scenarios scenarios/risks.yaml
     deps:
     - models/full/priors.hdf5
     params:
-    - models/full/params.yaml:
+    - models/full/params_risks.yaml:
     - scenarios/risks.yaml:
     outs:
     - models/full/posteriors.hdf5
@@ -160,19 +142,19 @@ stages:
       lyscripts compute risks
       --posteriors models/full/posteriors.hdf5
       --risks models/full/risks.hdf5
-      --params models/full/params.yaml
+      --params models/full/params_risks.yaml
       --scenarios scenarios/risks.yaml
     deps:
     - models/full/posteriors.hdf5
     params:
-    - models/full/params.yaml:
+    - models/full/params_risks.yaml:
     - scenarios/risks.yaml:
     outs:
     - models/full/risks.hdf5
 
   render-pdf:
     cmd: >
-      quarto render manuscript.qmd --to pdf
+      quarto render manuscript.qmd --to nature-pdf
     deps:
     - models
     - data/reduced.csv

@@ -6081,7 +6081,7 @@ stages:
       md5: 036a0288002f90e9db5b85402b463163
       size: 131872
   render-pdf:
-    cmd: "quarto render manuscript.qmd --to pdf\n"
+    cmd: "quarto render manuscript.qmd --to nature-pdf\n"
     deps:
     - path: data.qmd
       hash: md5
@@ -6093,26 +6093,26 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: 5f9dffbfbbd500a7121a268ab6a77533
-      size: 47462
+      md5: a1a548268089ead643434f62242bf1a3
+      size: 48038
     - path: model.qmd
       hash: md5
-      md5: 55ade79eba1d297e7b8dadb05f411620
-      size: 17418
+      md5: 1ad9c7f3b3b94f2d5bab39a2daecac08
+      size: 19642
     - path: models
       hash: md5
-      md5: 3e21b36e93f494f97d48c9abd2b40c9e.dir
-      size: 564525142
-      nfiles: 15
+      md5: 83d2baf5ab4d32d28f9b1f87a61ca355.dir
+      size: 564696784
+      nfiles: 18
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 55110a800d621508b461353446823045
-      size: 57289
+      md5: 76919f6e27400bc93ebe069ee3ab9fa2
+      size: 55494
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 2a9b55b280eff2cbdf0f8382d539b446
-      size: 1258488
+      md5: 134eebf27d4da36d0391f12d600ea4e2
+      size: 1370623
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -8650,7 +8650,7 @@ stages:
     outs:
     - path: models/full/prevalences_overall.hdf5
       hash: md5
-      md5: 9de224d2c87f26255d3f59ab8002aa54
+      md5: d4b27ecedce052d9f29cb9cae44cb87b
       size: 272224
   compute-prevalences@full-with_ipsi:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
@@ -8825,7 +8825,7 @@ stages:
     outs:
     - path: models/full/prevalences_with_ipsi.hdf5
       hash: md5
-      md5: 24a4e7ea37ccb1d33c4afbf2bebab509
+      md5: d3bea0a60e7d1f162201f02594ab5572
       size: 181760
   compute-prevalences@full-midext:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
@@ -8977,18 +8977,19 @@ stages:
     outs:
     - path: models/full/prevalences_midext.hdf5
       hash: md5
-      md5: 0d6a61143c492d0937830286cb5f8f43
+      md5: 038d9c527202c63eccfa6cddeb907358
       size: 5312
   compute-posteriors:
     cmd: "lyscripts compute posteriors --priors models/full/priors.hdf5 --posteriors
-      models/full/posteriors.hdf5 --params models/full/params.yaml --scenarios scenarios/risks.yaml\n"
+      models/full/posteriors.hdf5 --params models/full/params_risks.yaml --scenarios
+      scenarios/risks.yaml\n"
     deps:
     - path: models/full/priors.hdf5
       hash: md5
       md5: 75932b01d8d94a662c6bbf7cc6f1b6dd
       size: 66859808
     params:
-      models/full/params.yaml:
+      models/full/params_risks.yaml:
         graph:
           tumor:
             T:
@@ -9008,9 +9009,9 @@ stages:
             - V
             V: []
         modalities:
-          max_llh:
-          - 1.0
-          - 1.0
+          CT:
+          - 0.76
+          - 0.81
         model:
           class: Midline
           kwargs:
@@ -9030,7 +9031,7 @@ stages:
               parametric: binomial
               max_time: 10
           modalities:
-          - max_llh
+          - CT
           mapping:
             0: early
             1: early
@@ -9203,18 +9204,18 @@ stages:
     outs:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: 631ff3d1eb0d4993eee982d93476947a
+      md5: 5e1ba570f3048e92ae5da6382d496686
       size: 133743392
   compute-risks:
     cmd: "lyscripts compute risks --posteriors models/full/posteriors.hdf5 --risks
-      models/full/risks.hdf5 --params models/full/params.yaml --scenarios scenarios/risks.yaml\n"
+      models/full/risks.hdf5 --params models/full/params_risks.yaml --scenarios scenarios/risks.yaml\n"
     deps:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: 631ff3d1eb0d4993eee982d93476947a
+      md5: 5e1ba570f3048e92ae5da6382d496686
       size: 133743392
     params:
-      models/full/params.yaml:
+      models/full/params_risks.yaml:
         graph:
           tumor:
             T:
@@ -9234,9 +9235,9 @@ stages:
             - V
             V: []
         modalities:
-          max_llh:
-          - 1.0
-          - 1.0
+          CT:
+          - 0.76
+          - 0.81
         model:
           class: Midline
           kwargs:
@@ -9256,7 +9257,7 @@ stages:
               parametric: binomial
               max_time: 10
           modalities:
-          - max_llh
+          - CT
           mapping:
             0: early
             1: early
@@ -9429,5 +9430,5 @@ stages:
     outs:
     - path: models/full/risks.hdf5
       hash: md5
-      md5: 572fcfd7bae298b256d890d7f8948195
+      md5: f5deaa6cdf1bddaad08d49567af424f8
       size: 180512

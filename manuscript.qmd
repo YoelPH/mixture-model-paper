@@ -494,9 +494,7 @@ However, for early T-category scenarios with midline extension, the model does s
 
 ### Correlation between Ipsi- and Contralateral Involvement
 
-- [ ] split prevalence based on midline extension here, too.
-
-![Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown are four scenarios, all including contralateral LNL II involvement: Early T-category and an ipsilateral N0 neck (green), early T-category and ipsilateral LNL II involvement (blue), as well as the same two scenarios but for advanced T-category (orange and red). The figure shows that the model is capable of describing the correlation between ipsi- and contralateral involvement. Although for the scenario of LNL II involvement in both sides, the prediction's split between early and advanced T-category is not large enough.](figures/fig-model-prevalences-with-ipsi.png){#fig-model-prevalences-with-ipsi width="50%"}
+![Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown are four scenarios, all including contralateral LNL II involvement: Early T-category and an ipsilateral N0 neck (green), early T-category and ipsilateral LNL II involvement (blue), as well as the same two scenarios but for advanced T-category (orange and red). The figure shows that the model is capable of describing the correlation between ipsi- and contralateral involvement. Although for the scenario of LNL II involvement in both sides, the prediction's split between early and advanced T-category is not large enough.](figures/fig-model-prevalences-with-ipsi.png){#fig-model-prevalences-with-ipsi}
 
 In @fig-model-prevalences-with-ipsi we display the model's ability to capture the correlation between ipsi- and contralateral involvement. It shows that the prevalence of metastases in the two sides of the neck is correlated via the time of diagnosis, despite the model not having any direct connections between the two side. However, there are some small discrepancies in the model's prediction: When considering the scenario of LNL II involvement in the ipsi- *and* contralateral side, it cannot quite capture the split between early and late T-category. The model slightly overestimates the prevalence of this scenario for early T-category patients and underestimates it for advanced T-category.
 
@@ -522,7 +520,9 @@ Note that a distribution over $\epsilon$ appears both in the enumerator and the 
 
 ## Prediction of Risk for Occult Disease
 
-- [ ] risk of contra II for selected scenarios: Dependent on T-stage, midext. and ipsi LNL III. Not all combis, but extremes plus relevant scenarios in between.
+In this section, we briefly investigate how the model may be applied clinically: We want to estimate the risk for occult disease in some or all LNLs, given the patient's individual diagnosis. In terms of our model, this diagnosis consists of the T-category, the lateralization of the tumor (does it extend over the mid-sagittal line?), and which LNLs are clinically involved, e.g. because some lymph nodes appear enlarged in an MRI scan or show increased glycolytic activity on an FDG PET/CT scan.
+
+![Histograms over the predicted risk of contralateral LNL II invovlement, shown for all eight possible combinations of the risk factors T-category (early: top row, advanced: bottom row), midline extension (absent: left column, present: right column), and ipsilateral diagnosis (ipsilateral N0: blue, ipsilateral at least LNL III diagnosed: orange). The provided diagnosis always included a clinically node negative contralateral neck. Each of the three risk factors significantly increase the predicted risk for occult disease](figures/fig-model-risks.png){#fig-model-risks}
 
 
 ## Distributions over States

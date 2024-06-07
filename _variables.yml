@@ -2,9 +2,7 @@ version: 1                      # version of this parameter specification
 
 ########################################################################################
 # Under this key we define the specficity and sensitivity for a range
-# of diagnostic modalities. They are taken from literature and during
-# sampling, everything that's not commented our here will be used for
-# inference.
+# of diagnostic modalities. They are taken from literature.
 modalities:
   CT: [0.76, 0.81]
   MRI: [0.63, 0.81]
