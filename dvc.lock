@@ -6093,26 +6093,26 @@ stages:
       size: 557587
     - path: manuscript.qmd
       hash: md5
-      md5: a1a548268089ead643434f62242bf1a3
-      size: 48038
+      md5: 1d7cb273afbfeaf63696823189348bc9
+      size: 49905
     - path: model.qmd
       hash: md5
-      md5: 1ad9c7f3b3b94f2d5bab39a2daecac08
-      size: 19642
+      md5: dadc00230a54c8d65cb1f894c61df7d6
+      size: 19960
     - path: models
       hash: md5
-      md5: 83d2baf5ab4d32d28f9b1f87a61ca355.dir
-      size: 564696784
-      nfiles: 18
+      md5: b927cde064ffc582a6df5ba33eba9c75.dir
+      size: 549411984
+      nfiles: 19
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 76919f6e27400bc93ebe069ee3ab9fa2
-      size: 55494
+      md5: 355604a0012d017f7fccc42126959df2
+      size: 57220
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 134eebf27d4da36d0391f12d600ea4e2
-      size: 1370623
+      md5: 77b1f45e5ed7637df72a888cceb48bee
+      size: 1329602
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -9086,68 +9086,6 @@ stages:
             contra:
               II: true
         - t_stages:
-          - late
-          midext: false
-          mode: HMM
-          diagnosis:
-            ipsi:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-            contra:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-          involvement:
-            contra:
-              II: true
-        - t_stages:
-          - late
-          midext: true
-          mode: HMM
-          diagnosis:
-            ipsi:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-            contra:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-          involvement:
-            contra:
-              II: true
-        - t_stages:
-          - early
-          midext: false
-          mode: HMM
-          diagnosis:
-            ipsi:
-              CT:
-                III: true
-            contra:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-          involvement:
-            contra:
-              II: true
-        - t_stages:
           - early
           midext: true
           mode: HMM
@@ -9172,6 +9110,28 @@ stages:
           diagnosis:
             ipsi:
               CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
                 III: true
             contra:
               CT:
@@ -9191,6 +9151,28 @@ stages:
             ipsi:
               CT:
                 III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
             contra:
               CT:
                 I: false
@@ -9204,16 +9186,16 @@ stages:
     outs:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: 5e1ba570f3048e92ae5da6382d496686
-      size: 133743392
+      md5: f79148d565b7cb1be1a7637e0b93eab6
+      size: 117025568
   compute-risks:
     cmd: "lyscripts compute risks --posteriors models/full/posteriors.hdf5 --risks
       models/full/risks.hdf5 --params models/full/params_risks.yaml --scenarios scenarios/risks.yaml\n"
     deps:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: 5e1ba570f3048e92ae5da6382d496686
-      size: 133743392
+      md5: f79148d565b7cb1be1a7637e0b93eab6
+      size: 117025568
     params:
       models/full/params_risks.yaml:
         graph:
@@ -9312,68 +9294,6 @@ stages:
             contra:
               II: true
         - t_stages:
-          - late
-          midext: false
-          mode: HMM
-          diagnosis:
-            ipsi:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-            contra:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-          involvement:
-            contra:
-              II: true
-        - t_stages:
-          - late
-          midext: true
-          mode: HMM
-          diagnosis:
-            ipsi:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-            contra:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-          involvement:
-            contra:
-              II: true
-        - t_stages:
-          - early
-          midext: false
-          mode: HMM
-          diagnosis:
-            ipsi:
-              CT:
-                III: true
-            contra:
-              CT:
-                I: false
-                II: false
-                III: false
-                IV: false
-                V: false
-          involvement:
-            contra:
-              II: true
-        - t_stages:
           - early
           midext: true
           mode: HMM
@@ -9398,6 +9318,28 @@ stages:
           diagnosis:
             ipsi:
               CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: false
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
                 III: true
             contra:
               CT:
@@ -9417,6 +9359,28 @@ stages:
             ipsi:
               CT:
                 III: true
+            contra:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+          involvement:
+            contra:
+              II: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
             contra:
               CT:
                 I: false
@@ -9430,5 +9394,5 @@ stages:
     outs:
     - path: models/full/risks.hdf5
       hash: md5
-      md5: f5deaa6cdf1bddaad08d49567af424f8
-      size: 180512
+      md5: d5f61f5ca9961ac6408dda2da3963e6e
+      size: 158048

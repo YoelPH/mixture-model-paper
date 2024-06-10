@@ -11,6 +11,28 @@ scenarios:
     involvement:
       contra: {II: true}
 
+  - t_stages: [early]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {I: false, II: false, III: false, IV: false, V: false}
+      contra:
+        CT: {I: false, II: false, III: false, IV: false, V: false}
+    involvement:
+      contra: {II: true}
+
+  - t_stages: [early]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {III: true}
+      contra:
+        CT: {I: false, II: false, III: false, IV: false, V: false}
+    involvement:
+      contra: {II: true}
+
   - t_stages: [late]
     midext: false
     mode: "HMM"
@@ -39,6 +61,17 @@ scenarios:
     diagnosis:
       ipsi:
         CT: {III: true}
+      contra:
+        CT: {I: false, II: false, III: false, IV: false, V: false}
+    involvement:
+      contra: {II: true}
+
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {I: false, II: false, III: false, IV: false, V: false}
       contra:
         CT: {I: false, II: false, III: false, IV: false, V: false}
     involvement:

@@ -183,7 +183,7 @@ The entire data, including additional patients with tumors in other primary loca
 
 # Unilateral Model for Lymphatic Progression {#sec-unilateral}
 
-![Directed acyclic graph (DAG) representing the abstract lymphatic network in the head and neck region. Blue nodes are the LNLs' hidden random variables, the red node represents the tumor, and the orange square nodes depict the binary observed variables. Red and blue arcs symbolize the probability of lymphatic spread along that edge during one time-step. The orange arcs represent the sensitivity and specificity of the observational modality (e.g. CT, MRI, pathology, ...).](static/small-graph.png){#fig-small-graph width=50%}
+![Directed acyclic graph (DAG) representing the abstract lymphatic network in the head and neck region. Blue nodes are the LNLs' hidden random variables, the red node represents the tumor, and the orange square nodes depict the binary observed variables. Red and blue arcs symbolize the probability of lymphatic spread along that edge during one time-step. The orange arcs represent the sensitivity and specificity of the observational modality (e.g. CT, MRI, pathology, ...).](static/small-graph.png){#fig-small-graph width=40%}
 
 Our first model to predict the lymphatic progression of HNSCC was introduced using Bayesian networks [@pouymayou_bayesian_2019]. We subsequently extended this work to a hidden Markov model (HMM) [@ludwig_hidden_2021] to allow an intuitive inclusion of T-category into the predictions. We will briefly summarize this HMM's formalism before building on it to include the contralateral spread in @sec-ext-to-contra.
 
@@ -487,9 +487,9 @@ In @fig-model-prevalences-overall, we plot the prevalence of contralateral invol
 
 ![Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown for the contralateral LNLs II (blue), III (orange), and IV (green). The top row shows scenarios with early T-category tumors, the bottom row for late T-category ones. The left column depicts scenarios where the primary tumor is clearly lateralized, the right column scenarios of tumors extending over the mid-sagittal line. This figure illustrates the model's ability to describe the prevalence of different combinations of scenarios involving the risk factors T-category and midline extension.](figures/fig-model-prevalences-overall.png){#fig-model-prevalences-overall}
 
-@Fig-model-prevalences-overall shows nicely how the model is capable of accurately taking the most important risk factors, i.e. T-category and midline extension, into account. As observed in the data, the model predicts that the prevalence of contralateral LNL II involvement jumps from below 8% for early T-category lateralized tumors to almost 40% when the tumor is of advanced T-category and crosses the mid-sagittal line.
+@Fig-model-prevalences-overall shows nicely how the model is capable of accurately taking the most important risk factors, i.e. T-category and midline extension, into account. As observed in the data, the model predicts that the prevalence of contralateral LNL II involvement jumps from below 8% <!-- TODO: make this dynamic --> for early T-category lateralized tumors to almost 40% <!-- TODO: make this dynamic --> when the tumor is of advanced T-category and crosses the mid-sagittal line.
 
-However, for early T-category scenarios with midline extension, the model does seem to overestimate contralateral LNL II invovlement and underestimate the prevalence for metastases in LNL III. This likely stems from the the small sample size of this rare scenario as hinted at by the wide Beta posteriors.
+However, for early T-category scenarios with midline extension, the model does seem to overestimate contralateral LNL II and III invovlement. This likely stems from the the small sample size of this relatively rare scenario as hinted at by the wide beta posteriors.
 
 
 ### Correlation between Ipsi- and Contralateral Involvement
@@ -520,28 +520,19 @@ Note that a distribution over $\epsilon$ appears both in the enumerator and the 
 
 ## Prediction of Risk for Occult Disease
 
-In this section, we briefly investigate how the model may be applied clinically: We want to estimate the risk for occult disease in some or all LNLs, given the patient's individual diagnosis. In terms of our model, this diagnosis consists of the T-category, the lateralization of the tumor (does it extend over the mid-sagittal line?), and which LNLs are clinically involved, e.g. because some lymph nodes appear enlarged in an MRI scan or show increased glycolytic activity on an FDG PET/CT scan.
+In this section, we investigate how the model may be applied clinically: We want to estimate the risk for occult disease in some or all LNLs, given the patient's individual diagnosis. In terms of our model, this diagnosis consists of the T-category, the lateralization of the tumor (does it extend over the mid-sagittal line?), and which LNLs are clinically involved, e.g. because some lymph nodes appear enlarged in an MRI scan or show increased glycolytic activity on an FDG PET/CT scan.
 
 ![Histograms over the predicted risk of occult contralateral LNL II invovlement, shown for some combinations of T-category, tumor lateralization, and ipsilateral clinical involvement. The contralateral side was always assumed to be clinically negative.](figures/fig-model-risks.png){#fig-model-risks width=50%}
 
+@Fig-model-risks shows this predicted risk of occult disease in contralateral LNL II for four interesting combinations of these three risk factors. This risk is computed *given* a CT diagnosis assessing the per-LNL clinical involvement for which we assumed a sensitivity of 81% and a specificity of 76% [@debondt_detection_2007].
 
-## Distributions over States
+The variable impacting the prediction for contralateral involvement in our model is the tumor's lateralization. For example, a patient with a clearly lateralized early T-category tumor and a clinically N0 neck is assigned a 1-2% <!-- TODO: make this dynamic --> risk for occult disease in contralateral LNL II. Under the same scenario, but *with* mid-sagittal extension, the risk jumps to almost 7%. <!-- TODO: make this dynamic -->
 
-```{python}
-plt.rcdefaults()
+T-category plays a lesser role: Considering the scenario of a tumor that crosses the mid-sagittal line and an ipsilateral neck where at least LNL III is clinically involved, the risk for occult contralateral LNL II disease is around 8.5%. <!-- TODO: make this dynamic --> For the same scenario and an advanced T-category tumor, the risk increases to 11%. <!-- TODO: make this dynamic -->
 
-mi = pd.MultiIndex.from_product(
-  [[False, True]] * len(simple_model.ext.ipsi.graph.lnls),
-  names=simple_model.ext.ipsi.graph.lnls.keys(),
-)
-series = pd.Series(simple_model.ext.ipsi.state_dist(), index=mi)
-upsetplot.plot(
-  series,
-  sort_by="cardinality",
-  sort_categories_by="-input",
-)
-plt.show()
-```
+Lastly, the predicted risk is also correlated via the time-steps to the degree of ipsilateral involvement. Changing the aforementioned scenario (advanced T-category, midline extension, ipsilateral LNL III clinically involved) to one where the patient presents with a clinically N0 neck, the risk for occult disease in the contralateral LNL II falls from 11% <!-- TODO: make this dynamic --> to 9.5%. <!-- TODO: make this dynamic -->
+
+Taken together, T-category and ipsilateral involvement may still considerably impact the risk prediction for contralateral involvement: In @fig-model-risks the scenarios underlying the orange (6.5% <!-- TODO: make this dynamic -->) and the red (11% <!-- TODO: make this dynamic -->) histograms differ in T-category (early vs advanced) and clinical diagnosis (N0 vs ipsilateral at least LNL III involved).
 
 
 # Discussion
@@ -559,7 +550,7 @@ This work was supported by:
 - the Swiss Cancer Research Foundation under grant number KFS 5645-08-2022
 
 
-# Appendix {.appendix}
+# Contralateral Prevalence of Involvement {.appendix}
 
 ```{python}
 #| echo: false
@@ -612,3 +603,8 @@ involved["total", "n"] = total["I"]
   .hide()
 )
 ```
+
+
+# Marginalizing Beta Posteriors over Unknowns {.appendix}
+
+- [ ] write short theory section about why and how to compute the posteriors if some of the data (here midline extension) is unknown
