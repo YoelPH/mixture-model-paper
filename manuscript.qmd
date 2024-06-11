@@ -400,7 +400,7 @@ All samples up to this convergence - called the *burn-in phase* - were discarded
 [`lymph-model`]: https://lymph-model.readthedocs.io/en/stable/
 
 
-## Computing the Observed and Predicted Prevalence of Involvement Patterns
+## Computing the Observed and Predicted Prevalence of Involvement Patterns {#sec-prevalence}
 
 We want to assess the model's capability to approximate the distribution of lymphatic involvement patterns seen in the data. To that end, we compare the prevalence of some invovlement patterns under selected scenarios with the model's prediction for how often these involvements it expects to see, given these scenarios.
 
@@ -408,9 +408,9 @@ In this context, a "scenario" includes the patient's T-category $\text{T}x$ and 
 
 An involvement pattern specifies for each ipsi- and contralateral LNL whether it is "healthy", "involved", or "masked". If it is "masked", we essentially state that we are not interested in the involvement of that LNL and the prevalence will be marginalized over this LNL's involvement.
 
-For example, we may be interested in the prevalence of contralateral LNL II involvement (i.e., contra LNL II "involved" and all other LNLs "masked") under the scenario of early T-category (T0-T2) and no midline extension ($\epsilon=\texttt{False}$). To compute this prevalence in the data, we select all patients of this scenario (in our data, this amounts to <!-- TODO: dyamically compute this --> patients). Of those, <!-- TODO: dynamically compute this --> were found to harbor metastases in their contralateral LNL II. Therefore, the prevalence is <!-- TODO: dynamically compute this -->.
+For example, we may be interested in the prevalence of contralateral LNL II involvement (i.e., contra LNL II "involved" and all other LNLs "masked") under the scenario of early T-category (T0-T2) and no midline extension ($\epsilon=\texttt{False}$). To compute this prevalence in the data, we select all patients of this scenario (in our data, this amounts to 379<!-- TODO: dyamically compute this --> patients). Of those, 28<!-- TODO: dynamically compute this --> were found to harbor metastases in their contralateral LNL II. Therefore, the prevalence is 7%<!-- TODO: dynamically compute this -->.
 
-When displaying this data prevalence, we often choose to draw a *Beta posterior* over the "true" prevalence, hinting at the fact that our data merely represents a limited sample. The Beta posterior follows from a uniform Beta distribution as prior and a Bernoulli likelihood for the number of patients with the involvement of interest, given the parameer for the "true" prevalence. The resulting distribution has its maximum at the observed prevalence, but in addition gives a visual intuition for the variance of of the observed quantity. I.e., when we observe 3 out of 10 events, the Beta posterior is much wider than if we observe 300 out of 1000 for he same prevalence. It also allows us to check not inly if the model is accurate, but also whether it reflects the uncertainty contained in the data.
+When displaying this data prevalence, we often choose to draw a *beta posterior* over the "true" prevalence, hinting at the fact that our data merely represents a limited sample. The beta posterior follows from a uniform beta distribution as prior and a binomial likelihood for the number of patients with the involvement of interest, given the parameer for the "true" prevalence. The resulting distribution has its maximum at the observed prevalence, but in addition gives a visual intuition for the variance of of the observed quantity. I.e., when we observe 3 out of 10 events, the beta posterior is much wider than if we observe 300 out of 1000 for he same prevalence. It also allows us to check not only if the model is accurate, but also whether it reflects the uncertainty contained in the data.
 
 Predicting the prevalence using our model amounts to computing the following probability:
 
@@ -607,4 +607,56 @@ involved["total", "n"] = total["I"]
 
 # Marginalizing Beta Posteriors over Unknowns {.appendix}
 
-- [ ] write short theory section about why and how to compute the posteriors if some of the data (here midline extension) is unknown
+```{python}
+#| echo: false
+#| label: tbl-data-unknowns
+#| tbl-cap: Combinations of midline extension status and state of contralateral LNL II for early T-category patients.
+import pandas as pd
+import numpy as np
+from scripts import shared, COL
+
+data = shared.get_data()
+is_early = data[COL.t_stage].isin([0,1,2])
+
+reduced = pd.DataFrame({
+  "Midline Extension": data.loc[is_early, COL.midext],
+  "contra LNL II": data.loc[is_early, ("max_llh", "contra", "II")]
+})
+
+result = (
+  reduced
+  .fillna("unknown")
+  .value_counts(dropna=False)
+  .unstack("Midline Extension")
+  .rename(
+    index={
+      False: "healthy",
+      True: "involved",
+    },
+    columns={
+      False: "no",
+      True: "yes",
+    },
+  )
+)
+result.loc["total"] = result.sum()
+result
+```
+
+In @sec-prevalence we explained that we compare the predicted prevalence of an involvement pattern under a scenario to a beta posterior over the "true" prevalence given the observations in the data. However, our data contains incomplete observations, especially regarding the tumor's midline extension. This information is not present for a large group of 85 patients, most of which treated at the Centre Léon Bérard in France.
+
+To account for this missing information and plot the correct posteriors over the data prevalence, we need to marginalize over the possible combinations of matching involvement patterns and selected patients under a scenario. For example, we have only 29<!-- TODO: compute dynamically --> early T-category patients with midline extension. But for an additional 65<!-- TODO: compute dynamically --> patients we do not know whether the tumor crossed the mid-sagittal plane. If we now want to compute the prevalence of contralateral LNL II invovlement for these early T-category patients with midline extension, then we need to account for the possibility that we are missing information.
+
+In @tbl-data-unknowns we show the combinations of the midline extension status and state of the contralateral LNL II. Using only available information, we would get to 6 out of 29<!-- TODO: compute dynamically --> patients for the prevalence of contralateral LNL II invovlement among the early T-category patients with midline extension. But the column with the "unknown" numbers suggests that the true prevalence could range from 6 out of 29 + 59 (7%)<!-- TODO: compute dynamically --> up to 12 out of 29 + 6 (34%)<!-- TODO: compute dynamically -->. Assuming that every one of the possible combinations has the same a priori probability (uniform prior) and accouting for permutations via the binomial factor, the posterior marginalized over the unknowns could be written as
+
+$$
+\begin{aligned}
+p(x; \alpha=1, \beta=1) &= \sum_{m=0}^{65} \sum_{\ell=0}^{\min(m,6)} \binom{n+m}{k+\ell} x^{k+\ell} (1-x)^{n+m - (k+\ell)} \cdot \frac{1}{\operatorname{B}(\alpha, \beta)} x^\alpha (1-x)^\beta \\
+&= \sum_{m=0}^{65} \sum_{\ell=0}^{\min(m,6)} \binom{n+m}{k+\ell} x^{k+\ell+1} (1-x)^{n+m - (k+\ell) + 1}
+\end{aligned}
+$$
+
+We have plotted this marginal in @fig-model-marginal-pdf (blue curve) and the terms that make up the above sum (light red curves). Note that we weighted the plotting opacity with the number of permutations each of the possible combinations has. The marginal is compared against the "naive" beta posterior that only takes the data into account for which midline extension is available (green curve).
+
+![Posterior distributions over the data prevalence for contralateral LNL II involvement under the scenario of early T-category and midline extension. The green beta distribution shows this prevalence for those patients for which midline extension is known. While the blue PDF is a marginal distribution summed over all possible combinations, which are shown in shades of red. The more permutations a particular combination has, the more opaque it is plotted.](figures/fig-model-marginal-pdf.png){#fig-model-marginal-pdf width="50%"}
+
