@@ -36,20 +36,24 @@ half = full
 
 # Introduction
 
-- head and neck cancer spreads through the lymphatic network
-- may sometimes spread to contralateral side
-- spreads more frequently and to larger extent contralaterally when tumor extends the mid-sagittal line
-- we describe a model based on previously published hidden Markov model
-- we extend it to cover the contralateral side, too
-- naive approach: make two independent models for each side, but that is not supported by the data
-- ipsi- and contralateral side are correlated via time of diagnosis, which is correlated with T-category
-- tumor extension over mid-sagittal line is modelled as random variable
-- spread probabilities from tumor to contralateral LNLs in case of midline extesnion are linear combinations of these probabilities in case of ipsilateral spread and contralateral spread when tumor is clearly lateralized
+When treating head and neck squamous cell carcinomas (HNSCC) with radiotherapy or surgery, not only the primary tumor and the clinically detected lymph node metastases are targeted. Per current guidelines, large volumes of the neck - lymph node levels (LNLs) - are part of the the elective clinical target volume (CTV-N) [@gregoire_ctbased_2003;@gregoire_delineation_2014;@gregoire_delineation_2018;@eisbruch_intensitymodulated_2002;@biau_selection_2019;@chao_determination_2002;@vorwerk_guidelines_2011;@ferlito_elective_2009]. This is to minimize the risk of regional recurrences due to missed microscopic disease which cannot be detected by current in-vivo imaging modalities such as computed tomography (CT), magnetic resonance imaging (MRI), or positron emission tomography (PET).
+
+Minimizing this risk of missing occult disease in the lymph drainage region must be balanced against the toxicity related to unnecessary treatment of healthy tissue.
+
+The aforementioned guidelines for the definition of the CTV-N quantify this risk via the overall prevalence of lymph node metastases in the LNLs. Based on this, they recommend extensive irradiation of both sides of the neck for a majority of patients. However, this prevalence the guidelines are based on does not take into account the individual state of tumor progression, which may have a great impact on a patient's personal risk for occult disease in a given LNL. For example, a patient with substantial nodal involvement in the ipsilateral side and an advanced primary tumor that crosses the mid-sagittal plane would receive extensive elective irradiation of the contralateral LNLs II, III, and IVa. However, if the patient presented with no clinically detectable nodal disease (cN0) and only a small, clearly lateralized T1 tumor, the same contralateral CTV-N would be recommended [@biau_selection_2019].
+
+To better quantify this personalized risk we have previously developed an intuitive, probabilistic hidden Markov model [@ludwig_hidden_2021;@ludwig_modelling_2023] which was originally based on a conceptually similar Bayesian network model [@pouymayou_bayesian_2019]. So far, these models were limited to the ipsilateral side of the neck. The main focus of this work will be to extend the formalism of these previous works to include risk predictions for the contralateral side as well. We believe this holds the potential to greatly reduce the electively irradiated volumes in the contralateral neck for patients whose individual risk for occult disease in that side is low. In turn, this may substantially reduce the toxicity from irradiation and the associated decrease in quality of life.
+
+In the following, we begin by inspecting the dataset the model is built upon (@sec-data) and from it formulate some properties we require the bilateral model extension to have (@sec-requirements).
+
+After that, in @sec-unilateral, we briefly summarize the original model formalism before we extend it to the contralateral side starting in @sec-ext-to-contra.
+
+Next, we describe how the model training and the computational experiments were set up in @sec-methods and present the results in @sec-results, followed by a closing discussion (@sec-discussion).
 
 
-# Data on Lymphatic Progression Patterns
+# Data on Lymphatic Progression Patterns {#sec-data}
 
-We have collected a detailed dataset of <!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
+We have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
 
 Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. Note that the data from the Inselspital Bern and the Centre Léon Bérard only consists of patients treated with some form of neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset.
 
@@ -369,7 +373,7 @@ In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambd
 Together with the explicit modelling of the tumor's midline extension $\epsilon$ from @sec-midline, we now have a model that may be capable of capturing the higher prevalence of contralateral involvment that comes with tumors extending over the mid-sagittal line.
 
 
-# Methods
+# Methods {#sec-methods}
 
 <!-- Maybe I should break this apart into separate chapters on data, sampling, etc. -->
 
@@ -427,7 +431,7 @@ When plotted, we usually display histograms over the model's predictions. Each o
 Note that we decided to omit the y-axis ticks and labels in these figures over prevalences and risks. The y-axis in these plots measures the probability density and its numerical values are not intuitively interpretable. Instead, we occasionally use the freed space to label e.g. rows of subplots.
 
 
-# Results
+# Results {#sec-results}
 
 First, in @fig-model-burnin-history, we verify the sampling converged successfully by inspecting two monitoring quantities: The autocorrelation time of the MCMC chain and the acceptance fractions of the parallel walkers.
 
@@ -535,7 +539,7 @@ Lastly, the predicted risk is also correlated via the time-steps to the degree o
 Taken together, T-category and ipsilateral involvement may still considerably impact the risk prediction for contralateral involvement: In @fig-model-risks the scenarios underlying the orange (6.5% <!-- TODO: make this dynamic -->) and the red (11% <!-- TODO: make this dynamic -->) histograms differ in T-category (early vs advanced) and clinical diagnosis (N0 vs ipsilateral at least LNL III involved).
 
 
-# Discussion
+# Discussion {#sec-discussion}
 
 - conceptually extended model to cover both sides of neck
 - explicitly models midline extension (also allows for easy marginalization)
