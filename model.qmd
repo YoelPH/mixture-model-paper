@@ -606,7 +606,6 @@ contents.append(Histogram.from_hdf5(
   label="early, midline extension; N0",
 ))
 
-
 scenario = Scenario(
   t_stages=["late"],
   midext=True,
@@ -638,6 +637,7 @@ plt.show()
 
 ```{python}
 import matplotlib.pyplot as plt
+import numpy as np
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import draw, COLORS, BetaPosterior
 from lyscripts.compute.prevalences import compute_observed_prevalence
@@ -646,6 +646,8 @@ from scripts.marginalize_midext import (
   possible_prevalence_combinations,
   SummedBetaPosterior,
 )
+
+data = shared.get_data()
 
 scenario = Scenario(
   t_stages=["early"],
