@@ -1,5 +1,11 @@
 ---
 title: "Probabilistic Model of Bilateral Lymphatic Spread in Head and Neck Cancer"
+abstract: |
+  In current practice, large parts of the contralateral lymph system are included in the elective clinical target volume (CTV-N) of oropharyngeal squamous cell carcinoma (OPSCC) patients. Guidelines on how to define the CTV-N are mostly based on prevalences of nodal involvement in the different lymph node levels (LNLs) and do not consider the detailed, individual diagnosis of a patient.
+  
+  In this work, we present a probabilistic model for bilateral lymphatic tumor progression in OPSCC. Its aim is to predict the personal risk for occult disease in any LNL, given the patient's clincal diagnosis, T-category, and lateralization of the primary tumor. The model represents each of the LNLs I, II, III, IV, V, and VII of both sides of the neck as a hidden binary random variable that are connected to the tumor and among each other via arcs that correspond to spread probabilities per time-step. These spread probability rates are learned via Markov chain Monte Carlo (MCMC) sampling from a dataset of 833 OPSCC patients.
+
+  The model is able to describe the data well and may in the future be used to only include LNLs in a CTV-N that show a risk above a specific threshold for that particular patient's diagnosis. E.g., it predicts the risk for occult disease in contralateral LNL II to be below 5% unless the tumor crosses the mid-sagittal line.
 ---
 
 ```{python}
@@ -53,7 +59,9 @@ Next, we describe how the model training and the computational experiments were 
 
 # Data on Lymphatic Progression Patterns {#sec-data}
 
-We have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
+Originally, the only available data of detailed - i.e. per patient and per LNL - lymphatic involvement was a reconstructed table from the findings in @sanguineti_defining_2009, which included only ipsilateral nodal involvement for the LNLs I to IV.
+
+To be able to create models for lymphatic tumor progression that include more LNLs and the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
 
 Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. Note that the data from the Inselspital Bern and the Centre Léon Bérard only consists of patients treated with some form of neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset.
 
@@ -384,14 +392,14 @@ In this section, we detail how the experiments were performed. Every figure, tab
 
 ## Involvement Data Consensus
 
-It is possible to provide our model with multiple different diagnostic modalities, each being characterized by different pairs of sensitivity and specificity. However, we instead chose to combine them into a single "consensus" diagnosis before parameter inference. We opted for this because the literature values of sensitivity and specificity [@debondt_detection_2007] of imaging modalities like MRI and CT do not plausibly match some of our observations: In the USZ cohort, 78% of OPSCC patients where diagnosed with ipsilateral LNL II involvement via diagnostic imaging. This is virtually impossible with sensitivities around 80% and specificities lower than 100%.
+It is possible to provide our model with multiple different diagnostic modalities, each being characterized by different pairs of sensitivity and specificity. However, we instead chose to combine them into a single "consensus" diagnosis before parameter inference. We opted for this because the literature values of sensitivity and specificity [@debondt_detection_2007;@kyzas_18ffluorodeoxyglucose_2008] of imaging modalities like MRI and CT do not plausibly match some of our observations: In the USZ cohort, 78% of OPSCC patients where diagnosed with ipsilateral LNL II involvement via diagnostic imaging. This is virtually impossible with sensitivities around 80% and specificities lower than 100%.
 
-Our pre-training consensus was formed by considering all reported diagnostic information for a particular patient and LNL. When conflicts arose, we computed the *most likely* true state of involvement using the literature sensitivity and specificity values [@debondt_detection_2007].
+Our pre-training consensus was formed by considering all reported diagnostic information for a particular patient and LNL. When conflicts arose, we computed the *most likely* true state of involvement using the literature sensitivity and specificity values [@debondt_detection_2007;@kyzas_18ffluorodeoxyglucose_2008].
 
 
 ## MCMC Sampling {#sec-sampling}
 
-For parameter inference, we used the Python package [`emcee`] [@foreman-mackey_emcee_2013]. It implements efficient MCMC sampling algorithms that employ multiple parallel samplers for affine invariance and better performance on multi-core CPUs. The [`emcee`] library was provided with the likelihood implemented by our [`lymph-model`] Python package.
+For parameter inference, we used the Python package [`emcee`] [@foreman-mackey_emcee_2013]. It implements efficient MCMC sampling algorithms that employ multiple parallel samplers for affine invariance and better performance on multi-core CPUs. The sample proposal algirothms used by us are based on differential evolution moves [@terbraak_differential_2008;@nelson_run_2013]. The [`emcee`] library was provided with the likelihood implemented by our [`lymph-model`] Python package.
 
 For each dimension in the parameter space of the model, we initialized {{< var sampling.walkers_per_dim >}} of these parallel samplers, called "walkers", with random values in the unit cube. Every time all of these walkers advanced {{< var sampling.check_interval >}} steps, the autocorrelation time of the chains was estimated. For short chains, this estimate is not trustworthy, but stabilizes for longer chains. We therefore considered a sampling to be converged when two criteria where met:
 
