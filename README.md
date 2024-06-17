@@ -74,9 +74,23 @@ Now your Python environment should be good to go!
 
 [Python homepage]: https://python.org
 
+## Fetch the Data
+
+All patient data tables we have used in this work are made publicly available by us. For example, you can interactively explore the data on [LyProX], a web-based dashboard we created to motivate fellow researchers to share their data with us.
+
+But for this paper, you can automatically fetch the data in CSV format by running the following command:
+
+```sh
+dvc update -R data
+```
+
+This instructs the [DVC] tool to fetch the data from the GitHub repository [lydata], where we store these datasets
+
+[lydata]: https://github.com/rmnldwg/lydata
+
 ## Reproduce the Computations
 
-The sampling of the models may take quite a while and is orchestrated by the tool [DVC]. There is not really a need to rerun these computations as all figures plotted from the computational results are checked in git's version control.
+The sampling of the models may take quite a while and is orchestrated by the tool [DVC]. There is not really a need to rerun these computations as all results are stored in an Azure blob storage container.
 
 But if you want to reproduce this part, too, then go ahead and run
 
@@ -90,13 +104,7 @@ Otherwise, you can pull the computations from our Azure blob storage container v
 dvc pull -r azure
 ```
 
-Lastly, to replot the figures, which are computed in the notebook `model.qmd`, you can simply execute that notebook on its own:
-
-```sh
-quarto render model.qmd --execute
-```
-
-But that is already part of the `dvc repro` command that reproduces the entire pipeline.
+Regardless of what you do, you should now have some `.hdf5` files in the `models` directory (or rather in its subdirectories). These contain the drawn samples and computed risks and prevalences.
 
 [DVC]: https://dvc.org
 
@@ -106,4 +114,10 @@ To start a preview at the local address <localhost:8000>, simply run this comman
 
 ```sh
 quarto preview
+```
+
+And now you should be able to read the beautifully displayed HTML version of our paper in you browser. For a LaTeX/PDF output, run this:
+
+```sh
+quarto render --to pdf
 ```
