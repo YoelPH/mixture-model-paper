@@ -529,6 +529,8 @@ $$
 
 Note that a distribution over $\epsilon$ appears both in the enumerator and the denominator, which largely cancel each other, leaving only the midline extension's effect on the distribution over hidden states in the prediction.
 
+Also, the discrepancy in midline extension prevalence between early and advanced T-category is particularly pronounced in oropharyngeal SCC patients. For example, in oral cavity SCC, the midline extension only increases from 15.4% (20 out of 130) to 33.3% (13 out of 39).
+
 
 ## Prediction of Risk for Occult Disease
 
@@ -549,9 +551,22 @@ Taken together, T-category and ipsilateral involvement may still considerably im
 
 # Discussion {#sec-discussion}
 
-- conceptually extended model to cover both sides of neck
-- explicitly models midline extension (also allows for easy marginalization)
-- midline extension intuitively causes contralateral spread to become more similar to ipsilateral spread
+## Summary
+
+In this work we present a formalism to model the ipsi- and contralateral lymphatic involvement of oropharyngeal SCC patients. An ipsilateral model has been previously developed and published [@ludwig_hidden_2021;@ludwig_modelling_2023]. Based on this, we introduce an extension that leaves the ipsilateral model untouched, but extends it to the contralateral side in an intuitive and comprehensible manner.
+
+The model's performance w.r.t. its ability to describe the data on contralateral nodal involvement was evaluated based on a dataset of 833<!-- TODO: make this dynamic --> patients from four institutions. To the best of our knowledge, this is the first time lymphatic tumor progression has been modelled in such detail and to such an extent. While there was work on regional tumor spread, these models were conceptually different, more limited in the LNLs for which they make predictions, and not trained with real patient data [@benson_markov_2006;@jung_development_2017].
+
+The model takes the clincal diagnosis of the lymph node levels, the primary tumor's T-category, as well as lateralization into account when predicting the personalized risk for occult disease in any LNL of interest. Owing to the relatively few parameters, the model is highly interpretable and every parameter can be intuitively explained, while still offering good accuracy in its predictions.
+
+
+## Implications for Contralateral Elective Nodal Treatment
+
+The predictions of this model are being used to inform a clinical trial on volume deescalation at the University Hospital Zurich [citation needed<!-- TODO: add -->]. When accepting a 5% risk of occult disease in any given LNL, the model suggests the following contralateral elective irradiation (assuming the respective LNL appears clinically healthy):
+
+- LNL II when the tumor extends over the mid-sagittal line
+- LNL III when LNL II is clinically, the tumor is of advanced T-category, crosses the midline, and the ipsilateral neck shows involvement of at least LNL II
+- LNL IV only for severe ipsilateral involvement, advanced T-category with obvious midline extension and contralateral upstream involvement
 
 
 # Acknowledgement {.appendix}
