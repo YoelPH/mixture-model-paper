@@ -42,7 +42,7 @@ half = full
 
 # Introduction
 
-When treating head and neck squamous cell carcinomas (HNSCC) with radiotherapy or surgery, not only the primary tumor and the clinically detected lymph node metastases are targeted. Per current guidelines, large volumes of the neck - lymph node levels (LNLs) - are part of the the elective clinical target volume (CTV-N) [@gregoire_ctbased_2003;@gregoire_delineation_2014;@gregoire_delineation_2018;@eisbruch_intensitymodulated_2002;@biau_selection_2019;@chao_determination_2002;@vorwerk_guidelines_2011;@ferlito_elective_2009]. This is to minimize the risk of regional recurrences due to missed microscopic disease which cannot be detected by current in-vivo imaging modalities such as computed tomography (CT), magnetic resonance imaging (MRI), or positron emission tomography (PET).
+When treating head and neck squamous cell carcinomas (HNSCC) with radiotherapy or surgery, not only the primary tumor and the clinically detected lymph node metastases are targeted. Per current guidelines, large volumes of the neck - lymph node levels (LNLs) - are part of the the elective clinical target volume (CTV-N) [@gregoire_ct-based_2003;@gregoire_delineation_2014;@gregoire_delineation_2018;@eisbruch_intensity-modulated_2002;@biau_selection_2019;@chao_determination_2002;@vorwerk_guidelines_2011;@ferlito_elective_2009]. This is to minimize the risk of regional recurrences due to missed microscopic disease which cannot be detected by current in-vivo imaging modalities such as computed tomography (CT), magnetic resonance imaging (MRI), or positron emission tomography (PET).
 
 Minimizing this risk of missing occult disease in the lymph drainage region must be balanced against the toxicity related to unnecessary treatment of healthy tissue.
 
@@ -190,7 +190,7 @@ Over the course of this work, we will first briefly recap the mentioned HMM in @
 
 ## Data Availability
 
-The entire data, including additional patients with tumors in other primary locations than the oropharynx, is publicly available: It may be [downloaded from LyProX](https://lyprox.org/patients/dataset) where it can be interactively explored too, [from GitHub](https://github.com/rmnldwg/lydata), [from zenodo](https://zenodo.org/search?q=lydata), or via the *Data-in-Brief* publications @ludwig_dataset_2022 and @ludwig_multicentric_2023. Although these publications do not include the most recent dataset addition from Vall d'Hebron Barcelona Hospital.
+The entire data, including additional patients with tumors in other primary locations than the oropharynx, is publicly available: It may be [downloaded from LyProX](https://lyprox.org/patients/dataset) where it can be interactively explored too, [from GitHub](https://github.com/rmnldwg/lydata), [from zenodo](https://zenodo.org/search?q=lydata), or via the *Data-in-Brief* publications @ludwig_dataset_2022 and @ludwig_multi-centric_2023. Although these publications do not include the most recent dataset addition from Vall d'Hebron Barcelona Hospital.
 
 
 # Unilateral Model for Lymphatic Progression {#sec-unilateral}
@@ -392,14 +392,14 @@ In this section, we detail how the experiments were performed. Every figure, tab
 
 ## Involvement Data Consensus
 
-It is possible to provide our model with multiple different diagnostic modalities, each being characterized by different pairs of sensitivity and specificity. However, we instead chose to combine them into a single "consensus" diagnosis before parameter inference. We opted for this because the literature values of sensitivity and specificity [@debondt_detection_2007;@kyzas_18ffluorodeoxyglucose_2008] of imaging modalities like MRI and CT do not plausibly match some of our observations: In the USZ cohort, 78% of OPSCC patients where diagnosed with ipsilateral LNL II involvement via diagnostic imaging. This is virtually impossible with sensitivities around 80% and specificities lower than 100%.
+It is possible to provide our model with multiple different diagnostic modalities, each being characterized by different pairs of sensitivity and specificity. However, we instead chose to combine them into a single "consensus" diagnosis before parameter inference. We opted for this because the literature values of sensitivity and specificity [@de_bondt_detection_2007;@kyzas_18f-fluorodeoxyglucose_2008] of imaging modalities like MRI and CT do not plausibly match some of our observations: In the USZ cohort, 78% of OPSCC patients where diagnosed with ipsilateral LNL II involvement via diagnostic imaging. This is virtually impossible with sensitivities around 80% and specificities lower than 100%.
 
-Our pre-training consensus was formed by considering all reported diagnostic information for a particular patient and LNL. When conflicts arose, we computed the *most likely* true state of involvement using the literature sensitivity and specificity values [@debondt_detection_2007;@kyzas_18ffluorodeoxyglucose_2008].
+Our pre-training consensus was formed by considering all reported diagnostic information for a particular patient and LNL. When conflicts arose, we computed the *most likely* true state of involvement using the literature sensitivity and specificity values [@de_bondt_detection_2007;@kyzas_18f-fluorodeoxyglucose_2008].
 
 
 ## MCMC Sampling {#sec-sampling}
 
-For parameter inference, we used the Python package [`emcee`] [@foreman-mackey_emcee_2013]. It implements efficient MCMC sampling algorithms that employ multiple parallel samplers for affine invariance and better performance on multi-core CPUs. The sample proposal algirothms used by us are based on differential evolution moves [@terbraak_differential_2008;@nelson_run_2013]. The [`emcee`] library was provided with the likelihood implemented by our [`lymph-model`] Python package.
+For parameter inference, we used the Python package [`emcee`] [@foreman-mackey_emcee_2013]. It implements efficient MCMC sampling algorithms that employ multiple parallel samplers for affine invariance and better performance on multi-core CPUs. The sample proposal algirothms used by us are based on differential evolution moves [@ter_braak_differential_2008;@nelson_run_2013]. The [`emcee`] library was provided with the likelihood implemented by our [`lymph-model`] Python package.
 
 For each dimension in the parameter space of the model, we initialized {{< var sampling.walkers_per_dim >}} of these parallel samplers, called "walkers", with random values in the unit cube. Every time all of these walkers advanced {{< var sampling.check_interval >}} steps, the autocorrelation time of the chains was estimated. For short chains, this estimate is not trustworthy, but stabilizes for longer chains. We therefore considered a sampling to be converged when two criteria where met:
 
@@ -538,7 +538,7 @@ In this section, we investigate how the model may be applied clinically: We want
 
 ![Histograms over the predicted risk of occult contralateral LNL II invovlement, shown for some combinations of T-category, tumor lateralization, and ipsilateral clinical involvement. The contralateral side was always assumed to be clinically negative.](figures/fig-model-risks.png){#fig-model-risks width=50%}
 
-@Fig-model-risks shows this predicted risk of occult disease in contralateral LNL II for four interesting combinations of these three risk factors. This risk is computed *given* a CT diagnosis assessing the per-LNL clinical involvement for which we assumed a sensitivity of 81% and a specificity of 76% [@debondt_detection_2007].
+@Fig-model-risks shows this predicted risk of occult disease in contralateral LNL II for four interesting combinations of these three risk factors. This risk is computed *given* a CT diagnosis assessing the per-LNL clinical involvement for which we assumed a sensitivity of 81% and a specificity of 76% [@de_bondt_detection_2007].
 
 The variable impacting the prediction for contralateral involvement in our model is the tumor's lateralization. For example, a patient with a clearly lateralized early T-category tumor and a clinically N0 neck is assigned a 1-2% <!-- TODO: make this dynamic --> risk for occult disease in contralateral LNL II. Under the same scenario, but *with* mid-sagittal extension, the risk jumps to almost 7%. <!-- TODO: make this dynamic -->
 
