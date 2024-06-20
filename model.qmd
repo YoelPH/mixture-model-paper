@@ -541,11 +541,16 @@ from scripts import paths, shared
 
 all_false = {lnl: False for lnl in ["I", "II", "III", "IV", "V"]}
 
+nrows, ncols = 1, 3
 plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(width=17./2.))
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  width=17,
+  aspect_ratio=1.3,
+))
 
-fig, ax = plt.subplots()
-ax.set_xlim(0., 15.)
+fig, ax = plt.subplots(nrows=nrows, ncols=ncols)
 
 contents = []
 defaults = {
@@ -555,7 +560,7 @@ defaults = {
   "bins": 50,
 }
 
-
+# contra LNL II
 scenario = Scenario(
   t_stages=["early"],
   midext=False,
@@ -572,7 +577,6 @@ contents.append(Histogram.from_hdf5(
   label="early, lateralized; N0",
 ))
 
-
 scenario = Scenario(
   t_stages=["late"],
   midext=False,
@@ -586,9 +590,8 @@ contents.append(Histogram.from_hdf5(
   filename=paths.model_dir / "full" / "risks.hdf5",
   dataname=scenario.md5_hash("risks"),
   color=COLORS["blue"],
-  label="advanced, lateralized; ipsi LNL III",
+  label="adv., lateralized; ipsi LNL III",
 ))
-
 
 scenario = Scenario(
   t_stages=["early"],
@@ -603,7 +606,7 @@ contents.append(Histogram.from_hdf5(
   filename=paths.model_dir / "full" / "risks.hdf5",
   dataname=scenario.md5_hash("risks"),
   color=COLORS["orange"],
-  label="early, midline extension; N0",
+  label="early, mid. ext.; N0",
 ))
 
 scenario = Scenario(
@@ -619,14 +622,25 @@ contents.append(Histogram.from_hdf5(
   filename=paths.model_dir / "full" / "risks.hdf5",
   dataname=scenario.md5_hash("risks"),
   color=COLORS["red"],
-  label="advanced, midline extension; ipsi LNL III",
+  label="adv., mid. ext.; ipsi LNL III",
 ))
 
-draw(ax, contents, xlims=(0., 15.))
-ax.legend(labelspacing=0.3)
-ax.set_xlabel("risk [%]")
-ax.set_yticks([])
-ax.set_title("Predicted Risk of Contralateral LNL II Involvement\nfor Selected Diagnosis Scenarios")
+draw(ax[0], contents, xlims=(0., 15.))
+ax[0].legend(labelspacing=0.1)
+ax[0].set_xlabel("risk [%]")
+ax[0].set_yticks([])
+ax[0].set_xticks(np.linspace(0, 15, 6))
+ax[0].set_title("Contralateral LNL II")
+
+# contra LNL III
+contents = []
+
+
+ax[1].set_yticks([])
+ax[1].set_xticks(np.linspace(0, 15, 6))
+
+ax[2].set_yticks([])
+ax[2].set_xticks(np.linspace(0, 15, 6))
 
 plt.savefig(paths.figure_dir / "fig-model-risks.png", dpi=400)
 plt.show()
