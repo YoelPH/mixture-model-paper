@@ -349,9 +349,9 @@ Together with the explicit modelling of the tumor's midline extension $\epsilon$
 
 To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized and at every time-step there is a finite probability $p_\epsilon$ that the tumor grows over the symmetry plane of the patient.
 
-Technically, the introduction of this additional random variable doubles the space of the hidden states and therefore quadruples the size of the transition matrix $\mathbf{A}$. However, since we assume no correlation between the tumor's lateralization and the metastases in the LNLs, we can evolve the two parts separately.
+Technically, the introduction of this additional random variable doubles the space of the hidden states and therefore quadruples the size of the transition matrix $\mathbf{A}$. But since only the transition matrix in case of midline extension depends on the lateralization of the tumor, we implement it differently and thereby make the computation slightly more efficient.
 
-The probabilities to find a patient with a clearly lateralized tumor or one that extends over the mid-sagittal line after $t$ time-steps are then given by
+First, the overall probabilities to find a patient with a clearly lateralized tumor or one that extends over the mid-sagittal line after $t$ time-steps are respectively given by
 
 $$
 \begin{aligned}
@@ -364,17 +364,36 @@ In @fig-model-midext-evo, we visualize how the prior distribution over diagnose 
 
 ![The top panel shows the prior probability to get diagnosed at time-step $t$ for early and late T-category tumors as bars. Also in the top panel, we plot the conditional probability of the tumor's midline extension ($\epsilon=\texttt{True}$), given the time-step $t$ as a line plot. In the bottom panel, we show the joint probability of getting diagnosed in time-step $t$ *and* having a tumor that crosses the midline.](figures/fig-model-midext-evo.png){#fig-model-midext-evo width="50%"}
 
-To get the joint probability over the ipsi- and contralateral hidden states, as well as the state of the tumor's midline extension $P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \right)$, we simply add the above terms to the marginalization in @eq-bilateral-marginal:
+Using this, it is straightforward to write down the joint probability of ipsi- and contralalteral states in case of a tumor that does *not* extend over the mid-sagittal line similar to the marginalization in @eq-bilateral-marginal:
 
 $$
-P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \right) = \sum_{t=0}^{t_\text{max}} P(t) \cdot P(\epsilon \mid t) \cdot P \left( \mathbf{X}^\text{i} \mid t \right) \cdot P \left( \mathbf{X}^\text{c} \mid t \right)
+P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon=\texttt{False} \right) = \sum_{t=0}^{t_\text{max}} P(t) \cdot (1 - p_\epsilon)^t \cdot P \left( \mathbf{X}^\text{i} \mid t \right) \cdot P \left( \mathbf{X}^\text{c} \mid t, \epsilon=\texttt{False} \right)
+$$ {#eq-joint-noext}
+
+where for the contralateral evolution we used the transition matrix that depends on the base spread parameters $b_v^{\text{c},\epsilon=\texttt{False}}$.
+
+The case when midline extension is eventually present is more complicated: We already marginalize over the exact time-step when the tumor grows over the mid-sagittal line. But whenever that happens, we also need to change the contralateral transition matrix to use the increased spread rates from the tumor to the contralateral LNLs, given by the linear mix in @eq-mixing. We can achieve the correct marginalization by iteratively building the joint $P \left( \mathbf{X}^\text{c}, \epsilon=\texttt{True} \mid t \right)$ from $t=0$, where we know that all LNLs are healthy and the tumor is lateralized:
+
+$$
+P \left( \mathbf{X}^\text{c} = \boldsymbol{\xi}_0, \epsilon=\texttt{False} \mid t=0 \right) = 1
 $$
 
-Again, this can be written algebraically, by defining the vector $P(\mathbf{t}, \epsilon) = P(\mathbf{t}) \cdot P(\epsilon \mid \mathbf{t})$, to achieve the same form as in @eq-bilateral-marginal-algebra:
+Then we consider an arbitrary later time-step $t=\tau+1$. There are two possible scenarios we need to marginalize over:
+
+1. The tumor was still lateralized at $t=\tau$ and just grew over the midline. Under this scenario, the probability for having a midline extension at $t=\tau+1$ is $p_\epsilon$ and we use this to weight the contralateral state distribution that was so far evolved without increased contralateral spread.
+2. The mid-sagittal line was already crossed by the tumor. In that case, the probability is 1 to remain in that lateralization state. Thus, for this case we simply add the same distribution we are computing, but from one time-step earlier, arriving at a recursion relation:
 
 $$
-P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsymbol{\xi}_m, \epsilon \right) = \left[ \boldsymbol{\Lambda}^\intercal_\text{i} \cdot \operatorname{diag} P(\mathbf{t}, \epsilon) \cdot \boldsymbol{\Lambda}_\text{c} \right]_{n,m}
+P \left( \mathbf{X}^\text{c}, \epsilon=\texttt{True} \mid \tau + 1 \right) = \big[ p_\epsilon P \left( \mathbf{X}^\text{c}, \epsilon=\texttt{False} \mid \tau \right) + P \left( \mathbf{X}^\text{c}, \epsilon=\texttt{True} \mid \tau \right) \big]^\top \cdot \mathbf{A}^{\text{c},\epsilon=\texttt{True}}
 $$
+
+Using this, we can write the joint of ipsi- and contralateral involvement also for the case of mid-sagittal extension:
+
+$$
+P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon=\texttt{True} \right) = \sum_{t=0}^{t_\text{max}} P(t) \cdot P \left( \mathbf{X}^\text{i} \mid t \right) \cdot P \left( \mathbf{X}^\text{c}, \epsilon=\texttt{True} \mid t \right)
+$$ {#eq-joint-ext}
+
+Subsequently, @eq-joint-noext and @eq-joint-ext can be used to compute the likelihoods of patients with the respective tumor lateralization. If, for some reason, it is not known whether the tumor crossed the midline or not, we can simply add the two distributions to marginalize over midline extension as well.
 
 In @fig-model-state-dist we plot the state distribution for a full midline model as two separate heatmaps. To keep it readable, this example model only considers the LNLs II, III, and IV ipsi- and contralaterally.
 
