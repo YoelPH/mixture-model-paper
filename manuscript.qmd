@@ -324,6 +324,27 @@ P \left( \mathbf{X}^\text{i} = \boldsymbol{\xi}_n, \mathbf{X}^\text{c} = \boldsy
 $$ {#eq-bilateral-marginal-algebra}
 
 
+## Parameter Symmetries {#sec-params-symmetry}
+
+In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambda}_\text{c}$ could be parameterized using a disjoint set of parameters. I.e., the ipsi- and contralateral spread rates are entirely different. However, using two sensible assumptions, we can reduce the parameter space by sharing some parameters between the sides:
+
+1. We assume the spread *among* the LNLs to be same on both sides. It is reasonable to assume the lymphatic system is symmetric. Thus, the spread rates from one LNL to the other should be symmetric, too. Formally, this means \
+   $$
+   \begin{aligned}
+   b_v^\text{c} &\neq b_v^\text{i} \\
+   t_{rv}^\text{c} &= t_{rv}^\text{i}
+   \end{aligned}
+   $$ {#eq-symmetries}
+   for all $v \leq V$ and $r \in \operatorname{pa}(v)$.
+2. The tumor's spread to the contralateral side in case of an extension over the midline is larger than if it was clearly lateralized, but smaller than its spread to the ipsilateral side. This assumption stems from a simple thought experiment: Consider moving the tumor from a clearly lateralized position accross the mid-sagittal plane to the same position, but on the contralateral side. In the beginning we would have $b_v^\text{c} < b_v^\text{i}$, while in the end, the situation is reversed. If a tumor extends over the mid-sagittal line, its contralateral spread rate can be expected to be in between these two extremes. We encode this in a *mixing parameter* $\alpha$ that captures a "degree of asymmetry": \
+   $$
+   b_v^{\text{c},\epsilon=\texttt{True}} = \alpha \cdot b_v^\text{i} + (1 - \alpha) \cdot b_v^{\text{c},\epsilon=\texttt{False}}
+   $$ {#eq-mixing}
+   This means the model now uses three different sets of parameters to describe the spread from the tumor to the LNLs: $b^\text{i}_v$ for the spread to the ipsilateral LNLs, $b_v^{\text{c},\epsilon=\texttt{False}}$ for the spread to the contralateral LNLs as long as the tumor is clearly lateralized, and finally $b_v^{\text{c},\epsilon=\texttt{True}}$ when it crosses the midline. Note, however, that these three sets of spread rates only account for $2 \cdot 2^V + 1$ parameters, since they are coupled via the mixing parameter $\alpha$.
+
+Together with the explicit modelling of the tumor's midline extension $\epsilon$ from @sec-midline, we now have a model that may be capable of capturing the higher prevalence of contralateral involvment that comes with tumors extending over the mid-sagittal line.
+
+
 ## Modelling Midline Extension {#sec-midline}
 
 To account for the increased prevalence of involvement on the contralateral side when the tumor is not clearly lateralized anymore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. It starts lateralized and at every time-step there is a finite probability $p_\epsilon$ that the tumor grows over the symmetry plane of the patient.
@@ -358,27 +379,6 @@ $$
 In @fig-model-state-dist we plot the state distribution for a full midline model as two separate heatmaps. To keep it readable, this example model only considers the LNLs II, III, and IV ipsi- and contralaterally.
 
 ![3D state distribution of a midline model with 3 LNLs (II, III, and IV) in both sides of the neck.](figures/fig-model-state-dist.png){#fig-model-state-dist}
-
-
-## Parameter Symmetries {#sec-params-symmetry}
-
-In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambda}_\text{c}$ could be parameterized using a disjoint set of parameters. I.e., the ipsi- and contralateral spread rates are entirely different. However, using two sensible assumptions, we can reduce the parameter space by sharing some parameters between the sides:
-
-1. We assume the spread *among* the LNLs to be same on both sides. It is reasonable to assume the lymphatic system is symmetric. Thus, the spread rates from one LNL to the other should be symmetric, too. Formally, this means \
-   $$
-   \begin{aligned}
-   b_v^\text{c} &\neq b_v^\text{i} \\
-   t_{rv}^\text{c} &= t_{rv}^\text{i}
-   \end{aligned}
-   $$ {#eq-symmetries}
-   for all $v \leq V$ and $r \in \operatorname{pa}(v)$.
-2. The tumor's spread to the contralateral side in case of an extension over the midline is larger than if it was clearly lateralized, but smaller than its spread to the ipsilateral side. This assumption stems from a simple thought experiment: Consider moving the tumor from a clearly lateralized position accross the mid-sagittal plane to the same position, but on the contralateral side. In the beginning we would have $b_v^\text{c} < b_v^\text{i}$, while in the end, the situation is reversed. If a tumor extends over the mid-sagittal line, its contralateral spread rate can be expected to be in between these two extremes. We encode this in a *mixing parameter* $\alpha$ that captures a "degree of asymmetry": \
-   $$
-   b_v^{\text{c},\epsilon=\texttt{True}} = \alpha \cdot b_v^\text{i} + (1 - \alpha) \cdot b_v^{\text{c},\epsilon=\texttt{False}}
-   $$ {#eq-mixing}
-   This means the model now uses three different sets of parameters to describe the spread from the tumor to the LNLs: $b^\text{i}_v$ for the spread to the ipsilateral LNLs, $b_v^{\text{c},\epsilon=\texttt{False}}$ for the spread to the contralateral LNLs as long as the tumor is clearly lateralized, and finally $b_v^{\text{c},\epsilon=\texttt{True}}$ when it crosses the midline. Note, however, that these three sets of spread rates only account for $2 \cdot 2^V + 1$ parameters, since they are coupled via the mixing parameter $\alpha$.
-
-Together with the explicit modelling of the tumor's midline extension $\epsilon$ from @sec-midline, we now have a model that may be capable of capturing the higher prevalence of contralateral involvment that comes with tumors extending over the mid-sagittal line.
 
 
 # Methods {#sec-methods}
