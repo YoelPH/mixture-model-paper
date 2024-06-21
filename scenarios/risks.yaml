@@ -6,9 +6,9 @@ scenarios:
     mode: "HMM"
     diagnosis:
       ipsi:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {II: true}
 
@@ -17,9 +17,9 @@ scenarios:
     mode: "HMM"
     diagnosis:
       ipsi:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {II: true}
 
@@ -30,7 +30,7 @@ scenarios:
       ipsi:
         CT: {III: true}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {II: true}
 
@@ -39,9 +39,9 @@ scenarios:
     mode: "HMM"
     diagnosis:
       ipsi:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {II: true}
 
@@ -52,7 +52,7 @@ scenarios:
       ipsi:
         CT: {III: true}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {II: true}
 
@@ -63,7 +63,7 @@ scenarios:
       ipsi:
         CT: {III: true}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {II: true}
 
@@ -72,9 +72,9 @@ scenarios:
     mode: "HMM"
     diagnosis:
       ipsi:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {II: true}
 
@@ -84,9 +84,9 @@ scenarios:
     mode: "HMM"
     diagnosis:
       ipsi:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {III: true}
 
@@ -97,7 +97,7 @@ scenarios:
       ipsi:
         CT: {III: true}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {III: true}
 
@@ -120,7 +120,7 @@ scenarios:
       ipsi:
         CT: {III: true}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false}
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {IV: true}
 

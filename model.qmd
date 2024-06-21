@@ -395,7 +395,7 @@ for i, t_stage in enumerate(["early", "late"]):
     axes[i,j].set_yticks([])
     content = []
     for ipsi, color in zip(
-      [{"I": False, "II": False, "III": False, "IV": False, "V": False}, {"III": True}],
+      [{"I": False, "II": False, "III": False, "IV": False, "V": False, "VII": False}, {"III": True}],
       [COLORS["blue"], COLORS["orange"]],
     ):
       scenario = Scenario(
@@ -539,7 +539,7 @@ from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, draw, COLORS, split_legends
 from scripts import paths, shared
 
-all_false = {lnl: False for lnl in ["I", "II", "III", "IV", "V"]}
+all_false = {lnl: False for lnl in ["I", "II", "III", "IV", "V", "VII"]}
 
 nrows, ncols = 1, 3
 plt.rcParams.update(shared.get_fontsizes())

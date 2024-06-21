@@ -312,7 +312,7 @@ kombu==5.3.7
     #   celery
     #   dvc
     #   dvc-task
-lymph-model==1.2.1
+lymph-model @ git+https://github.com/rmnldwg/lymph@67ecfd87d5a9ba483c9c8092e20adc4bfecba25e
     # via
     #   -r requirements.in
     #   lyscripts
