@@ -80,7 +80,18 @@ scenarios:
 
 # now some contra LNL III risks
   - t_stages: [early]
-    midext: false
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
+      contra:
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
+    involvement:
+      contra: {III: true}
+
+  - t_stages: [late]
+    midext: true
     mode: "HMM"
     diagnosis:
       ipsi:
@@ -97,18 +108,7 @@ scenarios:
       ipsi:
         CT: {III: true}
       contra:
-        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
-    involvement:
-      contra: {III: true}
-
-  - t_stages: [late]
-    midext: true
-    mode: "HMM"
-    diagnosis:
-      ipsi:
-        CT: {III: true}
-      contra:
-        CT: {I: false, II: true, III: false, IV: false, V: false}
+        CT: {I: false, II: true, III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {III: true}
 
@@ -129,8 +129,8 @@ scenarios:
     mode: "HMM"
     diagnosis:
       ipsi:
-        CT: {I: true, II: true, III: true, IV: true, V: true}
+        CT: {I: true, II: true, III: true, IV: true, V: true, VII: true}
       contra:
-        CT: {I: true, II: true, III: true, IV: false, V: false}
+        CT: {I: true, II: true, III: true, IV: false, V: false, VII: false}
     involvement:
       contra: {IV: true}

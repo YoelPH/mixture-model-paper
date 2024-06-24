@@ -6,7 +6,7 @@ scenarios:
     midext: false
     diagnosis:
       ipsi:
-        max_llh: {I: false, II: false, III: false, IV: false, V: false, VII: false}
+        max_llh: {I: false, II: false, III: false, IV: false, V: false}
       contra:
         max_llh: {II: true}
   - t_stages: [early]
@@ -22,7 +22,7 @@ scenarios:
     midext: false
     diagnosis:
       ipsi:
-        max_llh: {I: false, II: false, III: false, IV: false, V: false, VII: false}
+        max_llh: {I: false, II: false, III: false, IV: false, V: false}
       contra:
         max_llh: {II: true}
   - t_stages: [late]
@@ -39,7 +39,7 @@ scenarios:
     midext: true
     diagnosis:
       ipsi:
-        max_llh: {I: false, II: false, III: false, IV: false, V: false, VII: false}
+        max_llh: {I: false, II: false, III: false, IV: false, V: false}
       contra:
         max_llh: {II: true}
   - t_stages: [early]
@@ -55,7 +55,7 @@ scenarios:
     midext: true
     diagnosis:
       ipsi:
-        max_llh: {I: false, II: false, III: false, IV: false, V: false, VII: false}
+        max_llh: {I: false, II: false, III: false, IV: false, V: false}
       contra:
         max_llh: {II: true}
   - t_stages: [late]
