@@ -5,7 +5,7 @@ multiprocess
 upsetplot
 emcee
 corner
-dvc
+dvc[azure]
 scipy
-lymph-model == 1.2.1
+lymph-model @ git+https://github.com/rmnldwg/lymph@67ecfd87d5a9ba483c9c8092e20adc4bfecba25e
 lyscripts @ git+https://github.com/rmnldwg/lyscripts@ea49ecc1a6ca8ef15256727fb8759867141d1871

@@ -439,22 +439,22 @@ for i, t_stage in enumerate(["early", "late"]):
 # manually place legends
 split_legends(
   axes=axes[0,0],
-  titles=["ipsi N0", "ipsi LNL III"],
+  titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
   locs=[(0.3, 0.99), (0.5, 0.55)],
 )
 split_legends(
   axes=axes[0,1],
-  titles=["ipsi N0", "ipsi LNL III"],
+  titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
   locs=[(0.3, 0.99), (0.5, 0.55)],
 )
 split_legends(
   axes=axes[1,0],
-  titles=["ipsi N0", "ipsi LNL III"],
+  titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
   locs=[(0.16, 0.99), (0.53, 0.55)],
 )
 split_legends(
   axes=axes[1,1],
-  titles=["ipsi N0", "ipsi LNL III"],
+  titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
   locs=[(0.13, 0.55), (0.5, 0.99)],
 )
 
@@ -539,7 +539,8 @@ from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, draw, COLORS, split_legends
 from scripts import paths, shared
 
-all_false = {lnl: False for lnl in ["I", "II", "III", "IV", "V"]}
+all_false = {lnl: False for lnl in ["I", "II", "III", "IV", "V", "VII"]}
+all_true = {lnl: True for lnl in ["I", "II", "III", "IV", "V", "VII"]}
 
 nrows, ncols = 1, 3
 plt.rcParams.update(shared.get_fontsizes())
@@ -635,12 +636,103 @@ ax[0].set_title("Contralateral LNL II")
 # contra LNL III
 contents = []
 
+scenario = Scenario(
+  t_stages=["early"],
+  midext=True,
+  diagnosis={
+    "ipsi": {"CT": all_false},
+    "contra": {"CT": all_false},
+  },
+  involvement={"contra": {"III": True}},
+)
+contents.append(Histogram.from_hdf5(
+  filename=paths.model_dir / "full" / "risks.hdf5",
+  dataname=scenario.md5_hash("risks"),
+  color=COLORS["green"],
+  label="early, mid. ext.; N0",
+))
 
+scenario = Scenario(
+  t_stages=["late"],
+  midext=True,
+  diagnosis={
+    "ipsi": {"CT": all_false},
+    "contra": {"CT": all_false},
+  },
+  involvement={"contra": {"III": True}},
+)
+contents.append(Histogram.from_hdf5(
+  filename=paths.model_dir / "full" / "risks.hdf5",
+  dataname=scenario.md5_hash("risks"),
+  color=COLORS["blue"],
+  label="adv., mid. ext.; N0",
+))
+
+scenario = Scenario(
+  t_stages=["late"],
+  midext=True,
+  diagnosis={
+    "ipsi": {"CT": {"III": True}},
+    "contra": {"CT": {"I": False, "II": True, "III": False, "IV": False, "V": False, "VII": False}},
+  },
+  involvement={"contra": {"III": True}},
+)
+contents.append(Histogram.from_hdf5(
+  filename=paths.model_dir / "full" / "risks.hdf5",
+  dataname=scenario.md5_hash("risks"),
+  color=COLORS["red"],
+  label="adv., mid. ext.;\nipsi LNL III & contra LNL II",
+))
+
+draw(ax[1], contents, xlims=(0., 8.))
+ax[1].legend(labelspacing=0.1)
+ax[1].set_xlabel("risk [%]")
 ax[1].set_yticks([])
-ax[1].set_xticks(np.linspace(0, 15, 6))
+ax[1].set_xticks(np.linspace(0, 8, 9))
+ax[1].set_title("Contralateral LNL III")
 
+
+# contra LNL IV
+contents = []
+
+scenario = Scenario(
+  t_stages=["late"],
+  midext=True,
+  diagnosis={
+    "ipsi": {"CT": {"III": True}},
+    "contra": {"CT": all_false},
+  },
+  involvement={"contra": {"IV": True}},
+)
+contents.append(Histogram.from_hdf5(
+  filename=paths.model_dir / "full" / "risks.hdf5",
+  dataname=scenario.md5_hash("risks"),
+  color=COLORS["green"],
+  label="adv., mid. ext.; ipsi LNL III",
+))
+
+scenario = Scenario(
+  t_stages=["late"],
+  midext=True,
+  diagnosis={
+    "ipsi": {"CT": all_true},
+    "contra": {"CT": {"I": True, "II": True, "III": True, "IV": False, "V": False, "VII": False}},
+  },
+  involvement={"contra": {"IV": True}},
+)
+contents.append(Histogram.from_hdf5(
+  filename=paths.model_dir / "full" / "risks.hdf5",
+  dataname=scenario.md5_hash("risks"),
+  color=COLORS["red"],
+  label="adv., mid. ext.;\nsevere bilat. inv.",
+))
+
+draw(ax[2], contents, xlims=(0., 5.))
+ax[2].legend(labelspacing=0.1)
+ax[2].set_xlabel("risk [%]")
 ax[2].set_yticks([])
-ax[2].set_xticks(np.linspace(0, 15, 6))
+ax[2].set_xticks(np.linspace(0, 5, 6))
+ax[2].set_title("Contralateral LNL IV")
 
 plt.savefig(paths.figure_dir / "fig-model-risks.png", dpi=400)
 plt.show()

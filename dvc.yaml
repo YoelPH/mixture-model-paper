@@ -66,6 +66,7 @@ stages:
       --cores ${sampling.cores}
     deps:
     - data/reduced.csv
+    - requirements.in
     params:
     - models/${item.model}/params.yaml:
     outs:
@@ -152,11 +153,24 @@ stages:
     outs:
     - models/full/risks.hdf5
 
+  render-figures:
+    cmd: >
+      quarto render model.qmd --cache-refresh
+    deps:
+    - model.qmd
+    - models
+    - scenarios
+    outs:
+    - figures:
+        persist: true
+        cache: false
+
   render-pdf:
     cmd: >
       quarto render manuscript.qmd --to nature-pdf
     deps:
     - models
+    - figures
     - data/reduced.csv
     - manuscript.qmd
     - data.qmd

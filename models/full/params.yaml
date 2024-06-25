@@ -7,13 +7,14 @@ version: 1
 # Subsequently, level II spreads to III and III to IV.
 graph:
   tumor:
-    T: [I, II, III, IV, V]
+    T: [I, II, III, IV, V, VII]
   lnl:
     I: [II]
     II: [III]
     III: [IV]
     IV: [V]
     V: []
+    VII: []
 
 ########################################################################################
 # Below are some parameters necessary for the model setup:

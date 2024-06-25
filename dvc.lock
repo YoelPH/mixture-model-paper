@@ -6091,28 +6091,33 @@ stages:
       hash: md5
       md5: 4013638719b10c5c5c1c1015259ace2a
       size: 557587
+    - path: figures
+      hash: md5
+      md5: e931510fcaa8e92c522127d9e0aeba83.dir
+      size: 1752926
+      nfiles: 11
     - path: manuscript.qmd
       hash: md5
-      md5: 25f95915dfb13ccbdcc3b81cbb31cade
-      size: 62168
+      md5: 7b5e10aa74e4f429c0182aad175d6274
+      size: 65544
     - path: model.qmd
       hash: md5
-      md5: 6a03415c94560526da09e3cbf5b49c1e
-      size: 21838
+      md5: ed5be8fdac1dc2bc5a8ff887b5f3b734
+      size: 24529
     - path: models
       hash: md5
-      md5: f062e24812eed29dde14d5a221d2393f.dir
-      size: 582959952
+      md5: e3567115fa0a0403b56171b87b8f391c.dir
+      size: 1440364679
       nfiles: 19
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 38d026230309f49cabdf7d6533328e7e
-      size: 69244
+      md5: 0e121a0d6f32ef0a9c2943f7f2d0f0b6
+      size: 73162
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 5eb53834b63f58875bc9f01180518339
-      size: 1623238
+      md5: 796d664a8b98f32801fd0dd85bef5e48
+      size: 1636476
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -7925,6 +7930,10 @@ stages:
       hash: md5
       md5: 4013638719b10c5c5c1c1015259ace2a
       size: 557587
+    - path: requirements.in
+      hash: md5
+      md5: 889332623eea0a0f1fb212998ede7a7e
+      size: 272
     params:
       models/simple/params.yaml:
         graph:
@@ -7973,12 +7982,12 @@ stages:
     outs:
     - path: models/simple/history.csv
       hash: md5
-      md5: 310ad1451ef284a064b46d3e84536642
-      size: 6278
+      md5: a77349ec0b99cf057f4e09d00b7c0d91
+      size: 6142
     - path: models/simple/samples.hdf5
       hash: md5
-      md5: 6d5c0c9d18354f45b5fd47b42429dfa7
-      size: 95105824
+      md5: e772c2af14fd94f7521eadbe751fc971
+      size: 92882656
   sampling@full:
     cmd: "lyscripts sample --input data/reduced.csv --params models/full/params.yaml
       --output models/full/samples.hdf5 --history models/full/history.csv --walkers-per-dim
@@ -7989,6 +7998,10 @@ stages:
       hash: md5
       md5: 4013638719b10c5c5c1c1015259ace2a
       size: 557587
+    - path: requirements.in
+      hash: md5
+      md5: 889332623eea0a0f1fb212998ede7a7e
+      size: 272
     params:
       models/full/params.yaml:
         graph:
@@ -7999,6 +8012,7 @@ stages:
             - III
             - IV
             - V
+            - VII
           lnl:
             I:
             - II
@@ -8009,6 +8023,7 @@ stages:
             IV:
             - V
             V: []
+            VII: []
         modalities:
           max_llh:
           - 1.0
@@ -8043,20 +8058,20 @@ stages:
     outs:
     - path: models/full/history.csv
       hash: md5
-      md5: 261c1812fb3a66d8792bde8a4f542ed9
-      size: 9162
+      md5: 568f657283f405a56b22ae922dcd83aa
+      size: 10223
     - path: models/full/samples.hdf5
       hash: md5
-      md5: 866fe9e0d3f012f79c7b13d58b2b445a
-      size: 265441352
+      md5: 982ee99cb6a6cae3c792ef2ab080ccdb
+      size: 371014784
   compute-priors@simple-priors:
     cmd: "lyscripts compute priors --samples models/simple/samples.hdf5 --priors models/simple/priors.hdf5
       --params models/simple/params.yaml --scenarios scenarios/priors.yaml\n"
     deps:
     - path: models/simple/samples.hdf5
       hash: md5
-      md5: 6d5c0c9d18354f45b5fd47b42429dfa7
-      size: 95105824
+      md5: e772c2af14fd94f7521eadbe751fc971
+      size: 92882656
     params:
       models/simple/params.yaml:
         graph:
@@ -8131,7 +8146,7 @@ stages:
     outs:
     - path: models/simple/priors.hdf5
       hash: md5
-      md5: 555866d4e95595bc715a56d80cb30dd9
+      md5: fcf5ba6aed4aef3bc7c61c47fb24553a
       size: 2716448
   compute-priors@full-priors:
     cmd: "lyscripts compute priors --samples models/full/samples.hdf5 --priors models/full/priors.hdf5
@@ -8139,8 +8154,8 @@ stages:
     deps:
     - path: models/full/samples.hdf5
       hash: md5
-      md5: 866fe9e0d3f012f79c7b13d58b2b445a
-      size: 265441352
+      md5: 982ee99cb6a6cae3c792ef2ab080ccdb
+      size: 371014784
     params:
       models/full/params.yaml:
         graph:
@@ -8151,6 +8166,7 @@ stages:
             - III
             - IV
             - V
+            - VII
           lnl:
             I:
             - II
@@ -8161,6 +8177,7 @@ stages:
             IV:
             - V
             V: []
+            VII: []
         modalities:
           max_llh:
           - 1.0
@@ -8221,8 +8238,8 @@ stages:
     outs:
     - path: models/full/priors.hdf5
       hash: md5
-      md5: 75932b01d8d94a662c6bbf7cc6f1b6dd
-      size: 66859808
+      md5: 730c0cbd2d0278ca54dd1241ffca7e54
+      size: 298857248
   compute-prevalences@simple-overall:
     cmd: "lyscripts compute prevalences --priors models/simple/priors.hdf5 --prevalences
       models/simple/prevalences_overall.hdf5 --data data/reduced.csv --params models/simple/params.yaml
@@ -8496,8 +8513,8 @@ stages:
       size: 557587
     - path: models/full/priors.hdf5
       hash: md5
-      md5: 75932b01d8d94a662c6bbf7cc6f1b6dd
-      size: 66859808
+      md5: 730c0cbd2d0278ca54dd1241ffca7e54
+      size: 298857248
     params:
       models/full/params.yaml:
         graph:
@@ -8508,6 +8525,7 @@ stages:
             - III
             - IV
             - V
+            - VII
           lnl:
             I:
             - II
@@ -8518,6 +8536,7 @@ stages:
             IV:
             - V
             V: []
+            VII: []
         modalities:
           max_llh:
           - 1.0
@@ -8650,8 +8669,8 @@ stages:
     outs:
     - path: models/full/prevalences_overall.hdf5
       hash: md5
-      md5: d4b27ecedce052d9f29cb9cae44cb87b
-      size: 272224
+      md5: 0554c735113652736e0e4355ae2b5f91
+      size: 295264
   compute-prevalences@full-with_ipsi:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
       models/full/prevalences_with_ipsi.hdf5 --data data/reduced.csv --params models/full/params.yaml
@@ -8663,8 +8682,8 @@ stages:
       size: 557587
     - path: models/full/priors.hdf5
       hash: md5
-      md5: 75932b01d8d94a662c6bbf7cc6f1b6dd
-      size: 66859808
+      md5: 730c0cbd2d0278ca54dd1241ffca7e54
+      size: 298857248
     params:
       models/full/params.yaml:
         graph:
@@ -8675,6 +8694,7 @@ stages:
             - III
             - IV
             - V
+            - VII
           lnl:
             I:
             - II
@@ -8685,6 +8705,7 @@ stages:
             IV:
             - V
             V: []
+            VII: []
         modalities:
           max_llh:
           - 1.0
@@ -8825,8 +8846,8 @@ stages:
     outs:
     - path: models/full/prevalences_with_ipsi.hdf5
       hash: md5
-      md5: d3bea0a60e7d1f162201f02594ab5572
-      size: 181760
+      md5: 9feef88f483bf6cca608e8cb22818ced
+      size: 197120
   compute-prevalences@full-midext:
     cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
       models/full/prevalences_midext.hdf5 --data data/reduced.csv --params models/full/params.yaml
@@ -8921,8 +8942,8 @@ stages:
       size: 557587
     - path: models/full/samples.hdf5
       hash: md5
-      md5: 866fe9e0d3f012f79c7b13d58b2b445a
-      size: 265441352
+      md5: 982ee99cb6a6cae3c792ef2ab080ccdb
+      size: 371014784
     params:
       models/full/params.yaml:
         graph:
@@ -8933,6 +8954,7 @@ stages:
             - III
             - IV
             - V
+            - VII
           lnl:
             I:
             - II
@@ -8943,6 +8965,7 @@ stages:
             IV:
             - V
             V: []
+            VII: []
         modalities:
           max_llh:
           - 1.0
@@ -8977,8 +9000,8 @@ stages:
     outs:
     - path: models/full/prevalences_midext.hdf5
       hash: md5
-      md5: 038d9c527202c63eccfa6cddeb907358
-      size: 5312
+      md5: 06c23e1cda497ec9bc83b0c391951d8c
+      size: 5696
   compute-posteriors:
     cmd: "lyscripts compute posteriors --priors models/full/priors.hdf5 --posteriors
       models/full/posteriors.hdf5 --params models/full/params_risks.yaml --scenarios
@@ -8986,8 +9009,8 @@ stages:
     deps:
     - path: models/full/priors.hdf5
       hash: md5
-      md5: 75932b01d8d94a662c6bbf7cc6f1b6dd
-      size: 66859808
+      md5: 730c0cbd2d0278ca54dd1241ffca7e54
+      size: 298857248
     params:
       models/full/params_risks.yaml:
         graph:
@@ -8998,6 +9021,7 @@ stages:
             - III
             - IV
             - V
+            - VII
           lnl:
             I:
             - II
@@ -9008,6 +9032,7 @@ stages:
             IV:
             - V
             V: []
+            VII: []
         modalities:
           CT:
           - 0.76
@@ -9053,6 +9078,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9060,6 +9086,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9075,6 +9102,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9082,6 +9110,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9100,6 +9129,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9115,6 +9145,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9122,6 +9153,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9140,6 +9172,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9158,6 +9191,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9173,6 +9207,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9180,12 +9215,13 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
         - t_stages:
           - early
-          midext: false
+          midext: true
           mode: HMM
           diagnosis:
             ipsi:
@@ -9195,6 +9231,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9202,6 +9239,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               III: true
@@ -9212,7 +9250,12 @@ stages:
           diagnosis:
             ipsi:
               CT:
-                III: true
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9220,6 +9263,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               III: true
@@ -9238,6 +9282,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               III: true
@@ -9256,6 +9301,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               IV: true
@@ -9271,6 +9317,7 @@ stages:
                 III: true
                 IV: true
                 V: true
+                VII: true
             contra:
               CT:
                 I: true
@@ -9278,22 +9325,23 @@ stages:
                 III: true
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               IV: true
     outs:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: a765b80c879cb40b4a446e62965a180c
-      size: 150461216
+      md5: 8ce40a23918fddfa7058cea56a783343
+      size: 672455456
   compute-risks:
     cmd: "lyscripts compute risks --posteriors models/full/posteriors.hdf5 --risks
       models/full/risks.hdf5 --params models/full/params_risks.yaml --scenarios scenarios/risks.yaml\n"
     deps:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: a765b80c879cb40b4a446e62965a180c
-      size: 150461216
+      md5: 8ce40a23918fddfa7058cea56a783343
+      size: 672455456
     params:
       models/full/params_risks.yaml:
         graph:
@@ -9304,6 +9352,7 @@ stages:
             - III
             - IV
             - V
+            - VII
           lnl:
             I:
             - II
@@ -9314,6 +9363,7 @@ stages:
             IV:
             - V
             V: []
+            VII: []
         modalities:
           CT:
           - 0.76
@@ -9359,6 +9409,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9366,6 +9417,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9381,6 +9433,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9388,6 +9441,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9406,6 +9460,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9421,6 +9476,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9428,6 +9484,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9446,6 +9503,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9464,6 +9522,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
@@ -9479,6 +9538,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9486,12 +9546,13 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               II: true
         - t_stages:
           - early
-          midext: false
+          midext: true
           mode: HMM
           diagnosis:
             ipsi:
@@ -9501,6 +9562,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9508,6 +9570,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               III: true
@@ -9518,7 +9581,12 @@ stages:
           diagnosis:
             ipsi:
               CT:
-                III: true
+                I: false
+                II: false
+                III: false
+                IV: false
+                V: false
+                VII: false
             contra:
               CT:
                 I: false
@@ -9526,6 +9594,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               III: true
@@ -9544,6 +9613,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               III: true
@@ -9562,6 +9632,7 @@ stages:
                 III: false
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               IV: true
@@ -9577,6 +9648,7 @@ stages:
                 III: true
                 IV: true
                 V: true
+                VII: true
             contra:
               CT:
                 I: true
@@ -9584,11 +9656,35 @@ stages:
                 III: true
                 IV: false
                 V: false
+                VII: false
           involvement:
             contra:
               IV: true
     outs:
     - path: models/full/risks.hdf5
       hash: md5
-      md5: d02dea0c834cb4854f5e0751b786797e
-      size: 270368
+      md5: d98930216cd47289ff69f18ee238266f
+      size: 293408
+  render-figures:
+    cmd: "quarto render model.qmd --cache-refresh\n"
+    deps:
+    - path: model.qmd
+      hash: md5
+      md5: ed5be8fdac1dc2bc5a8ff887b5f3b734
+      size: 24529
+    - path: models
+      hash: md5
+      md5: e3567115fa0a0403b56171b87b8f391c.dir
+      size: 1440364679
+      nfiles: 19
+    - path: scenarios
+      hash: md5
+      md5: a9551bc01a05a0c1f064b9131c4d960b.dir
+      size: 7534
+      nfiles: 5
+    outs:
+    - path: figures
+      hash: md5
+      md5: e931510fcaa8e92c522127d9e0aeba83.dir
+      size: 1752926
+      nfiles: 11
