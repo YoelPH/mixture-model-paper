@@ -83,7 +83,7 @@ axes[1].grid(axis="y", color=COLORS["gray"], alpha=0.5)
 
 axes[1].legend(labelspacing=0.2)
 
-plt.savefig(paths.figure_dir / "fig-model-midext-evo.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-model-midext-evo.svg")
 plt.show()
 ```
 
@@ -156,7 +156,7 @@ axes[0].plot(
 axes[0].legend()
 axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
 
-plt.savefig(paths.figure_dir / "fig-model-burnin-history.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-model-burnin-history.svg")
 plt.show()
 ```
 
@@ -216,7 +216,7 @@ noext.set_ylabel(r"ipsi state $\boldsymbol{\xi}^\text{i}_\ell$")
 noext.set_xlabel(r"contra state $\boldsymbol{\xi}^\text{c}_k$")
 midext.set_xlabel(r"contra state $\boldsymbol{\xi}^\text{c}_k$")
 
-plt.savefig(paths.figure_dir / "fig-model-state-dist.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-model-state-dist.svg")
 plt.show()
 ```
 
@@ -338,7 +338,7 @@ split_legends(
   locs=[(0.54, 0.99), (0.4, 0.6), (0.12, 0.99)],
 )
 
-plt.savefig(paths.figure_dir / "fig-model-prevalences-overall.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-model-prevalences-overall.svg")
 plt.show()
 ```
 
@@ -458,7 +458,7 @@ split_legends(
   locs=[(0.13, 0.55), (0.5, 0.99)],
 )
 
-plt.savefig(paths.figure_dir / "fig-model-prevalences-with-ipsi.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-model-prevalences-with-ipsi.svg")
 plt.show()
 ```
 
@@ -522,7 +522,7 @@ split_legends(
   locs=[(0.05, 0.99), (0.6, 0.99)],
 )
 
-plt.savefig(paths.figure_dir / "fig-model-prevalences-midext.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-model-prevalences-midext.svg")
 plt.show()
 ```
 
@@ -533,14 +533,12 @@ Now, we want to make actual use of the model and predict the risk for occult die
 
 ```{python}
 import numpy as np
+import h5py
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerTuple
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, draw, COLORS, split_legends
 from scripts import paths, shared
-
-all_false = {lnl: False for lnl in ["I", "II", "III", "IV", "V", "VII"]}
-all_true = {lnl: True for lnl in ["I", "II", "III", "IV", "V", "VII"]}
 
 nrows, ncols = 1, 3
 plt.rcParams.update(shared.get_fontsizes())
@@ -551,190 +549,86 @@ plt.rcParams.update(shared.get_figsizes(
   aspect_ratio=1.3,
 ))
 
-fig, ax = plt.subplots(nrows=nrows, ncols=ncols)
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols)
 
-contents = []
+contents = {"II": [], "III": [], "IV": []}
+mean_lists = {"II": [], "III": [], "IV": []}
 defaults = {
   "density": True,
   "histtype": "stepfilled",
   "alpha": 0.7,
   "bins": 50,
 }
-
-# contra LNL II
-scenario = Scenario(
-  t_stages=["early"],
-  midext=False,
-  diagnosis={
-    "ipsi": {"CT": all_false},
-    "contra": {"CT": all_false},
-  },
-  involvement={"contra": {"II": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["green"],
-  label="early, lateralized; N0",
-))
-
-scenario = Scenario(
-  t_stages=["late"],
-  midext=False,
-  diagnosis={
-    "ipsi": {"CT": {"III": True}},
-    "contra": {"CT": all_false},
-  },
-  involvement={"contra": {"II": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["blue"],
-  label="adv., lateralized; ipsi LNL III",
-))
-
-scenario = Scenario(
-  t_stages=["early"],
-  midext=True,
-  diagnosis={
-    "ipsi": {"CT": all_false},
-    "contra": {"CT": all_false},
-  },
-  involvement={"contra": {"II": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["orange"],
-  label="early, mid. ext.; N0",
-))
-
-scenario = Scenario(
-  t_stages=["late"],
-  midext=True,
-  diagnosis={
-    "ipsi": {"CT": {"III": True}},
-    "contra": {"CT": all_false},
-  },
-  involvement={"contra": {"II": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["red"],
-  label="adv., mid. ext.; ipsi LNL III",
-))
-
-draw(ax[0], contents, xlims=(0., 15.))
-ax[0].legend(labelspacing=0.1)
-ax[0].set_xlabel("risk [%]")
-ax[0].set_yticks([])
-ax[0].set_xticks(np.linspace(0, 15, 6))
-ax[0].set_title("Contralateral LNL II")
-
-# contra LNL III
-contents = []
-
-scenario = Scenario(
-  t_stages=["early"],
-  midext=True,
-  diagnosis={
-    "ipsi": {"CT": all_false},
-    "contra": {"CT": all_false},
-  },
-  involvement={"contra": {"III": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["green"],
-  label="early, mid. ext.; N0",
-))
-
-scenario = Scenario(
-  t_stages=["late"],
-  midext=True,
-  diagnosis={
-    "ipsi": {"CT": all_false},
-    "contra": {"CT": all_false},
-  },
-  involvement={"contra": {"III": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["blue"],
-  label="adv., mid. ext.; N0",
-))
-
-scenario = Scenario(
-  t_stages=["late"],
-  midext=True,
-  diagnosis={
-    "ipsi": {"CT": {"III": True}},
-    "contra": {"CT": {"I": False, "II": True, "III": False, "IV": False, "V": False, "VII": False}},
-  },
-  involvement={"contra": {"III": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["red"],
-  label="adv., mid. ext.;\nipsi LNL III & contra LNL II",
-))
-
-draw(ax[1], contents, xlims=(0., 8.))
-ax[1].legend(labelspacing=0.1)
-ax[1].set_xlabel("risk [%]")
-ax[1].set_yticks([])
-ax[1].set_xticks(np.linspace(0, 8, 9))
-ax[1].set_title("Contralateral LNL III")
+t_stage_map = {"early": "early", "late": "adv."}
+midext_map = {False: "lateralized", True: "mid. ext."}
+colors = [COLORS["green"], COLORS["blue"], COLORS["orange"], COLORS["red"]]
 
 
-# contra LNL IV
-contents = []
+def get_diag_label(diagnosis) -> str:
+  label = ""
+  is_n0 = True
 
-scenario = Scenario(
-  t_stages=["late"],
-  midext=True,
-  diagnosis={
-    "ipsi": {"CT": {"III": True}},
-    "contra": {"CT": all_false},
-  },
-  involvement={"contra": {"IV": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["green"],
-  label="adv., mid. ext.; ipsi LNL III",
-))
+  ipsi_positive = [lnl for lnl, status in diagnosis.get("ipsi", {}).get("CT", {}).items() if status]
+  if len(ipsi_positive) > 0:
+    is_n0 = False
+    label += "i:" + ",".join(ipsi_positive)
 
-scenario = Scenario(
-  t_stages=["late"],
-  midext=True,
-  diagnosis={
-    "ipsi": {"CT": all_true},
-    "contra": {"CT": {"I": True, "II": True, "III": True, "IV": False, "V": False, "VII": False}},
-  },
-  involvement={"contra": {"IV": True}},
-)
-contents.append(Histogram.from_hdf5(
-  filename=paths.model_dir / "full" / "risks.hdf5",
-  dataname=scenario.md5_hash("risks"),
-  color=COLORS["red"],
-  label="adv., mid. ext.;\nsevere bilat. inv.",
-))
+  contra_positive = [lnl for lnl, status in diagnosis.get("contra", {}).get("CT", {}).items() if status]
+  if len(contra_positive) > 0:
+    is_n0 = False
+    label += "; c:" + ",".join(contra_positive)
 
-draw(ax[2], contents, xlims=(0., 5.))
-ax[2].legend(labelspacing=0.1)
-ax[2].set_xlabel("risk [%]")
-ax[2].set_yticks([])
-ax[2].set_xticks(np.linspace(0, 5, 6))
-ax[2].set_title("Contralateral LNL IV")
+  return label if not is_n0 else "N0"
 
-plt.savefig(paths.figure_dir / "fig-model-risks.png", dpi=400)
+def get_label(scenario: Scenario) -> str:
+  t = scenario.t_stages[0]
+  m = scenario.midext
+  d = eval(scenario.diagnosis)
+  return f"{t_stage_map[t]}; {midext_map[m]}; {get_diag_label(d)}"
+
+
+with h5py.File(name=paths.model_dir / "full" / "risks.hdf5", mode="r") as h5file:
+  for dset in h5file.values():
+    scenario = Scenario.from_dict(dict(dset.attrs))
+    for_subplot = list(eval(scenario.involvement)["contra"].keys()).pop()
+    mean_lists[for_subplot].append(dset[:].mean())
+
+indices = {}
+for lnl, means in mean_lists.items():
+  indices[lnl] = np.argsort(means)
+
+counter = {"II": 0, "III": 0, "IV": 0}
+with h5py.File(name=paths.model_dir / "full" / "risks.hdf5", mode="r") as h5file:
+  for dset in h5file.values():
+    scenario = Scenario.from_dict(dict(dset.attrs))
+    for_subplot = list(eval(scenario.involvement)["contra"].keys()).pop()
+    c = counter[for_subplot]
+    counter[for_subplot] += 1
+    contents[for_subplot].append(
+      Histogram(
+        values=dset[:],
+        kwargs={
+          "label": get_label(scenario),
+          "color": colors[indices[for_subplot][c]],
+        },
+      )
+    )
+
+xlims = {
+  "II": (0, 15),
+  "III": (0, 7),
+  "IV": (0, 5),
+}
+for ax, (lnl, content) in zip(axes, contents.items()):
+  draw(ax, content, xlims=xlims[lnl])
+  ax.set_title(f"Contralateral LNL {lnl}")
+  ax.set_yticks([])
+  ax.set_xlabel("risk [%]")
+  ax.legend(labelspacing=0.1)
+
+axes[0].set_xticks(np.linspace(xlims["II"][0], xlims["II"][1], 6))
+
+plt.savefig(paths.figure_dir / "fig-model-risks.svg")
 plt.show()
 ```
 
@@ -799,6 +693,6 @@ ax.legend(handles=[*handles, h], labels=[*labels, "component beta PDFs"])
 ax.set_xlabel("prevalence [%]")
 ax.set_yticks([])
 
-plt.savefig(paths.figure_dir / "fig-model-marginal-pdf.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-model-marginal-pdf.svg")
 plt.show()
 ```

@@ -123,7 +123,7 @@ group_and_plot(
   colors=[COLORS["blue"], COLORS["orange"]],
 )
 
-plt.savefig(paths.figure_dir / "fig-data-strat.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-data-strat.svg")
 plt.show()
 ```
 
@@ -172,7 +172,7 @@ axes = plot_involvement_upset(
   lnls=[tpl[-1] for tpl in get_lnl_cols("ipsi")],
 )
 
-plt.savefig(paths.figure_dir / "fig-data-upset-ipsi.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-data-upset-ipsi.svg")
 plt.show()
 ```
 
@@ -189,6 +189,6 @@ axes = plot_involvement_upset(
   lnls=[tpl[-1] for tpl in get_lnl_cols("contra")],
 )
 
-plt.savefig(paths.figure_dir / "fig-data-upset-contra.png", dpi=400)
+plt.savefig(paths.figure_dir / "fig-data-upset-contra.svg")
 plt.show()
 ```
