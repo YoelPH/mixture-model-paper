@@ -9,14 +9,14 @@ stages:
       data/2021-clb-oropharynx.csv
       data/2023-isb-multisite.csv
       data/2023-clb-multisite.csv
-      data/2023-hvh-oropharynx.csv
+      data/2024-hvh-oropharynx.csv
       -o data/joined.csv
     deps:
     - data/2021-clb-oropharynx.csv
     - data/2021-usz-oropharynx.csv
     - data/2023-clb-multisite.csv
     - data/2023-isb-multisite.csv
-    - data/2023-hvh-oropharynx.csv
+    - data/2024-hvh-oropharynx.csv
     outs:
     - data/joined.csv
 
