@@ -1,17 +1,17 @@
----
+﻿---
 title: "Probabilistic Model of Bilateral Lymphatic Spread in Head and Neck Cancer"
 abstract: |
-  In current practice, large parts of the contralateral lymph system are included in the elective clinical target volume (CTV-N) of oropharyngeal squamous cell carcinoma (OPSCC) patients. Guidelines on how to define the CTV-N are mostly based on prevalences of nodal involvement in the different lymph node levels (LNLs) and do not consider the detailed, individual diagnosis of a patient.
-  
-  In this work, we present a probabilistic model for bilateral lymphatic tumor progression in OPSCC. Its aim is to predict the personal risk for occult disease in any LNL, given the patient's clincal diagnosis, T-category, and lateralization of the primary tumor. The model represents each of the LNLs I, II, III, IV, V, and VII of both sides of the neck as a hidden binary random variable that are connected to the tumor and among each other via arcs that correspond to spread probabilities per time-step. These spread probability rates are learned via Markov chain Monte Carlo (MCMC) sampling from a dataset of 833 OPSCC patients.
+  Purpose: According to current guidelines for elective nodal irradiation of oropharyngeal squamous cell carcinoma (OPSCC) patients, large parts of the contralateral lymphatic system are included in the elective clinical target volume (CTV-N), even for lateralized tumors without clinical lymph node involvement in the contralateral neck. In this work, we present a probabilistic model for bilateral lymphatic tumor progression in OPSCC to predict the personal risk for occult disease in any lymph node level (LNL), given the patient's clinical lymph node involvement, T-stage, and lateralization of the primary tumor.
 
-  The model is able to describe the data well and may in the future be used to only include LNLs in a CTV-N that show a risk above a specific threshold for that particular patient's diagnosis. E.g., it predicts the risk for occult disease in contralateral LNL II to be below 5% unless the tumor crosses the mid-sagittal line.
+  Methods: We extend a hidden markov model for lymphatic tumor progression, which was previously developed for ipsilateral lymph node involvement, to the contralateral neck. The model represents each of the LNLs I, II, III, IV, V, and VII of both sides of the neck as a hidden binary random variable with states healthy and involved. LNLs are connected to the tumor and among each other via arcs that correspond to spread probabilities. These spread probability rates are learned via Markov chain Monte Carlo (MCMC) sampling from a dataset of 833 OPSCC patients. 
+
+  Results: The model is able to describe the data on lymph node involvement well with a small number of interpretable parameters. Midline extension of the primary tumor is the main risk factor for contralateral involvement. In addition, the risk of occult metastases in contralateral lymph node level increases with more advanced T-stage and more severe ipsilateral involvement. The probability of involvement in contralateral level III is very low if the upstream level II is clinically negative. Similarly, the probability of involvement in contralateral level IV is very low if the upstream level III is clinically negative.
+
+  Conclusions: The model may guide personalized volume reduction of the elective CTV-N. It suggests that the contralateral neck may be spared from elective irradiation for lateralized tumors not crossing the midline. In patients with primary tumors crossing the midline but clinically negative contralateral neck, the contralateral elective irradiation may be limited to level II. 
 ---
 
 ```{python}
 #| echo: false
-
-
 import re
 
 import pandas as pd
@@ -42,28 +42,24 @@ half = full
 
 # Introduction
 
-When treating head and neck squamous cell carcinomas (HNSCC) with radiotherapy or surgery, not only the primary tumor and the clinically detected lymph node metastases are targeted. Per current guidelines, large volumes of the neck - lymph node levels (LNLs) - are part of the the elective clinical target volume (CTV-N) [@gregoire_ct-based_2003;@gregoire_delineation_2014;@gregoire_delineation_2018;@eisbruch_intensity-modulated_2002;@biau_selection_2019;@chao_determination_2002;@vorwerk_guidelines_2011;@ferlito_elective_2009]. This is to minimize the risk of regional recurrences due to missed microscopic disease which cannot be detected by current in-vivo imaging modalities such as computed tomography (CT), magnetic resonance imaging (MRI), or positron emission tomography (PET).
+When treating head and neck squamous cell carcinomas (HNSCC) with radiotherapy or surgery, not only the primary tumor and the clinically detected lymph node metastases are targeted. Per current guidelines, large volumes of the neck are part of the the elective clinical target volume (CTV-N) [@gregoire_ct-based_2003;@gregoire_delineation_2014;@gregoire_delineation_2018;@eisbruch_intensity-modulated_2002;@biau_selection_2019;@chao_determination_2002;@vorwerk_guidelines_2011;@ferlito_elective_2009]. This is to minimize the risk of regional recurrences due to untreated microscopic disease which cannot be detected by current in-vivo imaging modalities such as computed tomography (CT), magnetic resonance imaging (MRI), or positron emission tomography (PET). However, minimizing the risk of missing occult disease in the lymph drainage region must be balanced against the toxicity related to unnecessary treatment of healthy tissue.
 
-Minimizing this risk of missing occult disease in the lymph drainage region must be balanced against the toxicity related to unnecessary treatment of healthy tissue.
+The aforementioned guidelines for the definition of the CTV-N are based on anatomically defined lymph node levels (LNL) [@gregoire_delineation_2014] and the overall prevalence of lymph node metastases in the LNLs. Based on this, they recommend extensive irradiation of both sides of the neck for a majority of patients. However, this prevalence the guidelines are based on does not take into account an individual patient's state of tumor progression, which may have a great impact on a patient's personal risk for occult disease in a given LNL. For example, a patient with substantial nodal involvement in the ipsilateral side and an advanced primary tumor that crosses the mid-sagittal plane would receive extensive elective irradiation of the contralateral LNLs II, III, and IVa. However, if the patient presented with no clinically detectable nodal disease (cN0) and only a small, clearly lateralized T1 tumor, the same contralateral CTV-N would be recommended [@biau_selection_2019].
 
-The aforementioned guidelines for the definition of the CTV-N quantify this risk via the overall prevalence of lymph node metastases in the LNLs. Based on this, they recommend extensive irradiation of both sides of the neck for a majority of patients. However, this prevalence the guidelines are based on does not take into account the individual state of tumor progression, which may have a great impact on a patient's personal risk for occult disease in a given LNL. For example, a patient with substantial nodal involvement in the ipsilateral side and an advanced primary tumor that crosses the mid-sagittal plane would receive extensive elective irradiation of the contralateral LNLs II, III, and IVa. However, if the patient presented with no clinically detectable nodal disease (cN0) and only a small, clearly lateralized T1 tumor, the same contralateral CTV-N would be recommended [@biau_selection_2019].
+To better quantify this personalized risk of occult disease we have previously developed an intuitive, probabilistic hidden Markov model [@ludwig_hidden_2021;@ludwig_modelling_2023] which was originally based on a conceptually similar Bayesian network model [@pouymayou_bayesian_2019]. So far, these models were limited to the ipsilateral side of the neck. The main contribution of this work will be to extend the formalism to include risk predictions for the contralateral side as well. We believe this holds the potential to reduce the electively irradiated volumes in the contralateral neck for patients whose individual risk for occult disease is low. In turn, this may substantially reduce the toxicity from irradiation and the associated decrease in quality of life.
 
-To better quantify this personalized risk we have previously developed an intuitive, probabilistic hidden Markov model [@ludwig_hidden_2021;@ludwig_modelling_2023] which was originally based on a conceptually similar Bayesian network model [@pouymayou_bayesian_2019]. So far, these models were limited to the ipsilateral side of the neck. The main focus of this work will be to extend the formalism of these previous works to include risk predictions for the contralateral side as well. We believe this holds the potential to greatly reduce the electively irradiated volumes in the contralateral neck for patients whose individual risk for occult disease in that side is low. In turn, this may substantially reduce the toxicity from irradiation and the associated decrease in quality of life.
+The main contributions of this paper are as follows:
 
-In the following, we begin by inspecting the dataset the model is built upon (@sec-data) and from it formulate some properties we require the bilateral model extension to have (@sec-requirements).
+1. In section @sec-data we present a multi-centric dataset on lymph node involvement in 833 OPSCC patients. Based on the dataset the main risk factors for contralateral lymph node involvement are identified and the requirements for the bilateral model extension are described (@sec-requirements).
 
-After that, in @sec-unilateral, we briefly summarize the original model formalism before we extend it to the contralateral side starting in @sec-ext-to-contra.
+2. In @sec-ext-to-contra we present a bilateral HMM of lymphatic progression that accounts for the T-stage lateralization of the primary tumor as well as clinical involvement as risk factors for occult contralateral involvement. In @sec-methods we describe how the model training and the computational experiments were set up.
 
-Next, we describe how the model training and the computational experiments were set up in @sec-methods and present the results in @sec-results, followed by a closing discussion (@sec-discussion).
+3. In the results in @sec-results, we demonstrate that the model is able to describe the patterns of contralateral lymph node involvement observed in the dataset, and we apply the model to estimating risk of occult disease for typical patients. In @sec-discussion, implications for volume-deescalated radiotherapy are discussed.
 
 
 # Data on Lymphatic Progression Patterns {#sec-data}
 
-Originally, the only available data of detailed - i.e. per patient and per LNL - lymphatic involvement was a reconstructed table from the findings in @sanguineti_defining_2009, which included only ipsilateral nodal involvement for the LNLs I to IV.
-
-To be able to create models for lymphatic tumor progression that include more LNLs and the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the involvement of every patient individually and per lymph node level in tabular form, in addition to other clinico-pathological information such as age, T-category, and HPV p16 status.
-
-Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. Note that the data from the Inselspital Bern and the Centre Léon Bérard only consists of patients treated with some form of neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset.
+To be able to create models for lymphatic tumor progression that includes all relevant LNLs including the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the lymph node involvement per LNL of every patient individually in tabular form, in addition to other primary tumor and patient characteristics such as T-category, subside, and lateralization of the primary tumor, and HPV p16 status. Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. The data from the Inselspital Bern and the Centre Léon Bérard only consists of patients who received a neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset. The majority of patients from the University Hospital Zürich and the Vall d'Hebron Barcelona Hospital was treated with definitive radiotherapy.
 
 ```{python}
 #| echo: false
@@ -162,7 +158,7 @@ grouped.index.name = "Institution"
 ```
 
 
-## Contralateral Involvement Prevalence {#sec-data-strat}
+## Patterns of Contralateral Involvement {#sec-data-strat}
 
 These datasets allow us to investigate correlations between the involvement of individual LNLs, or between risk factors and patterns of involvement. In @fig-data-strat, we have plotted the prevalence of each contralateral LNL's involvement, stratified by T-category, ipsilateral number of involved LNLs, and whether the tumor extended over the mid-sagittal line. A similar but more complete stratification is also tabulated in the appendix in @tbl-data-strat.
 
