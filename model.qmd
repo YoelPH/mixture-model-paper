@@ -238,7 +238,6 @@ import numpy as np
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
-from scripts.marginalize_midext import possible_prevalence_combinations, SummedBetaPosterior
 
 def turn_axis_off(axes):
   axes.set_xticks([])
@@ -293,20 +292,11 @@ for i, t_stage in enumerate(["early", "late"]):
           label="prediction",
         )
       )
-      # content.append(
-      #   BetaPosterior.from_hdf5(
-      #     filename=paths.model_dir / "full" / "prevalences_overall.hdf5",
-      #     dataname=scenario.md5_hash("prevalences"),
-      #     color=color,
-      #   )
-      # )
-      combs = possible_prevalence_combinations(data, scenario)
       content.append(
-        SummedBetaPosterior(
-          num_success=combs.matches.values,
-          num_total=combs.total.values,
-          permutations=combs.permutations.values,
-          kwargs={"color": color},
+        BetaPosterior.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_overall.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
         )
       )
     draw(
@@ -353,10 +343,6 @@ import numpy as np
 from lyscripts.scenario import Scenario
 from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
 from scripts import paths, shared
-from scripts.marginalize_midext import (
-  possible_prevalence_combinations,
-  SummedBetaPosterior,
-)
 
 def turn_axis_off(axes):
   axes.set_xticks([])
@@ -414,20 +400,11 @@ for i, t_stage in enumerate(["early", "late"]):
           label="prediction",
         )
       )
-      # content.append(
-      #   BetaPosterior.from_hdf5(
-      #     filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
-      #     dataname=scenario.md5_hash("prevalences"),
-      #     color=color,
-      #   )
-      # )
-      combs = possible_prevalence_combinations(data, scenario)
       content.append(
-        SummedBetaPosterior(
-          num_success=combs.matches.values,
-          num_total=combs.total.values,
-          permutations=combs.permutations.values,
-          kwargs={"color": color},
+        BetaPosterior.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_with_ipsi.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
         )
       )
     draw(
@@ -629,70 +606,5 @@ for ax, (lnl, content) in zip(axes, contents.items()):
 axes[0].set_xticks(np.linspace(xlims["II"][0], xlims["II"][1], 6))
 
 plt.savefig(paths.figure_dir / "fig-model-risks.svg")
-plt.show()
-```
-
-
-# Illustrating the Marginalization over Beta PDFs
-
-```{python}
-import matplotlib.pyplot as plt
-import numpy as np
-from lyscripts.scenario import Scenario
-from lyscripts.plot.utils import draw, COLORS, BetaPosterior
-from lyscripts.compute.prevalences import compute_observed_prevalence
-from scripts import paths, shared, COL
-from scripts.marginalize_midext import (
-  possible_prevalence_combinations,
-  SummedBetaPosterior,
-)
-
-data = shared.get_data()
-
-scenario = Scenario(
-  t_stages=["early"],
-  midext=True,
-  diagnosis={"contra": {"max_llh": {"II": True}}},
-)
-combs = possible_prevalence_combinations(data, scenario)
-summed_beta = SummedBetaPosterior(
-  num_success=combs.matches.values,
-  num_total=combs.total.values,
-  permutations=combs.permutations.values,
-  kwargs={"label": "marginalized PDF", "color": COLORS["blue"]},
-)
-num_match, num_total = compute_observed_prevalence(data, scenario, mapping=None)
-naive_beta = BetaPosterior(
-  num_success=num_match,
-  num_total=num_total,
-  kwargs={"color": COLORS["green"], "label": "naive beta PDF"},
-)
-
-plt.rcParams.update(shared.get_fontsizes())
-plt.rcParams.update(shared.get_figsizes(width=17./2.))
-fig, ax = plt.subplots()
-draw(ax, contents=[naive_beta, summed_beta], xlims=(0., 50.))
-
-x = np.linspace(*ax.get_xlim(), 300)
-perm_sum = combs.permutations.sum()
-for _, row in combs.sort_values("permutations").iterrows():
-  beta = BetaPosterior(
-    num_success=row.matches,
-    num_total=row.total,
-  )
-  h, = ax.plot(
-    x, beta.pdf(x),
-    alpha=0.6 * (row.permutations / perm_sum)**0.5,
-    color=COLORS["red"],
-    zorder=1,
-  )
-
-ax.set_ylim(bottom=0.)
-handles, labels = ax.get_legend_handles_labels()
-ax.legend(handles=[*handles, h], labels=[*labels, "component beta PDFs"])
-ax.set_xlabel("prevalence [%]")
-ax.set_yticks([])
-
-plt.savefig(paths.figure_dir / "fig-model-marginal-pdf.svg")
 plt.show()
 ```
