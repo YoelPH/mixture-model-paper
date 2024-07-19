@@ -1,5 +1,8 @@
-"""
-Marginalize over *observd* midline extension status using sums of beta posteriors.
+"""Plot observed and predicted prevalence of midline extension.
+
+Note: This module contains functions and classes for marginalizing over matching
+patterns where midline extension is unknown. We decided not to use this approach
+in the final analysis, but the code is kept here for reference.
 """
 
 import math
