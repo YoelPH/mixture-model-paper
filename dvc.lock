@@ -6089,7 +6089,7 @@ stages:
       size: 5970
     - path: data/reduced.csv
       hash: md5
-      md5: 4013638719b10c5c5c1c1015259ace2a
+      md5: 0e948bcfa0b0521194f3cddb4a9f14cd
       size: 557587
     - path: figures
       hash: md5
@@ -6098,8 +6098,8 @@ stages:
       nfiles: 11
     - path: manuscript.qmd
       hash: md5
-      md5: 0fdf9f2e534894d1a5837766f2bbd8a6
-      size: 67375
+      md5: 4061c9060cbc804645b2aed0cfc25ad3
+      size: 69401
     - path: model.qmd
       hash: md5
       md5: a49cce1a44b07858a7843ef11aecae48
@@ -6112,12 +6112,12 @@ stages:
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: d7eaee4b2b6b53fc8cb7eaaec04c613b
-      size: 75251
+      md5: a2b7e2ddd09815e036044c5bc370c0d4
+      size: 76613
     - path: .output/manuscript.pdf
       hash: md5
-      md5: c2d5804b4d87beccb7adc7a57a38eb55
-      size: 750653
+      md5: 1a27239c7bd4f61cdd6dcca2c0501d80
+      size: 752181
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -7996,7 +7996,7 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: 4013638719b10c5c5c1c1015259ace2a
+      md5: 0e948bcfa0b0521194f3cddb4a9f14cd
       size: 557587
     - path: requirements.in
       hash: md5
@@ -8509,7 +8509,7 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: 4013638719b10c5c5c1c1015259ace2a
+      md5: 0e948bcfa0b0521194f3cddb4a9f14cd
       size: 557587
     - path: models/full/priors.hdf5
       hash: md5
@@ -8678,7 +8678,7 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: 4013638719b10c5c5c1c1015259ace2a
+      md5: 0e948bcfa0b0521194f3cddb4a9f14cd
       size: 557587
     - path: models/full/priors.hdf5
       hash: md5
@@ -8938,7 +8938,7 @@ stages:
     deps:
     - path: data/reduced.csv
       hash: md5
-      md5: 4013638719b10c5c5c1c1015259ace2a
+      md5: 0e948bcfa0b0521194f3cddb4a9f14cd
       size: 557587
     - path: models/full/samples.hdf5
       hash: md5
