@@ -44,9 +44,8 @@ model:
     4: "late"
 
 ########################################################################################
-# Under this key we define the specficity and sensitivity for a range
-# of diagnostic modalities. They are taken from literature and during
-# sampling, everything that's not commented our here will be used for
-# inference.
+# Under this key we define the specificity and sensitivity for a range
+# of diagnostic modalities.
 modalities:
   CT: [0.76, 0.81]
+  FNA: [0.98, 0.80]

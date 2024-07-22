@@ -65,6 +65,19 @@ scenarios:
         CT: {I: false, II: true , III: false, IV: false, V: false, VII: false}
       contra:
         CT: {I: false, II: true , III: false, IV: false, V: false, VII: false}
+        FNA: {II: true}
+    involvement:
+      contra: {III: true}
+
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {I: false, II: true , III: false, IV: false, V: false, VII: false}
+      contra:
+        CT: {I: false, II: true , III: false, IV: false, V: false, VII: false}
+        FNA: {II: true}
     involvement:
       contra: {III: true}
 
@@ -81,28 +94,6 @@ scenarios:
 
 # and lastly, contra LNL IV
   - t_stages: [late]
-    midext: false
-    mode: "HMM"
-    diagnosis:
-      ipsi:
-        CT: {I: false, II: true , III: true , IV: true , V: false, VII: false}
-      contra:
-        CT: {I: false, II: true , III: true , IV: false, V: false, VII: false}
-    involvement:
-      contra: {IV: true}
-
-  - t_stages: [late]
-    midext: true
-    mode: "HMM"
-    diagnosis:
-      ipsi:
-        CT: {I: false, II: true , III: true , IV: true , V: false, VII: false}
-      contra:
-        CT: {I: false, II: true , III: true , IV: false, V: false, VII: false}
-    involvement:
-      contra: {IV: true}
-
-  - t_stages: [late]
     midext: true
     mode: "HMM"
     diagnosis:
@@ -112,3 +103,27 @@ scenarios:
         CT: {I: false, II: true , III: false, IV: false, V: false, VII: false}
     involvement:
       contra: {IV: true}
+
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {I: false, II: true , III: true , IV: true , V: false, VII: false}
+      contra:
+        CT: {I: false, II: true , III: true , IV: false, V: false, VII: false}
+    involvement:
+      contra: {IV: true}
+
+  - t_stages: [late]
+    midext: true
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {I: false, II: true , III: true , IV: true , V: false, VII: false}
+      contra:
+        CT: {I: false, II: true , III: true , IV: false, V: false, VII: false}
+        FNA: {III: true}
+    involvement:
+      contra: {IV: true}
+
