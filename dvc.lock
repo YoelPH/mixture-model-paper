@@ -6093,31 +6093,31 @@ stages:
       size: 557587
     - path: figures
       hash: md5
-      md5: e9f9d05a97ce9b18839ac60c5869c98a.dir
-      size: 1381425
+      md5: 9289c97087bbcff003d4730ba5d80d49.dir
+      size: 1390835
       nfiles: 11
     - path: manuscript.qmd
       hash: md5
-      md5: db6060d653818ccce9a0e078bf16b0ac
-      size: 63482
+      md5: a6da74fc611d7d12d379f955f37c33ac
+      size: 64264
     - path: model.qmd
       hash: md5
-      md5: bba996ccf7452e10aba3301792b715d6
-      size: 20012
+      md5: 5dbb3b6d3fa6e62c3900e67973ff02ac
+      size: 20159
     - path: models
       hash: md5
-      md5: 714787c8ca5d655e4d54939113a9bc89.dir
-      size: 1513407327
+      md5: 6984faae564493bbf4686402809addc9.dir
+      size: 1588148895
       nfiles: 16
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 3abaa9c8fb44543c9555f96ba8c7e0e5
-      size: 70685
+      md5: 061b25e14c6b933cdcaf7e02554d409b
+      size: 71426
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 3ce0c6f5afa03fb085acef555db4e5b9
-      size: 652516
+      md5: c2b0215ea2881a932204433d8db2a103
+      size: 662135
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -9250,6 +9250,30 @@ stages:
               CT:
                 I: false
                 II: true
+                III: false
+                IV: false
+                V: false
+                VII: false
+            contra:
+              CT:
+                I: false
+                II: true
+                III: false
+                IV: false
+                V: false
+                VII: false
+          involvement:
+            contra:
+              III: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: true
                 III: true
                 IV: true
                 V: false
@@ -9318,16 +9342,16 @@ stages:
     outs:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: 9bc9cd3015f61fc6a24aaf80b9e6aab4
-      size: 747172640
+      md5: f42ef406f0f0793becbc957b8f12203e
+      size: 821889824
   compute-risks:
     cmd: "lyscripts compute risks --posteriors models/full/posteriors.hdf5 --risks
       models/full/risks.hdf5 --params models/full/params_risks.yaml --scenarios scenarios/risks.yaml\n"
     deps:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: 9bc9cd3015f61fc6a24aaf80b9e6aab4
-      size: 747172640
+      md5: f42ef406f0f0793becbc957b8f12203e
+      size: 821889824
     params:
       models/full/params_risks.yaml:
         graph:
@@ -9567,6 +9591,30 @@ stages:
               CT:
                 I: false
                 II: true
+                III: false
+                IV: false
+                V: false
+                VII: false
+            contra:
+              CT:
+                I: false
+                II: true
+                III: false
+                IV: false
+                V: false
+                VII: false
+          involvement:
+            contra:
+              III: true
+        - t_stages:
+          - late
+          midext: true
+          mode: HMM
+          diagnosis:
+            ipsi:
+              CT:
+                I: false
+                II: true
                 III: true
                 IV: true
                 V: false
@@ -9635,28 +9683,28 @@ stages:
     outs:
     - path: models/full/risks.hdf5
       hash: md5
-      md5: 71a4460ce7f044fdeac5a64ae46ee175
-      size: 244640
+      md5: 19c57cd60e3eebcb79f41583e056d615
+      size: 269024
   render-figures:
     cmd: "quarto render model.qmd --cache-refresh\n"
     deps:
     - path: model.qmd
       hash: md5
-      md5: bba996ccf7452e10aba3301792b715d6
-      size: 20012
+      md5: 5dbb3b6d3fa6e62c3900e67973ff02ac
+      size: 20159
     - path: models
       hash: md5
-      md5: 714787c8ca5d655e4d54939113a9bc89.dir
-      size: 1513407327
+      md5: 6984faae564493bbf4686402809addc9.dir
+      size: 1588148895
       nfiles: 16
     - path: scenarios
       hash: md5
-      md5: 329e345896ab5c055c65570c20c15ba1.dir
-      size: 7298
+      md5: bcdd4978178b56d7a4cb8cb65da14035.dir
+      size: 7595
       nfiles: 5
     outs:
     - path: figures
       hash: md5
-      md5: e9f9d05a97ce9b18839ac60c5869c98a.dir
-      size: 1381425
+      md5: 9289c97087bbcff003d4730ba5d80d49.dir
+      size: 1390835
       nfiles: 11
