@@ -90,18 +90,18 @@ This instructs the [DVC] tool to fetch the data from the GitHub repository [lyda
 
 ## Reproduce the Computations
 
-The sampling of the models may take quite a while and is orchestrated by the tool [DVC]. There is not really a need to rerun these computations as all results are stored in an Azure blob storage container.
+The sampling of the models may take quite a while and is orchestrated by the tool [DVC]. There is not really a need to rerun these computations as all results are stored in an Azure blob storage container. To fetch them, run
 
 But if you want to reproduce this part, too, then go ahead and run
 
 ```sh
-dvc repro
+dvc pull -r azure
 ```
 
-Otherwise, you can pull the computations from our Azure blob storage container via
+But if you want to rerun the full, lengthy computations as well, then simply do this:
 
 ```sh
-dvc pull -r azure
+dvc repro
 ```
 
 Regardless of what you do, you should now have some `.hdf5` files in the `models` directory (or rather in its subdirectories). These contain the drawn samples and computed risks and prevalences.
