@@ -6093,7 +6093,7 @@ stages:
       size: 557587
     - path: figures
       hash: md5
-      md5: 9289c97087bbcff003d4730ba5d80d49.dir
+      md5: b4d7040c301141a4f497e203176983c6.dir
       size: 1390835
       nfiles: 11
     - path: manuscript.qmd
@@ -6106,18 +6106,18 @@ stages:
       size: 20159
     - path: models
       hash: md5
-      md5: 6984faae564493bbf4686402809addc9.dir
+      md5: e92a77b8047eea45fc5ccfaa031b96c2.dir
       size: 1588148895
       nfiles: 16
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 341755e4f8dafa03c515f89e39a9f26f
-      size: 71527
+      md5: 821bab25adb7a3bbfc672b7e3bc88232
+      size: 71523
     - path: .output/manuscript.pdf
       hash: md5
-      md5: b5dab30147d6905a12bd6da5a796bc6f
-      size: 662391
+      md5: 742708a970cd2aafd73ebbb59ea7a8b6
+      size: 662388
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -9342,7 +9342,7 @@ stages:
     outs:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: f42ef406f0f0793becbc957b8f12203e
+      md5: 20ca1be5739d0404a7a3d8e0f4045dd9
       size: 821889824
   compute-risks:
     cmd: "lyscripts compute risks --posteriors models/full/posteriors.hdf5 --risks
@@ -9350,7 +9350,7 @@ stages:
     deps:
     - path: models/full/posteriors.hdf5
       hash: md5
-      md5: f42ef406f0f0793becbc957b8f12203e
+      md5: 20ca1be5739d0404a7a3d8e0f4045dd9
       size: 821889824
     params:
       models/full/params_risks.yaml:
@@ -9683,7 +9683,7 @@ stages:
     outs:
     - path: models/full/risks.hdf5
       hash: md5
-      md5: 19c57cd60e3eebcb79f41583e056d615
+      md5: 6554489b326b06ad4d4bf929fa9df15c
       size: 269024
   render-figures:
     cmd: "quarto render model.qmd --cache-refresh\n"
@@ -9694,7 +9694,7 @@ stages:
       size: 20159
     - path: models
       hash: md5
-      md5: 6984faae564493bbf4686402809addc9.dir
+      md5: e92a77b8047eea45fc5ccfaa031b96c2.dir
       size: 1588148895
       nfiles: 16
     - path: scenarios
@@ -9705,6 +9705,6 @@ stages:
     outs:
     - path: figures
       hash: md5
-      md5: 9289c97087bbcff003d4730ba5d80d49.dir
+      md5: b4d7040c301141a4f497e203176983c6.dir
       size: 1390835
       nfiles: 11
