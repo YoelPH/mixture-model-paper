@@ -59,7 +59,7 @@ The main contributions of this paper are as follows:
 
 # Data on Lymphatic Progression Patterns {#sec-data}
 
-To be able to create models for lymphatic tumor progression that includes all relevant LNLs including the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the lymph node involvement per LNL of every patient individually in tabular form, in addition to other primary tumor and patient characteristics such as T-category, subside, and lateralization of the primary tumor, and HPV p16 status. Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. The data from the Inselspital Bern and the Centre Léon Bérard only consists of patients who received a neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset. The majority of patients from the University Hospital Zürich and the Vall d'Hebron Barcelona Hospital was treated with definitive radiotherapy.
+To be able to create models for lymphatic tumor progression that include all relevant LNLs including the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas. It reports the lymph node involvement per LNL of every patient individually in tabular form, in addition to other primary tumor and patient characteristics such as T-category, subside, and lateralization of the primary tumor, and HPV p16 status. Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. The data from the Inselspital Bern and the Centre Léon Bérard only consist of patients who received a neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset. The majority of patients from the University Hospital Zürich and the Vall d'Hebron Barcelona Hospital was treated with definitive radiotherapy.
 
 ```{python}
 #| echo: false
@@ -176,7 +176,7 @@ Lastly, the right panel in @fig-data-strat shows that patients with a tumor cros
 Based on the observations of the [previous section](#sec-data-strat), any potential model that aims to also predict the risk for contralateral nodal involvement, should be able to take the following into account:
 
 1. More advanced T-category should lead to higher risk for nodal disease. One approach to achieve this via the expected time of diagnosis has already been developed in the form of a hidden Markov model [@ludwig_hidden_2021].
-2. The degree of ipsilateral involvement should give the model information on the time that may have passed between onset and diagnosis of the disease. This should come in addition to what can be inferred about this time from T-category alone.
+2. The degree of ipsilateral involvement should give the model information on the time that may have passed between onset and diagnosis of the disease. This should come in addition to what can be inferred about the time from T-category alone.
 3. A tumor that extends over the mid-sagittal line should yield contralateral metastases with much higher probability.
 
 Over the course of this work, we will first briefly recap the mentioned HMM in @sec-unilateral, which was so far used to model ipsilateral lymphatic progression only. Then, we intuitively extend it to include the contralateral side as well in @sec-ext-to-contra. In this section, we also introduce a way of modelling the tumor's midline extension as a random variable (@sec-midline) and lastly talk about how it may affect the contralateral spread in @sec-params-symmetry.
@@ -249,7 +249,7 @@ In this work, we use binomial distributions $\mathfrak{B} \left( t_D, p_{\text{T
 With the formalism introduced above, we can write the likelihood function for a patient to present with a diagnosis consisting of an observed state and a T-category $d = \left( \boldsymbol{\zeta}_i, \text{T}x \right)$ as follows:
 
 $$
-\ell = P \left( \mathbf{Z} = \boldsymbol{\zeta}_i \mid \text{T}x \right) = \sum_{t=0}^{t_\text{max}} \left[ \boldsymbol{\xi}_0 \cdot \mathbf{A} \cdot \mathbf{B} \right]_i \cdot P \left( t \mid \text{T}x \right)
+\ell = P \left( \mathbf{Z} = \boldsymbol{\zeta}_i \mid \text{T}x \right) = \sum_{t=0}^{t_\text{max}} \left[ \boldsymbol{\xi}_0 \cdot \mathbf{A}^t \cdot \mathbf{B} \right]_i \cdot P \left( t \mid \text{T}x \right)
 $$ {#eq-single-patient-llh}
 
 Above, the quantity inside $\left[ \ldots \right]_i$ denotes the $i$-th component of the vector that is the result of the vector and matrix multiplications in the square brackets. Note that it is also possible to account for missing involvement information: If a diagnosis (like fine needle aspiration (FNA)) is only available for a subset of all LNLs, we can sum over all those possible complete observed states $\boldsymbol{\zeta}_j$ that match the provided diagnosis.
@@ -445,7 +445,7 @@ Our pre-training consensus was formed by considering all reported diagnostic inf
 
 For parameter inference, we used the Python package [`emcee`] [@foreman-mackey_emcee_2013]. It implements efficient MCMC sampling algorithms that employ multiple parallel samplers for affine invariance and better performance on multi-core CPUs. The sample proposal algirothms used by us are based on differential evolution moves [@ter_braak_differential_2008;@nelson_run_2013]. The [`emcee`] library was provided with the likelihood implemented by our [`lymph-model`] Python package.
 
-For each dimension in the parameter space of the model, we initialized {{< var sampling.walkers_per_dim >}} of these parallel samplers, called "walkers", with random values in the unit cube. Every time all of these walkers advanced {{< var sampling.check_interval >}} steps, the autocorrelation time of the chains was estimated. For short chains, this estimate is not trustworthy, but stabilizes for longer chains. We therefore considered a sampling to be converged when two criteria where met:
+For each dimension in the parameter space of the model, we initialized {{< var sampling.walkers_per_dim >}} of these parallel samplers, called "walkers", with random values in the unit cube. Every time all of these walkers advanced {{< var sampling.check_interval >}} steps, the autocorrelation time of the chains was estimated. For short chains, this estimate is not trustworthy, but stabilizes for longer chains. We therefore considered a sampling to be converged when two criteria were met:
 
 1. The change in the autocorrelation time was less then {{< var sampling.rel_thresh >}}.
 2. The estimate of the autocorrelation dropped below $n$ / {{< var sampling.trust_fac >}} where $n$ is the length of the chain up to that point.
@@ -599,7 +599,7 @@ Taken together, T-category and ipsilateral involvement may still considerably im
 
 ### Contralalteral LNL III
 
-As shown in the center subplot of @fig-model-risks, the risk for occult disease in the contralateral LNL III may only crosses a 5% threshold if the upstream level II is clinically involved, too. If the clinical diagnosis of the contralateral upstream level II is pathologically confirmed by FNA the risk increases by another percentage point<!-- TODO: make dynamic -->. When the tumor additionally crosses the mid-sagittal line, the risk may reach around 7%<!-- TODO: make dynamic -->.
+As shown in the center subplot of @fig-model-risks, the risk for occult disease in the contralateral LNL III may only cross a 5% threshold if the upstream level II is clinically involved, too. If the clinical diagnosis of the contralateral upstream level II is pathologically confirmed by FNA the risk increases by another percentage point<!-- TODO: make dynamic -->. When the tumor additionally crosses the mid-sagittal line, the risk may reach around 7%<!-- TODO: make dynamic -->.
 
 
 ### Contralateral LNL IV
