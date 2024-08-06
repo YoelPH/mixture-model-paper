@@ -6093,31 +6093,31 @@ stages:
       size: 557587
     - path: figures
       hash: md5
-      md5: b4d7040c301141a4f497e203176983c6.dir
-      size: 1390835
-      nfiles: 11
+      md5: 1cd3aac97235342c33c9035a4b216b49.dir
+      size: 1526225
+      nfiles: 12
     - path: manuscript.qmd
       hash: md5
-      md5: 40cf2d91a276e406eb6f1a5a8805b984
-      size: 64420
+      md5: 581f5db3947fe8614c9d3b579208a3f8
+      size: 65585
     - path: model.qmd
       hash: md5
-      md5: 5dbb3b6d3fa6e62c3900e67973ff02ac
-      size: 20159
+      md5: 8536f38bd2942e9e93f0d1c349024f37
+      size: 22940
     - path: models
       hash: md5
-      md5: e92a77b8047eea45fc5ccfaa031b96c2.dir
-      size: 1588148895
-      nfiles: 16
+      md5: 9d356c91334e9cd75c21c3f76784db68.dir
+      size: 1589971679
+      nfiles: 20
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 821bab25adb7a3bbfc672b7e3bc88232
-      size: 71523
+      md5: 718076acc70d7a7ee8149426c8959e42
+      size: 72872
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 742708a970cd2aafd73ebbb59ea7a8b6
-      size: 662388
+      md5: 125f5a3739d9986458476baa534025ca
+      size: 781502
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -9690,21 +9690,166 @@ stages:
     deps:
     - path: model.qmd
       hash: md5
-      md5: 5dbb3b6d3fa6e62c3900e67973ff02ac
-      size: 20159
+      md5: 8536f38bd2942e9e93f0d1c349024f37
+      size: 22940
     - path: models
       hash: md5
-      md5: e92a77b8047eea45fc5ccfaa031b96c2.dir
-      size: 1588148895
-      nfiles: 16
+      md5: 9d356c91334e9cd75c21c3f76784db68.dir
+      size: 1589971679
+      nfiles: 20
     - path: scenarios
       hash: md5
-      md5: bcdd4978178b56d7a4cb8cb65da14035.dir
-      size: 7595
-      nfiles: 5
+      md5: 6d28ec558ba1c07a511e9e8448d3414b.dir
+      size: 8734
+      nfiles: 6
     outs:
     - path: figures
       hash: md5
-      md5: b4d7040c301141a4f497e203176983c6.dir
-      size: 1390835
-      nfiles: 11
+      md5: 1cd3aac97235342c33c9035a4b216b49.dir
+      size: 1526225
+      nfiles: 12
+  compute-prevalences@full-with_upstream:
+    cmd: "lyscripts compute prevalences --priors models/full/priors.hdf5 --prevalences
+      models/full/prevalences_with_upstream.hdf5 --data data/reduced.csv --params
+      models/full/params.yaml --scenarios scenarios/with_upstream.yaml\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: 0e948bcfa0b0521194f3cddb4a9f14cd
+      size: 557587
+    - path: models/full/priors.hdf5
+      hash: md5
+      md5: 730c0cbd2d0278ca54dd1241ffca7e54
+      size: 298857248
+    params:
+      models/full/params.yaml:
+        graph:
+          tumor:
+            T:
+            - I
+            - II
+            - III
+            - IV
+            - V
+            - VII
+          lnl:
+            I:
+            - II
+            II:
+            - III
+            III:
+            - IV
+            IV:
+            - V
+            V: []
+            VII: []
+        modalities:
+          max_llh:
+          - 1.0
+          - 1.0
+        model:
+          class: Midline
+          kwargs:
+            is_symmetric:
+              tumor_spread: false
+              lnl_spread: true
+            use_central: false
+            use_midext_evo: true
+            use_mixing: true
+          distributions:
+            early:
+              frozen: binomial
+              max_time: 10
+              kwargs:
+                p: 0.3
+            late:
+              parametric: binomial
+              max_time: 10
+          modalities:
+          - max_llh
+          mapping:
+            0: early
+            1: early
+            2: early
+            3: late
+            4: late
+        version: 1
+      scenarios/with_upstream.yaml:
+        scenarios:
+        - t_stages:
+          - early
+          mode: HMM
+          midext: false
+          diagnosis:
+            contra:
+              max_llh:
+                II: false
+                III: true
+        - t_stages:
+          - late
+          mode: HMM
+          midext: false
+          diagnosis:
+            contra:
+              max_llh:
+                II: false
+                III: true
+        - t_stages:
+          - early
+          mode: HMM
+          midext: true
+          diagnosis:
+            contra:
+              max_llh:
+                II: false
+                III: true
+        - t_stages:
+          - late
+          mode: HMM
+          midext: true
+          diagnosis:
+            contra:
+              max_llh:
+                II: false
+                III: true
+        - t_stages:
+          - early
+          mode: HMM
+          midext: false
+          diagnosis:
+            contra:
+              max_llh:
+                II: true
+                III: true
+        - t_stages:
+          - late
+          mode: HMM
+          midext: false
+          diagnosis:
+            contra:
+              max_llh:
+                II: true
+                III: true
+        - t_stages:
+          - early
+          mode: HMM
+          midext: true
+          diagnosis:
+            contra:
+              max_llh:
+                II: true
+                III: true
+        - t_stages:
+          - late
+          mode: HMM
+          midext: true
+          diagnosis:
+            contra:
+              max_llh:
+                II: true
+                III: true
+    outs:
+    - path: models/full/prevalences_with_upstream.hdf5
+      hash: md5
+      md5: fe465c95c27573e2decca2d1da23dd36
+      size: 197120

@@ -439,6 +439,106 @@ plt.savefig(paths.figure_dir / "fig-model-prevalences-with-ipsi.svg")
 plt.show()
 ```
 
+## Contra LNL III Depending on Upstream LNL II Involvement
+
+```{python}
+import matplotlib.pyplot as plt
+from matplotlib import gridspec
+import numpy as np
+from lyscripts.scenario import Scenario
+from lyscripts.plot.utils import Histogram, BetaPosterior, draw, COLORS, split_legends
+from scripts import paths, shared
+
+def turn_axis_off(axes):
+  axes.set_xticks([])
+  axes.set_yticks([])
+
+nrows, ncols = 2, 2
+
+plt.rcParams.update(shared.get_fontsizes())
+plt.rcParams.update(shared.get_figsizes(
+  nrows=nrows,
+  ncols=ncols,
+  aspect_ratio=2.,
+  width=17,
+))
+
+fig = plt.figure()
+gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
+axes = np.array([[fig.add_subplot(gs[i,j]) for j in range(ncols)] for i in range(nrows)])
+full = fig.add_subplot(gs[:,:], frame_on=False)
+turn_axis_off(full)
+
+full.set_title(
+  "Observed vs Predicted Prevalence of Contralateral LNL III Involvement\nDependent on Upstream LNL III Involvement",
+  pad=20.,
+  fontsize="large",
+)
+
+data = shared.get_data()
+
+for i, t_stage in enumerate(["early", "late"]):
+  axes[i,0].set_ylabel(f"{t_stage} T-cat.", fontweight="bold")
+  for j, midext in enumerate([False, True]):
+    axes[0,j].set_title("Mid. ext." if midext else "Lateralized", fontweight="bold")
+    axes[0,j].set_xticks([])
+    axes[-1,j].set_xlabel("prevalence [%]")
+    axes[i,j].set_yticks([])
+    content = []
+    for upstream, color in zip([False, True], [COLORS["green"], COLORS["red"]]):
+      scenario = Scenario(
+        t_stages=[t_stage],
+        midext=midext,
+        diagnosis={
+          "contra": {"max_llh": {"II": upstream, "III": True}},
+        }
+      )
+      content.append(
+        Histogram.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_with_upstream.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+          label="prediction",
+        )
+      )
+      content.append(
+        BetaPosterior.from_hdf5(
+          filename=paths.model_dir / "full" / "prevalences_with_upstream.hdf5",
+          dataname=scenario.md5_hash("prevalences"),
+          color=color,
+        )
+      )
+    draw(
+      axes=axes[i,j],
+      contents=content,
+      xlims=(0., 15. if midext else 4.),
+    )
+
+split_legends(
+  axes=axes[0,0],
+  titles=["upstream healthy", "upstream involved"],
+  locs=[(0.4, 0.99), (0.5, 0.55)],
+)
+split_legends(
+  axes=axes[0,1],
+  titles=["upstream healthy", "upstream involved"],
+  locs=[(0.3, 0.99), (0.6, 0.55)],
+)
+split_legends(
+  axes=axes[1,0],
+  titles=["upstream healthy", "upstream involved"],
+  locs=[(0.2, 0.99), (0.65, 0.99)],
+)
+split_legends(
+  axes=axes[1,1],
+  titles=["upstream healthy", "upstream involved"],
+  locs=[(0.3, 0.99), (0.65, 0.99)],
+)
+
+plt.savefig(paths.figure_dir / "fig-model-prevalences-with-upstream.svg")
+plt.show()
+```
+
 ## Portion of Midline Extension
 
 Since we model the tumor's midline extension as a random variable we can predict its portion among early or late T-category patients and compare it with the observed prevalence in the data.

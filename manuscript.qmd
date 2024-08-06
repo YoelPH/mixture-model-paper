@@ -557,6 +557,13 @@ In @fig-model-prevalences-with-ipsi we display the model's ability to capture th
 <!-- NOTE: This last sentence is purely speculative! We need to discuss this. -->
 
 
+### Influence of Upstream Involvement
+
+![Predicted (histograms) vs observed (beta posteriors) prevalence of scnearios that show how much more often the contralateral LNL III is involved when the upstream level II is involved (red) against when it is healthy (green). As in @fig-model-prevalences-with-ipsi, this is plotted for all four combinations of T-category and midline extension. Note that the contralateral LNL III is extremely rarely involved without the upstream level II.](figures/fig-model-prevalences-with-upstream.svg){#fig-model-prevalences-with-upstream}
+
+Similarily to how we have shown the dependence of contralateral LNL II involvement on some extent of ipsilateral metastasis, we can look at the dependence of contralateral LNL III involvement depending on whether or not the upstream level harbors disease. In @fig-model-prevalences-with-upstream this is shown in analogy to @fig-model-prevalences-with-ipsi. Note that the prevalence of contralateral LNL III involvement is generally much lower than that of LNL II. Also, level III involvement is exceedingly rare when the upstream level II is not metastatic. The model captures this well.
+
+
 ### Prevalence of Midline Extension
 
 ![Comparing the predicted (histograms) and observed (lines depicting beta posteriors) prevalence of midline extension for early (blue) and late (orange) T-category. While the prevalence is predicted correctly when marginalizing over T-category, the model cannot capture the degree of separation observed in the data. Since the tumor's midline extension is virtually always part of the diagnosis and hence *given* when predicting a patient's risk, we do not consider this discrepancy a major issue.](figures/fig-model-prevalences-midext.svg){#fig-model-prevalences-midext width="50%"}
