@@ -153,15 +153,29 @@ stages:
     outs:
     - models/full/risks.hdf5
 
-  render-figures:
+  plot-figures:
+    matrix:
+      name:
+        - model_burnin_history
+        - model_midext_evo
+        - model_prevalences_midext
+        - model_prevalences_overall
+        - model_prevalences_upstream
+        - model_prevalences_with_ipsi
+        - model_risks
+        - model_state_dist
+        - data_strat
+        - data_upset_ipsi
     cmd: >
-      quarto render model.qmd --cache-refresh
+      python scripts/${item.name}.py
     deps:
-    - model.qmd
+    - scripts/${item.name}.py
+    - scripts/shared.py
+    - scripts/paths.py
+    - requirements.txt
     - models
-    - scenarios
     outs:
-    - figures:
+    - figures/fig_${item.name}.svg:
         persist: true
         cache: false
 
@@ -173,8 +187,6 @@ stages:
     - figures
     - data/reduced.csv
     - manuscript.qmd
-    - data.qmd
-    - model.qmd
     outs:
     - .output/manuscript.pdf
     - .output/_tex/manuscript.tex
