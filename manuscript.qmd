@@ -224,9 +224,9 @@ Any hidden Markov model is fully described by three quantities:
    $$ {#eq-obs-matrix}
    where in row $i$ and at column $j$ we find the probability to *observe* a lymphatic involvement pattern $\mathbf{Z} = \boldsymbol{\zeta}_j$, given that the true (but hidden) state of involvement at the time of diagnosis $t_D$ is $\mathbf{X}[t_D] = \boldsymbol{\xi}_i$.
 
-The transition matrix $\mathbf{A}$ is parametrized using a directed acyclic graph (DAG) as an abstract representation of the underlying lymphatic network. Directed arcs from the primary tumor to a LNL are associated with a probability $b_v$ for direct spread to LNL $v$ during one time step. Directed arcs from a LNL $v$ to a LNL $r$ are associated with a probability $t_{vr}$ for the tumor to progress from one LNL to the next. In this paper, we build on the DAG shown in @fig-small-graph which was obtained by maximizing the model evidence as described in [cite 2024 graph extension paper].
+The transition matrix $\mathbf{A}$ is parametrized using a directed acyclic graph (DAG) as an abstract representation of the underlying lymphatic network. Directed arcs from the primary tumor to a LNL are associated with a probability $b_v$ for direct spread to LNL $v$ during one time step. Directed arcs from a LNL $v$ to a LNL $r$ are associated with a probability $t_{vr}$ for the tumor to progress from one LNL to the next. In this paper, we build on the DAG shown in @fig-full-graph which was obtained by maximizing the model evidence as described in [cite 2024 graph extension paper].
 
-![Directed acyclic graph (DAG) representing the abstract lymphatic network in the head and neck region. Blue nodes are the LNLs' hidden random variables, the red node represents the tumor, and the orange square nodes depict the binary observed variables. Red and blue arcs symbolize the probability of lymphatic spread along that edge during one time-step. The orange arcs represent the sensitivity and specificity of the observational modality (e.g. CT, MRI, pathology, ...).](static/small-graph.svg){#fig-small-graph width=40%}
+![Directed acyclic graph (DAG) representing the abstract lymphatic network in the head and neck region. Blue nodes are the LNLs' hidden random variables, the red node represents the tumor, and the orange square nodes depict the binary observed variables. Red and blue arcs symbolize the probability of lymphatic spread along that edge during one time-step. The orange arcs represent the sensitivity and specificity of the observational modality (e.g. CT, MRI, pathology, ...).](static/full-graph.svg){#fig-full-graph width=40%}
 
 Using the introduced quantities, we can evolve the distribution of all possible hidden states from $\mathbf{X}[t=0] = \boldsymbol{\xi}_0$ step by step, by successively multiplying this vector with the transition matrix $\mathbf{A}$. For later use, we define at this point the matrices of the dsitributions over all hidden states, given all time-steps $\boldsymbol{\Lambda}$:
 
@@ -261,7 +261,7 @@ $$ {#eq-single-patient-llh}
 
 Above, the quantity inside $\left[ \ldots \right]_i$ denotes the $i$-th component of the vector that is the result of the vector and matrix multiplications in the square brackets. Note that it is also possible to account for missing involvement information: If a diagnosis (like fine needle aspiration (FNA)) is only available for a subset of all LNLs, we can sum over all those possible complete observed states $\boldsymbol{\zeta}_j$ that match the provided diagnosis.
 
-The single-patient likelihood $\ell$ in @eq-single-patient-llh depends on the spread parameters shown in @fig-small-graph via the transition matrix $\mathbf{A}$ and on the binomial parameters $p_{\text{T}x}$ via time-priors. In this work, we will only differentiate between "early" (T1 & T2) and "advanced" (T3 & T4) T-categories. Therefore, the parameter space of the unilateral model is:
+The single-patient likelihood $\ell$ in @eq-single-patient-llh depends on the spread parameters shown in @fig-full-graph via the transition matrix $\mathbf{A}$ and on the binomial parameters $p_{\text{T}x}$ via time-priors. In this work, we will only differentiate between "early" (T1 & T2) and "advanced" (T3 & T4) T-categories. Therefore, the parameter space of the unilateral model is:
 
 $$
 \boldsymbol{\theta} = \left( \left\{ b_v \right\}, \left\{ t_{vr} \right\}, p_\text{early}, p_\text{adv.} \right) \quad \text{with} \quad \genfrac{}{}{0pt}{2}{v\leq V}{r\in\operatorname{pa}(v)}
@@ -335,7 +335,7 @@ $$ {#eq-bilateral-marginal-algebra}
 
 In general, the matrices $\boldsymbol{\Lambda}_\text{i}$ and $\boldsymbol{\Lambda}_\text{c}$ could be parameterized using a disjoint set of parameters. I.e., the ipsi- and contralateral spread rates are entirely different. However, using three sensible assumptions, we can reduce the parameter space by sharing some parameters between the sides:
 
-1. We assume that both ipsilateral and contralateral spread is described through the same graph shown in {#fig-small-graph}.
+1. We assume that both ipsilateral and contralateral spread is described through the same graph shown in {#fig-full-graph}.
 2. We assume the spread *among* the LNLs to be same on both sides. It is reasonable to assume the lymphatic system is symmetric. Thus, the spread rates from one LNL to the other should be symmetric, too. Formally, this means \
    $$
    \begin{aligned}
