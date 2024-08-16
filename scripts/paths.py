@@ -1,5 +1,4 @@
-"""
-Define paths for data and models.
+"""Define paths for data and models.
 """
 from pathlib import Path
 from typing import Literal

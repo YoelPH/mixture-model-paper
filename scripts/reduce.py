@@ -1,5 +1,4 @@
-"""
-Remove all unnecessary columns from the joined, enhanced and (row-wise) filtered data.
+"""Remove all unnecessary columns from the joined, enhanced and (row-wise) filtered data.
 """
 import argparse
 from pathlib import Path
