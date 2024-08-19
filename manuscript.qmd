@@ -59,10 +59,7 @@ The main contributions of this paper are as follows:
 
 # Data on Lymphatic Progression Patterns {#sec-data}
 
-To be able to create models for lymphatic tumor progression that include all relevant LNLs including the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas [@ludwig_dataset_2022;@ludwig_multi-centric_2023]. It reports the lymph node involvement per LNL of every patient individually in tabular form, in addition to other primary tumor and patient characteristics such as T-category, subside, and lateralization of the primary tumor, and HPV p16 status. Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. The data from the Inselspital Bern and the Centre Léon Bérard only consist of patients who received a neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset. The majority of patients from the University Hospital Zürich and the Vall d'Hebron Barcelona Hospital was treated with definitive radiotherapy. 
-
-Pathological involvement is thus available only for a subset of the patients and only for the dissected levels. For the remaining patients, only clinical involvement is available. For the analysis performed in this paper, all available diagnostic information has been combined into a consensus decision representing the most likely state of involvement for each patient and LNL, using literature values for sensitivity and specificity of different modalities [@de_bondt_detection_2007;@kyzas_18f-fluorodeoxyglucose_2008]. In brief, pathology was considered the gold standard if available, overwriting possibly conflicting reports on clinical involvement. If pathology was not available, clinical involvement determined the consensus decision. For a subset of 83 patients in the CLB dataset, the lateralization of the primary tumor was not reported.
-
+To be able to create models for lymphatic tumor progression that include all relevant LNLs including the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas [@ludwig_dataset_2022;@ludwig_multi-centric_2023]. It reports the lymph node involvement per LNL of every patient individually in tabular form, in addition to other primary tumor and patient characteristics such as T-category, subside, and lateralization of the primary tumor, and HPV p16 status. Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. The data from the Inselspital Bern and the Centre Léon Bérard only consist of patients who received a neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset. The majority of patients from the University Hospital Zürich and the Vall d'Hebron Barcelona Hospital was treated with definitive radiotherapy. For a subset of 83 patients in the CLB dataset, the lateralization of the primary tumor was not reported.
 
 ```{python}
 #| echo: false
@@ -159,6 +156,45 @@ grouped.index.name = "Institution"
   .hide()
 )
 ```
+
+
+## Consensus on Involvement Status
+
+Pathological involvement is thus available only for a subset of the patients and only for the dissected levels. For the remaining patients, only clinical involvement is available. For the analysis performed in this paper, all available diagnostic information has been combined into a consensus decision representing the most likely state of involvement for each patient and LNL, using literature values for sensitivity and specificity of different modalities [@de_bondt_detection_2007;@kyzas_18f-fluorodeoxyglucose_2008]. These values are tabulated in @tbl-spec-sens.
+
+This consensus was formed as follows: Suppose the involvement status $X_v$ of LNL $v$ was assessed using different diagnostic modalities $\mathcal{O} = \{ \text{MRI}, \text{CT}, \text{pathology}, \ldots \}$, each characterized by their own pair of sensitivity and specificity values $s_N^\mathcal{o}$ and $s_P^\mathcal{o}$, with $\mathcal{o} \in \mathcal{O}$. Then we have $|\mathcal{O}|$ observations $z_v^\mathcal{o} \in \left[ 0, 1 \right]$, where 0 stands for "healthy" and 1 for "involved". We can then compute the most likely true involvement $X_v$ using the likelihood function
+
+$$
+\begin{aligned}
+\ell \left( X_v \mid \{ z_v^\mathcal{o} \}_{\mathcal{o} \in \mathcal{O}} \right) = \prod_{\mathcal{o} \in \mathcal{O}}
+\left( 1 - X_v \right) \cdot &\left[ z_v^\mathcal{o} \cdot \left( 1 - s_P^\mathcal{o} \right) + \left( 1 - z_v^\mathcal{o} \right) \cdot s_P^\mathcal{o} \right] \\
++ X_v \cdot &\left[ z_v^\mathcal{o} \cdot s_N^\mathcal{o} + \left( 1 - z_v^\mathcal{o} \right) \cdot (1 - s_N^\mathcal{o}) \right]
+\end{aligned}
+$$
+
+We now assume the true state $X_v$ to take on the value 1 if $\ell \left( X_v = 1 \mid \ldots \right) > \ell \left( X_v = 0 \mid \ldots \right)$ and 0 otherwise. For example, if we have $z_\text{II}^\text{CT} = 0$ and $z_\text{II}^\text{MRI} = 1$ we would compute the following likelihoods:
+
+$$
+\begin{aligned}
+\ell \left( X_\text{II} = 1 \mid z_\text{II}^\text{CT} = 0, z_\text{II}^\text{MRI} = 1 \right) &= \left( 1 - s_N^\text{CT} \right) \cdot s_N^\text{MRI} = 15.39\% \\
+\ell \left( X_\text{II} = 0 \mid z_\text{II}^\text{CT} = 0, z_\text{II}^\text{MRI} = 1 \right) &= s_P^\text{CT} \cdot \left(1 - s_N^\text{MRI}\right) = 14.44\%
+\end{aligned}
+$$
+
+In this example, we would thus assume the true state to be involved ($X_\text{II} = 1$).
+
+This method of computing a consensus also ensures that the pathology reports always override any conflicting clinical diagnosis, due to pathology's high sensitivity and specificity.
+
+| Modality  | Specificity | Sensitivity |
+| :-------- | ----------: | ----------: |
+| CT        |         76% |         81% |
+| PET       |         86% |         79% |
+| MRI       |         63% |         81% |
+| FNA       |         98% |         80% |
+| pathology |        100% |        100% |
+
+: Specificity and sensitivity values from the literature [@de_bondt_detection_2007;@kyzas_18f-fluorodeoxyglucose_2008]. {#tbl-spec-sens}
+
 
 ## Data Availability
 
