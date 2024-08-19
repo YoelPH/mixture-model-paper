@@ -3,11 +3,11 @@ title: "Probabilistic Model of Bilateral Lymphatic Spread in Head and Neck Cance
 abstract: |
   Purpose: According to current guidelines for elective nodal irradiation of oropharyngeal squamous cell carcinoma (OPSCC) patients, large parts of the contralateral lymphatic system are included in the elective clinical target volume (CTV-N), even for lateralized tumors without clinical lymph node involvement in the contralateral neck. In this work, we present a probabilistic model for bilateral lymphatic tumor progression in OPSCC to predict the personal risk for occult disease in any lymph node level (LNL), given the patient's clinical lymph node involvement, T-stage, and lateralization of the primary tumor.
 
-  Methods: We extend a hidden markov model for lymphatic tumor progression, which was previously developed for ipsilateral lymph node involvement, to the contralateral neck. The model represents each of the LNLs I, II, III, IV, V, and VII of both sides of the neck as a hidden binary random variable with states healthy and involved. LNLs are connected to the tumor and among each other via arcs that correspond to spread probabilities. These spread probability rates are learned via Markov chain Monte Carlo (MCMC) sampling from a dataset of 833 OPSCC patients. 
+  Methods: We extend a hidden markov model for lymphatic tumor progression, which was previously developed for ipsilateral lymph node involvement, to the contralateral neck. The model represents each of the LNLs I, II, III, IV, V, and VII of both sides of the neck as a hidden binary random variable with states healthy and involved. LNLs are connected to the tumor and among each other via arcs that correspond to spread probabilities. These spread probability rates are learned via Markov chain Monte Carlo (MCMC) sampling from a dataset of 833 OPSCC patients.
 
   Results: The model is able to describe the data on lymph node involvement well with a small number of interpretable parameters. Midline extension of the primary tumor is the main risk factor for contralateral involvement. In addition, the risk of occult metastases in contralateral lymph node level increases with more advanced T-stage and more severe ipsilateral involvement. The probability of involvement in contralateral level III is very low if the upstream level II is clinically negative. Similarly, the probability of involvement in contralateral level IV is very low if the upstream level III is clinically negative.
 
-  Conclusions: The model may guide personalized volume reduction of the elective CTV-N. It suggests that the contralateral neck may be spared from elective irradiation for lateralized tumors not crossing the midline. In patients with primary tumors crossing the midline but clinically negative contralateral neck, the contralateral elective irradiation may be limited to level II. 
+  Conclusions: The model may guide personalized volume reduction of the elective CTV-N. It suggests that the contralateral neck may be spared from elective irradiation for lateralized tumors not crossing the midline. In patients with primary tumors crossing the midline but clinically negative contralateral neck, the contralateral elective irradiation may be limited to level II.
 ---
 
 ```{python}
@@ -204,7 +204,7 @@ The entire data, including additional patients with tumors in other primary loca
 
 ## Patterns of Contralateral Involvement {#sec-data-strat}
 
-These datasets allow us to investigate correlations between the involvement of individual LNLs, or between risk factors and patterns of involvement. In @fig-data-strat, we have plotted the prevalence of each contralateral LNL's involvement, stratified by T-category, ipsilateral number of involved LNLs, and whether the tumor extended over the mid-sagittal line. A similar but more complete stratification is also tabulated in the appendix in @tbl-data-strat. 
+These datasets allow us to investigate correlations between the involvement of individual LNLs, or between risk factors and patterns of involvement. In @fig-data-strat, we have plotted the prevalence of each contralateral LNL's involvement, stratified by T-category, ipsilateral number of involved LNLs, and whether the tumor extended over the mid-sagittal line. A similar but more complete stratification is also tabulated in the appendix in @tbl-data-strat.
 
 ![Contralateral involvement stratified by T-category (left panel), the number of metastatic LNLs ipsilaterally (center panel), and whether the primary tumor extended over the mid-sagittal line or was clearly lateralized (right panel).](figures/fig_data_strat.svg){#fig-data-strat}
 
@@ -236,7 +236,7 @@ Over the course of this work, we will first briefly recap the mentioned HMM in @
 
 This paper builds on the previously developed unilateral model for ipsilateral lymph node involvement presented in [cite 2024 graph extension paper]. In this section we provide a brief recap of the unilateral model to introduce the notation needed to extend the framework to a bilateral model describing both ipsilateral and contralateral lymph node involvement in @sec-ext-to-contra. For further details in the ipsilateral model, the reader is referred to the earlier publications [@ludwig_hidden_2021, cite 2024 graph extension paper]
 
-<!-- 
+<!--
 Our first model to predict the lymphatic progression of HNSCC was introduced using Bayesian networks [@pouymayou_bayesian_2019]. We subsequently extended this work to a hidden Markov model (HMM) [@ludwig_hidden_2021] to allow an intuitive inclusion of T-category into the predictions. We will briefly summarize this HMM's formalism before building on it to include the contralateral spread in @sec-ext-to-contra.
 -->
 
@@ -358,7 +358,7 @@ P \left( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \right) &= \sum_{t=0}^{t_\text
 \end{aligned}
 $$ {#eq-bilateral-marginal}
 
-This assumption makes intuitive sense: The state of the ipsilateral and contralateral sides of the lymphatic network evolves independently over time as there are no major lymph vessels crossing the midline. However, both sides are coupled via time. Qualitatively speaking, according to the model in {#eq-bilateral-marginal}, a joint state with severe contralateral involvement and limited ipsilateral involvement would be unlikely, because severe contralateral involvement becomes likely only at later time steps when limited ipsilateral involvement becomes unlikely. 
+This assumption makes intuitive sense: The state of the ipsilateral and contralateral sides of the lymphatic network evolves independently over time as there are no major lymph vessels crossing the midline. However, both sides are coupled via time. Qualitatively speaking, according to the model in {#eq-bilateral-marginal}, a joint state with severe contralateral involvement and limited ipsilateral involvement would be unlikely, because severe contralateral involvement becomes likely only at later time steps when limited ipsilateral involvement becomes unlikely.
 
 <!--There may, however, be diffusion of lymph fluid accross this line or bulky involvement that redirects lymphatic drainage significantly.-->
 
@@ -399,7 +399,7 @@ which is less than double in size, compared to the unilateral model. From these 
 
 ## Modelling Midline Extension {#sec-midline}
 
-It can be assumed that most tumors that cross the midline at the time of diagnose have started as lateralized tumors and grew over the midline at a later time step. Hence, the transition matrix $\mathbf{A}_\text{c}^{\epsilon=\texttt{True}}$ only applies for a subset of the time steps. 
+It can be assumed that most tumors that cross the midline at the time of diagnose have started as lateralized tumors and grew over the midline at a later time step. Hence, the transition matrix $\mathbf{A}_\text{c}^{\epsilon=\texttt{True}}$ only applies for a subset of the time steps.
 Therefore, we also model the tumor's extension over the mid-sagittal line as a binary random variable. A tumor starts lateralized and at every time-step there is a finite probability $p_\epsilon$ that the tumor grows over the midsaggital plane. The overall probabilities to find a patient with a clearly lateralized tumor or one that extends over the mid-sagittal line after $t$ time-steps are then respectively given by
 
 $$
@@ -531,7 +531,7 @@ Note that we decided to omit the y-axis ticks and labels in these figures over p
 
 # Results: Model evaluation {#sec-results}
 
-In @tbl-midline-params, we tabulate the mean and standard deviation of the sampled parameters for the full midline model. Considering the parameters of the bilateral model that describe the ipsilateral spread ($b^i_v$, $t_{vr}$ and $p_\text{adv.}$), we note that the bilateral model mostly reproduces the parameter values reported in the earlier publication [@ludwig_modelling_2023] for the unilateral model. The small differences may be mostly due to the differences in training dataset. Therefore, the analysis of the models capability to adequately describe ipsilateral lymph node involvement is not repeated here and we focus instead on the analysis of contralateral involvement. We can further note that the contralateral spread parameters $b^c_v$ are small compared to the ipsilateral parameters $b^i_v$, reflecting the low prevalence of contralateral lymph node involvement for lateralized tumors. 
+In @tbl-midline-params, we tabulate the mean and standard deviation of the sampled parameters for the full midline model. Considering the parameters of the bilateral model that describe the ipsilateral spread ($b^i_v$, $t_{vr}$ and $p_\text{adv.}$), we note that the bilateral model mostly reproduces the parameter values reported in the earlier publication [@ludwig_modelling_2023] for the unilateral model. The small differences may be mostly due to the differences in training dataset. Therefore, the analysis of the models capability to adequately describe ipsilateral lymph node involvement is not repeated here and we focus instead on the analysis of contralateral involvement. We can further note that the contralateral spread parameters $b^c_v$ are small compared to the ipsilateral parameters $b^i_v$, reflecting the low prevalence of contralateral lymph node involvement for lateralized tumors.
 
 ```{python}
 #| echo: false
@@ -595,7 +595,7 @@ In @fig-model-prevalences-overall, we plot the prevalence of contralateral invol
 
 ![Comparison of predicted (histograms) vs observed (beta posteriors) prevalences. Shown for the contralateral LNLs II (blue), III (orange), and IV (green). The top row shows scenarios with early T-category tumors, the bottom row for late T-category ones. The left column depicts scenarios where the primary tumor is clearly lateralized, the right column scenarios of tumors extending over the mid-sagittal line. This figure illustrates the model's ability to describe the prevalence of involvement for different combinations of the risk factors T-category and midline extension.](figures/fig_model_prevalences_overall.svg){#fig-model-prevalences-overall}
 
-@Fig-model-prevalences-overall shows nicely that the model is capable of accurately accounting for the most important risk factors, i.e. T-category and midline extension. As observed in the data, the model predicts that the prevalence of contralateral LNL II involvement increases from below 8% <!--  TODO: make this dynamic --> for early T-category lateralized tumors to almost 40% <!-- TODO: make this dynamic --> when the tumor is of advanced T-category and crosses the mid-sagittal line. Similarly, the prevalence of contralateral LNL III involvement increases from around 2% <!--  TODO: make this dynamic --> for early T-category lateralized tumors to almost 15% <!-- TODO: make this dynamic --> when the tumor is of advanced T-category and crosses the mid-sagittal line. 
+@Fig-model-prevalences-overall shows nicely that the model is capable of accurately accounting for the most important risk factors, i.e. T-category and midline extension. As observed in the data, the model predicts that the prevalence of contralateral LNL II involvement increases from below 8% <!--  TODO: make this dynamic --> for early T-category lateralized tumors to almost 40% <!-- TODO: make this dynamic --> when the tumor is of advanced T-category and crosses the mid-sagittal line. Similarly, the prevalence of contralateral LNL III involvement increases from around 2% <!--  TODO: make this dynamic --> for early T-category lateralized tumors to almost 15% <!-- TODO: make this dynamic --> when the tumor is of advanced T-category and crosses the mid-sagittal line.
 
 <!--  However, for early T-category scenarios with midline extension, the model does seem to overestimate contralateral LNL II and III invovlement. This likely stems from the the small sample size of this relatively rare scenario as hinted at by the wide beta posteriors. -->
 
@@ -640,7 +640,7 @@ For a clinical application of the model we are interested in the risk of occult 
 
 ## Contralateral LNL II
 
-@Fig-model-risks (left panel) shows the predicted risk of occult disease in contralateral LNL II. The most important variable impacting the prediction for contralateral level II involvement in our model is the tumor's lateralization. A patient with a clearly lateralized early T-category tumor and a clinically N0 neck is predicted to have a 1-2% <!-- TODO: make this dynamic, and include this scenario in the plot --> risk for occult disease in contralateral LNL II. For a patient with a clearly lateralized early T-category tumor but *with* mid-sagittal extension, the risk increases to almost 7%. <!-- TODO: make this dynamic --> 
+@Fig-model-risks (left panel) shows the predicted risk of occult disease in contralateral LNL II. The most important variable impacting the prediction for contralateral level II involvement in our model is the tumor's lateralization. A patient with a clearly lateralized early T-category tumor and a clinically N0 neck is predicted to have a 1-2% <!-- TODO: make this dynamic, and include this scenario in the plot --> risk for occult disease in contralateral LNL II. For a patient with a clearly lateralized early T-category tumor but *with* mid-sagittal extension, the risk increases to almost 7%. <!-- TODO: make this dynamic -->
 
 Also advanced T-category increases the risk of occult disease but plays a lesser role: Considering the scenario of a tumor that crosses the midline and an ipsilateral neck where at least LNL III is clinically involved, the risk for occult contralateral LNL II disease is around 8.5%. <!-- TODO: make this dynamic --> For the same scenario and an advanced T-category tumor, the risk increases to 11%. <!-- TODO: make this dynamic -->
 
