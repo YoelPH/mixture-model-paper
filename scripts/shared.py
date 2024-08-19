@@ -1,5 +1,4 @@
-"""Some shared and reused functions for the scripts.
-"""
+"""Some shared and reused functions for the scripts."""
 
 from collections import namedtuple
 from pathlib import Path
@@ -10,7 +9,6 @@ import pandas as pd
 from lymph import types
 
 from lyscripts import utils
-
 
 try:
     from . import paths
