@@ -162,13 +162,13 @@ grouped.index.name = "Institution"
 
 Pathological involvement is thus available only for a subset of the patients and only for the dissected levels. For the remaining patients, only clinical involvement is available. For the analysis performed in this paper, all available diagnostic information has been combined into a consensus decision representing the most likely state of involvement for each patient and LNL, using literature values for sensitivity and specificity of different modalities [@de_bondt_detection_2007;@kyzas_18f-fluorodeoxyglucose_2008]. These values are tabulated in @tbl-spec-sens.
 
-This consensus was formed as follows: Suppose the involvement status $X_v$ of LNL $v$ was assessed using different diagnostic modalities $\mathcal{O} = \{ \text{MRI}, \text{CT}, \text{pathology}, \ldots \}$, each characterized by their own pair of sensitivity and specificity values $s_N^\mathcal{o}$ and $s_P^\mathcal{o}$, with $\mathcal{o} \in \mathcal{O}$. Then we have $|\mathcal{O}|$ observations $z_v^\mathcal{o} \in \left[ 0, 1 \right]$, where 0 stands for "healthy" and 1 for "involved". We can then compute the most likely true involvement $X_v$ using the likelihood function
+This consensus was formed as follows: Suppose the involvement status $X_v$ of LNL $v$ was assessed using different diagnostic modalities $\mathcal{O} = \{ \text{MRI}, \text{CT}, \text{pathology}, \ldots \}$, each characterized by their own pair of sensitivity and specificity values $s_N^{\mathcal{o}}$ and $s_P^{\mathcal{o}}$, with $\mathcal{o} \in \mathcal{O}$. Then we have $|\mathcal{O}|$ observations $z_v^{\mathcal{o}} \in \left[ 0, 1 \right]$, where 0 stands for "healthy" and 1 for "involved". We can then compute the most likely true involvement $X_v$ using the likelihood function
 
 $$
 \begin{aligned}
-\ell \left( X_v \mid \{ z_v^\mathcal{o} \}_{\mathcal{o} \in \mathcal{O}} \right) = \prod_{\mathcal{o} \in \mathcal{O}}
-\left( 1 - X_v \right) \cdot &\left[ z_v^\mathcal{o} \cdot \left( 1 - s_P^\mathcal{o} \right) + \left( 1 - z_v^\mathcal{o} \right) \cdot s_P^\mathcal{o} \right] \\
-+ X_v \cdot &\left[ z_v^\mathcal{o} \cdot s_N^\mathcal{o} + \left( 1 - z_v^\mathcal{o} \right) \cdot (1 - s_N^\mathcal{o}) \right]
+\ell \left( X_v \mid \{ z_v^{\mathcal{o}} \}_{\mathcal{o} \in \mathcal{O}} \right) = \prod_{\mathcal{o} \in \mathcal{O}}
+\left( 1 - X_v \right) \cdot &\left[ z_v^{\mathcal{o}} \cdot \left( 1 - s_P^{\mathcal{o}} \right) + \left( 1 - z_v^{\mathcal{o}} \right) \cdot s_P^{\mathcal{o}} \right] \\
++ X_v \cdot &\left[ z_v^{\mathcal{o}} \cdot s_N^{\mathcal{o}} + \left( 1 - z_v^{\mathcal{o}} \right) \cdot (1 - s_N^{\mathcal{o}}) \right]
 \end{aligned}
 $$
 
