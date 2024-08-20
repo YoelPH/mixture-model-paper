@@ -73,7 +73,7 @@ def main():
 
     contents = {"II": [], "III": [], "IV": []}
     mean_lists = {"II": [], "III": [], "IV": []}
-    colors = [COLORS["green"], COLORS["blue"], COLORS["orange"], COLORS["red"]]
+    colors = [COLORS["green"], COLORS["blue"], COLORS["orange"], COLORS["red"], "#6821ab"]
 
     with h5py.File(name=paths.model_dir / "full" / "risks.hdf5", mode="r") as h5file:
         for dset in h5file.values():

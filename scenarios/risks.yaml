@@ -2,6 +2,17 @@
 # first, contra LNL II
 scenarios:
   - t_stages: [early]
+    midext: false
+    mode: "HMM"
+    diagnosis:
+      ipsi:
+        CT: {I: false, II: true , III: false, IV: false, V: false, VII: false}
+      contra:
+        CT: {I: false, II: false, III: false, IV: false, V: false, VII: false}
+    involvement:
+      contra: {II: true}
+
+  - t_stages: [early]
     midext: true
     mode: "HMM"
     diagnosis:

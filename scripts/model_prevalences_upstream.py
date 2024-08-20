@@ -35,7 +35,7 @@ def main():
     full.set_title(
         (
             "Observed vs Predicted Prevalence of Contralateral LNL III Involvement"
-            "\nDependent on Upstream LNL III Involvement"
+            "\nDependent on Upstream LNL II Involvement"
         ),
         pad=20.0,
         fontsize="large",
