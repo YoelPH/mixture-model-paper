@@ -448,6 +448,7 @@ $$
 \boldsymbol{\theta} = \left( \left\{ b_v^\text{i} \right\}, \left\{ b_v^\text{c} \right\}, \alpha, \left\{ t_{vr} \right\}, p_\text{early}, p_\text{adv.}, p_\epsilon \right) \quad \text{with} \quad \genfrac{}{}{0pt}{2}{v\leq V}{r\in\operatorname{pa}(v)}
 $$ {#eq-ext-param-space}
 
+
 ## Model Prediction in the Bayesian Context
 
 Our stated goal is to compute the risk for a patient's true ipsi- and contralateral nodal involvement states $\mathbf{X}^\text{i}$ and $\mathbf{X}^\text{c}$, *given* their individual diagnosis $d = \left( \boldsymbol{\zeta}^\text{i}_k, \boldsymbol{\zeta}^\text{c}_\ell, \epsilon, \text{T}x \right)$. Here, this diagnosis consists of the observed ipsi- and contralateral nodal involvements, the patient's midline extension $\epsilon$, and their tumor's T-category $\text{T}x$. Using Bayes' law, we can write this risk as:
@@ -608,6 +609,13 @@ In @fig-model-prevalences-overall, we plot the prevalence of contralateral invol
 In @fig-model-prevalences-with-ipsi we display the model's ability to capture the correlation between ipsi- and contralateral involvement. It shows that the prevalence of metastases in the two sides of the neck is correlated via the time of diagnosis, despite the model not having any direct connections between the two side. However, there are some discrepancies in the model's prediction: It cannot quite capture the correlation of ipsi- and contralateral involvement that is seen in the data. This is notable for example in the bottom right subplot where the prevalence is overestimated for the scenario of an (almost) healthy ipsilateral neck and underestimated when at least LNL III shows metastases. One reason for this may be the width of the time-prior: If it was wider, the posterior over the diagnosis time given the ipsilateral involvement could more flexibly shift to reflect a more severe contralateral involvement.
 
 <!-- NOTE: This last sentence is purely speculative! We need to discuss this. -->
+
+
+### Influence of Upstream Involvement on Contralateral Metastasis
+
+![The influence of the upstream LNL II's involvement on the prevalence of contralateral level III for the four combinations of tumor lateralization (lateralized or extending over midline) and T-ctageory (early or advanced). Our model predictions (histograms) are plotted against the observations in the data (beta posteriors).](figures/fig_model_prevalences_upstream.svg){#fig-model-prevalences-upstream}
+
+@Fig-model-prevalences-upstream illustrates how rarely the contralateral LNL III harbors metastases when its upstream level II is healthy. Also, the model can capture this correlation rather well, with the exception of early T-category tumors that extend over the mid-sagittal line. As in @fig-model-prevalences-overall and @fig-model-prevalences-with-ipsi, these cases are relatively rare resulting in a broad distribution over the true prevalence.
 
 
 ### Prevalence of Midline Extension
