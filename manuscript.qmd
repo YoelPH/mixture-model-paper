@@ -314,23 +314,6 @@ $$ {#eq-log-likelihood}
 The methodology we use to infer the model's parameters is detailed in @sec-sampling.
 
 
-## Model Prediction in the Bayesian Context
-
-Our stated goal is to compute the risk for a patient's true nodal involvement state $\mathbf{X}$, *given* their individual diagnosis $d = \left( \boldsymbol{\zeta}_k, \text{T}x \right)$. Using Bayes' law, this is written as:
-
-$$
-P \big( \mathbf{X} \mid \mathbf{Z}=\boldsymbol{\zeta}_k, \boldsymbol{\hat{\theta}}, \text{T}x \big) = \frac{P \left( \boldsymbol{\zeta}_k \mid \mathbf{X} \right) P \big( \mathbf{X} \mid \boldsymbol{\hat{\theta}}, \text{T}x \big)}{\sum_{i=0}^{2^V} P \left( \boldsymbol{\zeta}_k \mid \mathbf{X}=\boldsymbol{\xi}_i \right) P \big( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\hat{\theta}}, \text{T}x \big)}
-$$ {#eq-uni-bayes-law}
-
-The term $P \left( \boldsymbol{\zeta}_k \mid \mathbf{X} \right)$ is defined solely by sensitivity and specificity of the diagnostic modality. Terms like this already appeared in the definition of the observation matrx in @eq-obs-matrix. The *prior* $P \big( \mathbf{X} \mid \boldsymbol{\hat{\theta}} \big)$ in the above equation is the crucial term that is supplied by a trained model and its parameters $\boldsymbol{\hat{\theta}}$.
-
-It is possible to compute this *posterior* probability of true involvement not only for one fully defined state $\mathbf{X}$, but also for e.g. individual LNLs: For example, the risk for involvement in level IV would be a marginalization over all states $\boldsymbol{\xi}_i$, where $\xi_{i4}=1$. Formally:
-
-$$
-P \big( \text{IV} \mid \mathbf{Z}=\boldsymbol{\zeta}_k, \boldsymbol{\hat{\theta}}, \text{T}x  \big) = \sum_{k \, : \, \xi_{k4}=1} P \big( \mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\zeta}_k, \boldsymbol{\hat{\theta}}, \text{T}x  \big)
-$$ {#eq-marg-over-posterior}
-
-
 # Extension to a Bilateral Model {#sec-ext-to-contra}
 
 A naive approach to model the contralateral lymphatic spread would be to simply employ two independent unilateral models as introduced in @sec-unilateral. During training, one could enforce that some parameters are shared between these two models, e.g. the parameterization of the distributions over diagnose times or the spread among the LNLs ($t_{vr}). However, this approach lacks a way to describe the correlation between ipsi- and contralateral involvement discussed in section {#sec-data-strat}. Two independent unilateral models would not describe the observation that contralateral involvement becomes more likely with more severe ipsilateral involvement.
@@ -464,6 +447,24 @@ The final parameter space of our extended model has now reached this size:
 $$
 \boldsymbol{\theta} = \left( \left\{ b_v^\text{i} \right\}, \left\{ b_v^\text{c} \right\}, \alpha, \left\{ t_{vr} \right\}, p_\text{early}, p_\text{adv.}, p_\epsilon \right) \quad \text{with} \quad \genfrac{}{}{0pt}{2}{v\leq V}{r\in\operatorname{pa}(v)}
 $$ {#eq-ext-param-space}
+
+## Model Prediction in the Bayesian Context
+
+Our stated goal is to compute the risk for a patient's true ipsi- and contralateral nodal involvement states $\mathbf{X}^\text{i}$ and $\mathbf{X}^\text{c}$, *given* their individual diagnosis $d = \left( \boldsymbol{\zeta}^\text{i}_k, \boldsymbol{\zeta}^\text{c}_\ell, \epsilon, \text{T}x \right)$. Here, this diagnosis consists of the observed ipsi- and contralateral nodal involvements, the patient's midline extension $\epsilon$, and their tumor's T-category $\text{T}x$. Using Bayes' law, we can write this risk as:
+
+$$
+P \big( \mathbf{X}^\text{i}, \mathbf{X}^\text{c} \mid d, \boldsymbol{\hat{\theta}} \big)
+= \frac{P \left( \boldsymbol{\zeta}^\text{i}_k \mid \mathbf{X}^\text{i} \right) P \left( \boldsymbol{\zeta}^\text{c}_\ell \mid \mathbf{X}^\text{c} \right) P \big( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \mid \boldsymbol{\hat{\theta}}, \text{T}x \big)}
+{\sum_{i=0}^{2^V} \sum_{j=0}^{2^V} P \left( \boldsymbol{\zeta}^\text{i}_k \mid \mathbf{X}^\text{i}=\boldsymbol{\xi}^\text{i}_i \right) P \big( \boldsymbol{\zeta}^\text{c}_\ell \mid \mathbf{X}^\text{c}=\boldsymbol{\xi}^\text{c}_j \big) P \big( \mathbf{X}^\text{i}=\boldsymbol{\xi}^\text{i}_i, \mathbf{X}^\text{c}=\boldsymbol{\xi}^\text{c}_j, \epsilon \mid \boldsymbol{\hat{\theta}}, \text{T}x \big)}
+$$ {#eq-uni-bayes-law}
+
+The terms $P \left( \boldsymbol{\zeta}^\text{i}_k \mid \mathbf{X}^\text{i} \right)$ and $P \left( \boldsymbol{\zeta}^\text{c}_\ell \mid \mathbf{X}^\text{c} \right)$ are defined solely by sensitivity and specificity of the diagnostic modality. Terms like these already appeared in the definition of the observation matrx in @eq-obs-matrix. The *prior* $P \big( \mathbf{X}^\text{i}, \mathbf{X}^\text{c}, \epsilon \mid \boldsymbol{\hat{\theta}}, \text{T}x \big)$ in the above equation is the crucial term that is supplied by a trained model and its parameters $\boldsymbol{\hat{\theta}}$.
+
+It is possible to compute this *posterior* probability of true involvement not only for one fully defined state $(\mathbf{X}^\text{i}, \mathbf{X}^\text{c})$, but also for e.g. individual LNLs: For example, the risk for involvement in the contralateral level IV would be a marginalization over all ipsilateral states $\boldsymbol{\xi}^\text{i}_i$ and all contralateral states $\boldsymbol{\xi}^\text{c}_j$ where $\xi^\text{c}_{j4}=1$. Formally:
+
+$$
+P \big( \text{cIV} \mid \mathbf{Z}^\text{i}=\boldsymbol{\zeta}^\text{i}_k, \mathbf{Z}^\text{c}=\boldsymbol{\zeta}^\text{c}_\ell, \boldsymbol{\hat{\theta}}, \text{T}x \big) = \sum_k \sum_{\ell \, : \, \xi_{\ell 4}=1} P \big( \mathbf{X}^\text{i} = \boldsymbol{\xi}^\text{i}_k, \mathbf{X}^\text{c} = \boldsymbol{\xi}^\text{c}_\ell \mid \boldsymbol{\zeta}^\text{i}_k, \boldsymbol{\zeta}^\text{c}_\ell, \epsilon, \boldsymbol{\hat{\theta}}, \text{T}x \big)
+$$ {#eq-marg-over-posterior}
 
 
 # Computational methods {#sec-methods}
