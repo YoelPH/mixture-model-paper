@@ -54,9 +54,10 @@ def main():
             for ipsi, color in zip(
                 [
                     {"I": False, "II": False, "III": False, "IV": False, "V": False},
-                    {"III": True},
+                    {"II": True},
+                    {"II": True, "III": True},
                 ],
-                [COLORS["blue"], COLORS["orange"]],
+                [COLORS["green"], COLORS["orange"], COLORS["red"]],
             ):
                 scenario = Scenario(
                     t_stages=[t_stage],
@@ -88,29 +89,29 @@ def main():
             draw(
                 axes=axes[i, j],
                 contents=content,
-                xlims=(0.0, 30.0 if midext else 10.0),
+                xlims=(0.0, 40.0 if midext else 14.0),
             )
 
     # manually place legends
     split_legends(
         axes=axes[0, 0],
-        titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
-        locs=[(0.3, 0.99), (0.5, 0.55)],
+        titles=["ipsi LNLs I-V healthy", "ipsi LNL II", "ipsi LNLs II & III"],
+        locs=[(0.2, 0.99), (0.5, 0.6), (0.55, 0.99)],
     )
     split_legends(
         axes=axes[0, 1],
-        titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
-        locs=[(0.3, 0.99), (0.5, 0.55)],
+        titles=["ipsi LNLs I-V healthy", "ipsi LNL II", "ipsi LNLs II & III"],
+        locs=[(0.15, 0.99), (0.7, 0.6), (0.5, 0.99)],
     )
     split_legends(
         axes=axes[1, 0],
-        titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
-        locs=[(0.16, 0.99), (0.53, 0.55)],
+        titles=["ipsi LNLs I-V healthy", "ipsi LNL II", "ipsi LNLs II & III"],
+        locs=[(0.1, 0.99), (0.65, 0.99), (0.35, 0.6)],
     )
     split_legends(
         axes=axes[1, 1],
-        titles=["ipsi LNLs I-V healthy", "ipsi LNL III"],
-        locs=[(0.13, 0.55), (0.5, 0.99)],
+        titles=["ipsi LNLs I-V healthy", "ipsi LNL II", "ipsi LNLs II & III"],
+        locs=[(0.1, 0.99), (0.65, 0.6), (0.45, 0.99)],
     )
 
     plt.savefig(shared.get_figure_path(__file__))
