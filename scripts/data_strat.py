@@ -45,27 +45,28 @@ def group_and_plot(
 
 def main():
     """Plot figure."""
-    nrows, ncols = 1, 3
+    nrows, ncols = 2, 2
     plt.rcParams.update(**shared.get_fontsizes())
     plt.rcParams.update(
         **shared.get_figsizes(
             nrows=nrows,
             ncols=ncols,
-            aspect_ratio=1.1,
+            aspect_ratio=1.5,
         )
     )
     fig = plt.figure()
     gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
 
-    left = fig.add_subplot(gs[0])
-    center = fig.add_subplot(gs[1], sharey=left)
-    right = fig.add_subplot(gs[2], sharey=center)
+    t_cat_ax = fig.add_subplot(gs[0,0])
+    ipsi_inv_ax = fig.add_subplot(gs[0,1], sharey=t_cat_ax)
+    midext_ax = fig.add_subplot(gs[1,0], sharey=ipsi_inv_ax)
     row = fig.add_subplot(gs[:], frame_on=False)
 
-    right.set_ylabel("contra prevalence [%]")
-    right.set_title("Midline Extension")
-    center.set_title("Ipsilateral Involvement")
-    left.set_title("T-category")
+    t_cat_ax.set_ylabel("contra prevalence [%]")
+    midext_ax.set_ylabel("contra prevalence [%]")
+    midext_ax.set_title("Midline Extension", fontweight="bold")
+    ipsi_inv_ax.set_title("Ipsilateral Involvement", fontweight="bold")
+    t_cat_ax.set_title("T-category", fontweight="bold")
     row.set_xlabel("Lymph Node Level", labelpad=17)
     row.set_xticks([])
     row.set_yticks([])
@@ -78,7 +79,7 @@ def main():
     group_and_plot(
         df=contra_by_midext,
         column="extension",
-        axes=right,
+        axes=midext_ax,
         colors=[COLORS["green"], COLORS["red"]],
     )
 
@@ -100,7 +101,7 @@ def main():
     group_and_plot(
         df=contra_by_ipsi,
         column="ipsi",
-        axes=center,
+        axes=ipsi_inv_ax,
         colors=[COLORS["green"], COLORS["orange"], COLORS["red"]],
     )
 
@@ -120,7 +121,7 @@ def main():
     group_and_plot(
         df=contra_by_t,
         column="t_stage",
-        axes=left,
+        axes=t_cat_ax,
         colors=[COLORS["blue"], COLORS["orange"]],
     )
 
