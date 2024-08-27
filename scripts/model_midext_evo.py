@@ -2,11 +2,9 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import paths
 import shared
-from matplotlib import ticker
-
 from lyscripts.plot.utils import COLORS
+from matplotlib import ticker
 
 
 def main():
@@ -34,6 +32,7 @@ def main():
             width=17 / 2,
         )
     )
+    plt.rcParams.update(shared.get_axes_params())
 
     fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=True)
     w = 0.3

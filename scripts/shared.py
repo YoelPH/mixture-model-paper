@@ -4,6 +4,7 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Any, Literal
 
+from lyscripts.plot.utils import COLORS
 import numpy as np
 import pandas as pd
 from lymph import types
@@ -168,3 +169,16 @@ CONTRA_LNLS = [
     ("max_llh", "contra", "IV"),
     ("max_llh", "contra", "V"),
 ]
+
+
+def get_axes_params() -> dict[str, Any]:
+    """Return rc params regarding axes, ticks and grid."""
+    return {
+        "xtick.bottom": False,
+        "xtick.major.pad": 1,
+        "ytick.left": False,
+        "ytick.major.pad": 1,
+        "axes.grid": True,
+        "axes.grid.axis": "y",
+        "grid.color": COLORS["gray"],
+    }

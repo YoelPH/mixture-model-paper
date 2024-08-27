@@ -38,8 +38,7 @@ def group_and_plot(
         )
 
     axes.legend()
-    axes.grid(axis="y", color=COLORS["gray"])
-    axes.set_axisbelow(True)
+    axes.grid(visible=False, axis="x")
 
 
 def main():
@@ -53,12 +52,7 @@ def main():
             aspect_ratio=1.6,
         )
     )
-    plt.rcParams.update({
-        "xtick.bottom": False,
-        "xtick.major.pad": 1,
-        "ytick.left": False,
-        "ytick.major.pad": 1,
-    })
+    plt.rcParams.update(shared.get_axes_params())
     fig = plt.figure()
     gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
 
@@ -183,7 +177,6 @@ def main():
 
     uncorr_ax.legend()
     uncorr_ax.set_xticks(pos, labels=["I", "II", "III", "IV", "V"])
-    uncorr_ax.grid(axis="y", color=COLORS["gray"])
 
     plt.savefig(shared.get_figure_path(__file__))
 

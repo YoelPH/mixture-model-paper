@@ -4,7 +4,6 @@ from collections import namedtuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import paths
 import shared
 from matplotlib import ticker
 
@@ -23,12 +22,12 @@ def main():
     config_map = {
         "acor_times": PlotConfig(
             title="Estimated Autocorrelation Time",
-            ylabel="steps",
+            ylabel="estimate [steps]",
             label="Autocorrelation Time",
         ),
         "accept_fracs": PlotConfig(
             title="Average Acceptance Fraction of Walkers",
-            ylabel=None,
+            ylabel="fraction [%]",
             label=None,
         ),
     }
@@ -41,6 +40,7 @@ def main():
             width=17,
         )
     )
+    plt.rcParams.update(shared.get_axes_params())
 
     fig, axes = plt.subplots(
         nrows=nrows,
@@ -68,7 +68,9 @@ def main():
         label="Trust Threshold",
     )
     axes[0].legend()
-    axes[1].yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
+    axes[1].yaxis.set_major_formatter(
+        ticker.FuncFormatter(lambda x, *_: f"{100 * x:.0f}")
+    )
 
     plt.savefig(shared.get_figure_path(__file__))
 
