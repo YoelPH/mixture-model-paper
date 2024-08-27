@@ -5,11 +5,10 @@ import numpy as np
 import pandas as pd
 import paths
 import shared
-from matplotlib import gridspec
-from matplotlib.axes import Axes
-
 from lyscripts import utils
 from lyscripts.plot.utils import COLORS
+from matplotlib import gridspec
+from matplotlib.axes import Axes
 
 
 def group_and_plot(
@@ -51,23 +50,31 @@ def main():
         **shared.get_figsizes(
             nrows=nrows,
             ncols=ncols,
-            aspect_ratio=1.5,
+            aspect_ratio=1.6,
         )
     )
+    plt.rcParams.update({
+        "xtick.bottom": False,
+        "xtick.major.pad": 1,
+        "ytick.left": False,
+        "ytick.major.pad": 1,
+    })
     fig = plt.figure()
     gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
 
     t_cat_ax = fig.add_subplot(gs[0,0])
     ipsi_inv_ax = fig.add_subplot(gs[0,1], sharey=t_cat_ax)
     midext_ax = fig.add_subplot(gs[1,0], sharey=ipsi_inv_ax)
+    uncorr_ax = fig.add_subplot(gs[1,1], sharey=midext_ax)
     row = fig.add_subplot(gs[:], frame_on=False)
 
-    t_cat_ax.set_ylabel("contra prevalence [%]")
-    midext_ax.set_ylabel("contra prevalence [%]")
-    midext_ax.set_title("Midline Extension", fontweight="bold")
     ipsi_inv_ax.set_title("Ipsilateral Involvement", fontweight="bold")
     t_cat_ax.set_title("T-category", fontweight="bold")
-    row.set_xlabel("Lymph Node Level", labelpad=17)
+    midext_ax.set_title("Midline Extension", fontweight="bold")
+    uncorr_ax.set_title("Lateralized Tumors", fontweight="bold")
+
+    row.set_xlabel("Lymph Node Level", labelpad=15)
+    row.set_ylabel("Contralateral Involvement Prevalence [%]", labelpad=17)
     row.set_xticks([])
     row.set_yticks([])
 
@@ -124,6 +131,59 @@ def main():
         axes=t_cat_ax,
         colors=[COLORS["blue"], COLORS["orange"]],
     )
+
+    # plot showing that T-stage and ipsi involvement are still predictive, when
+    # considering midline extension
+    lateral = raw[raw[shared.COL.midext] == False]
+
+    early = lateral[lateral[shared.COL.t_stage] <= 2]
+    early_n0 = early[early["max_llh", "ipsi"].sum(axis=1) == 0]
+    early_II = early[early["max_llh", "ipsi", "II"] == True]
+    early_II_and_III = early_II[early_II["max_llh", "ipsi", "III"] == True]
+
+    late = lateral[lateral[shared.COL.t_stage] > 2]
+    late_II = late[late["max_llh", "ipsi", "II"] == True]
+
+    early_n0 = early_n0[shared.CONTRA_LNLS]["max_llh", "contra"].mean(axis=0)
+    early_II = early_II[shared.CONTRA_LNLS]["max_llh", "contra"].mean(axis=0)
+    early_II_and_III = early_II_and_III[shared.CONTRA_LNLS]["max_llh", "contra"].mean(axis=0)
+    late_II = late_II[shared.CONTRA_LNLS]["max_llh", "contra"].mean(axis=0)
+
+    pos = np.arange(len(early_n0))
+    kwargs = {"width": 0.6, "zorder": 2}
+
+    uncorr_ax.bar(
+        x=pos+0.2,
+        height=100 * early_II_and_III,
+        color=COLORS["red"],
+        label="early; ipsi II and III",
+        **kwargs,
+    )
+    uncorr_ax.bar(
+        x=pos+0.1,
+        height=100 * late_II,
+        color=COLORS["orange"],
+        label="late; ipsi II",
+        **kwargs,
+    )
+    uncorr_ax.bar(
+        x=pos,
+        height=100 * early_II,
+        color=COLORS["blue"],
+        label="early; ipsi II",
+        **kwargs,
+    )
+    uncorr_ax.bar(
+        x=pos-0.1,
+        height=100 * early_n0,
+        color=COLORS["green"],
+        label="early; ipsi N0",
+        **kwargs,
+    )
+
+    uncorr_ax.legend()
+    uncorr_ax.set_xticks(pos, labels=["I", "II", "III", "IV", "V"])
+    uncorr_ax.grid(axis="y", color=COLORS["gray"])
 
     plt.savefig(shared.get_figure_path(__file__))
 

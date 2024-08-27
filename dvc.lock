@@ -6089,13 +6089,13 @@ stages:
       size: 557587
     - path: figures
       hash: md5
-      md5: b28bd1858b7509e24a78b1a0c6b0c821.dir
-      size: 1061185
+      md5: 7254e997294b3686b79a34cd7090d0aa.dir
+      size: 1089535
       nfiles: 14
     - path: manuscript.qmd
       hash: md5
-      md5: 4355bb1d3eb18b946e441244a5dff5ab
-      size: 77294
+      md5: dbf248f5ca9e2525a1459649044139ac
+      size: 77243
     - path: models
       hash: md5
       md5: c0bd7e1ce55a9d790e395fff08100f58.dir
@@ -6104,12 +6104,12 @@ stages:
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 86b1f4b4c0a864c8b56cb19212580c8b
-      size: 83317
+      md5: bdcbdecacf4369e88228b6c20aaf472f
+      size: 83164
     - path: .output/manuscript.pdf
       hash: md5
-      md5: 3688d0be613d884b1ba5acc34b50a3f1
-      size: 862835
+      md5: 80b965ecad1005ec86cc8f68d94530cd
+      size: 864983
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -10187,8 +10187,8 @@ stages:
       size: 13486
     - path: scripts/data_strat.py
       hash: md5
-      md5: 3a5fb5aefed4a3b429c298bfb8bd2678
-      size: 3639
+      md5: 8477381e569b80ff438c6931058a4868
+      size: 5772
     - path: scripts/paths.py
       hash: md5
       md5: 50f5ee86fdfab7b18962fc69e5faea94
@@ -10200,8 +10200,8 @@ stages:
     outs:
     - path: figures/fig_data_strat.svg
       hash: md5
-      md5: 05ad133494381a6fe8aecb5a118d0a0e
-      size: 51357
+      md5: 5d7350a93d10dc9834183a090239398d
+      size: 79707
   plot-figures@data_upset_ipsi:
     cmd: "python scripts/data_upset_ipsi.py\n"
     deps:

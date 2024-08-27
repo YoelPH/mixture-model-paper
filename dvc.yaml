@@ -165,7 +165,6 @@ stages:
         - model_risks
         - model_state_dist
         - data_strat
-        - data_strat_uncorr
         - data_upset_ipsi
     cmd: >
       python scripts/${item.name}.py
