@@ -7,7 +7,7 @@ import lydata  # noqa: F401
 import pandas as pd
 import shared
 import yaml
-from lydata.accessor import Q
+from lydata.accessor import Q, QueryPortion
 from pandas.api.typing import DataFrameGroupBy
 from pydantic_settings import BaseSettings
 
@@ -46,19 +46,30 @@ def cast_numpy_to_native(variables: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def get_data_variables(precision: int) -> dict:
+def variables_from_portion(
+    key: str,
+    portion: QueryPortion,
+    precision: int = 2,
+) -> dict[str, Any]:
+    """Get a dictionary from a QueryPortion object."""
+    return {
+        f"{key}_match": portion.match,
+        f"{key}_total": portion.total,
+        f"{key}_percent": round(portion.percent, precision),
+    }
+
+
+def get_data_variables(precision: int = 2) -> dict[str, Any]:
     """Get the variables from the data."""
     variables = {}
     data = shared.get_data()
-    grouped_contra_inv = group_contra_inv(data)
-    absolute = grouped_contra_inv.sum()
-    percent = absolute / grouped_contra_inv.count()
 
     variables["num_patients"] = len(data)
 
     is_early = Q("t_stage", "==", "early")
     is_late = Q("t_stage", "==", "late")
     has_midext = Q("midext", "==", True)
+    not_has_midext = Q("midext", "==", False)
     is_cII_involved = Q(("max_llh", "contra", "II"), "==", True)
     is_ipsi_healthy = (
         Q(("max_llh", "ipsi", "I"), "==", False)
@@ -82,60 +93,93 @@ def get_data_variables(precision: int) -> dict:
         & Q(("max_llh", "ipsi", "V"), "==", False)
     )
 
-    variables["early_with_midext_percent"] = round(
-        number=data.ly.portion(query=has_midext, given=is_early).percent,
-        ndigits=precision,
-    )
-    variables["advanced_with_midext_percent"] = round(
-        number=data.ly.portion(query=has_midext, given=is_late).percent,
-        ndigits=precision,
-    )
+    variables.update(variables_from_portion(
+        key="early_with_midext",
+        portion=data.ly.portion(query=has_midext, given=is_early),
+        precision=precision,
+    ))
+    variables.update(variables_from_portion(
+        key="late_with_midext",
+        portion=data.ly.portion(query=has_midext, given=is_late),
+        precision=precision,
+    ))
 
-    early_ipsin0_cII_portion = data.ly.portion(
-        query=is_cII_involved,
-        given=is_early & is_ipsi_healthy,
-    )
-    variables["early_ipsin0_cII_match"] = early_ipsin0_cII_portion.match
-    variables["early_ipsin0_cII_total"] = early_ipsin0_cII_portion.total
-    variables["early_ipsin0_cII_percent"] = round(
-        number=early_ipsin0_cII_portion.percent,
-        ndigits=precision,
-    )
-
-    early_ipsiII_cII_portion = data.ly.portion(
-        query=is_cII_involved,
-        given=is_early & is_iII_involved,
-    )
-    variables["early_ipsiII_cII_match"] = early_ipsiII_cII_portion.match
-    variables["early_ipsiII_cII_total"] = early_ipsiII_cII_portion.total
-    variables["early_ipsiII_cII_percent"] = round(
-        number=early_ipsiII_cII_portion.percent,
-        ndigits=precision,
-    )
-
-    early_ipsiIIandIII_cII_portion = data.ly.portion(
-        query=is_cII_involved,
-        given=is_early & is_iIIandIII_involved,
-    )
-    variables["early_ipsiIIandIII_cII_match"] = early_ipsiIIandIII_cII_portion.match
-    variables["early_ipsiIIandIII_cII_total"] = early_ipsiIIandIII_cII_portion.total
-    variables["early_ipsiIIandIII_cII_percent"] = round(
-        number=early_ipsiIIandIII_cII_portion.percent,
-        ndigits=precision,
-    )
-
-    late_ipsiIIandIII_cII_portion = data.ly.portion(
-        query=is_cII_involved,
-        given=is_late & is_iIIandIII_involved,
-    )
-    variables["late_ipsiIIandIII_cII_match"] = late_ipsiIIandIII_cII_portion.match
-    variables["late_ipsiIIandIII_cII_total"] = late_ipsiIIandIII_cII_portion.total
-    variables["late_ipsiIIandIII_cII_percent"] = round(
-        number=late_ipsiIIandIII_cII_portion.percent,
-        ndigits=precision,
-    )
+    variables.update(variables_from_portion(
+        key="early_ipsin0_cII",
+        portion=data.ly.portion(
+            query=is_cII_involved,
+            given=is_early & is_ipsi_healthy,
+        ),
+        precision=precision,
+    ))
+    variables.update(variables_from_portion(
+        key="early_ipsiII_cII",
+        portion=data.ly.portion(
+            query=is_cII_involved,
+            given=is_early & is_iII_involved,
+        ),
+        precision=precision,
+    ))
+    variables.update(variables_from_portion(
+        key="early_ipsiIIandIII_cII",
+        portion=data.ly.portion(
+            query=is_cII_involved,
+            given=is_early & is_iIIandIII_involved,
+        ),
+        precision=precision,
+    ))
+    variables.update(variables_from_portion(
+        key="late_ipsiIIandIII_cII",
+        portion=data.ly.portion(
+            query=is_cII_involved,
+            given=is_late & is_iIIandIII_involved,
+        ),
+        precision=precision,
+    ))
+    variables.update(variables_from_portion(
+        key="early_nomidext_cII",
+        portion=data.ly.portion(
+            query=is_cII_involved,
+            given=is_early & not_has_midext,
+        ),
+        precision=precision,
+    ))
 
     return cast_numpy_to_native(variables)
+
+
+def get_model_variables(precision: int = 2) -> dict[str, Any]:
+    """Get the variables from the models."""
+    variables = {}
+    model = shared.get_model(which="full", load_samples=True)
+
+    variables["params"] = cast_numpy_to_native({
+        k: round(v, precision)
+        for k, v in model.get_params().items()
+    })
+    variables["params_percent"] = cast_numpy_to_native({
+        k: round(100 * v, precision)
+        for k, v in model.get_params().items()
+    })
+    early_dist = model.get_distribution("early")
+    variables["early_expected_time"] = round(
+        number=early_dist.support @ early_dist.pmf,
+        ndigits=precision,
+    ).item()
+    late_dist = model.get_distribution("late")
+    variables["late_expected_time"] = round(
+        number=late_dist.support @ late_dist.pmf,
+        ndigits=precision,
+    ).item()
+
+    return variables
+
+
+def get_risk_variables(precision: int = 2) -> dict[str, Any]:
+    """Get the variables for the risk calculations."""
+    variables = {}
+
+    return variables
 
 
 def main() -> None:
@@ -144,6 +188,8 @@ def main() -> None:
 
     variables = {}
     variables["data"] = get_data_variables(precision=cmd.precision)
+    variables["model"] = get_model_variables(precision=cmd.precision)
+    variables["risk"] = get_risk_variables(precision=cmd.precision)
 
     with open(cmd.output, mode="w", encoding="utf-8") as file:
         yaml.dump(variables, file)
