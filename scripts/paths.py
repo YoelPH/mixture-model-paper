@@ -1,5 +1,5 @@
-"""Define paths for data and models.
-"""
+"""Define paths for data and models."""
+
 from pathlib import Path
 from typing import Literal
 
@@ -8,6 +8,7 @@ data = data_dir / "reduced.csv"
 model_dir = Path("models")
 cache_dir = Path(".cache")
 figure_dir = Path("figures")
+scenario_dir = Path("scenarios")
 params = Path("_variables.yml")
 
 

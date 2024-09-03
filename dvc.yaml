@@ -182,10 +182,14 @@ stages:
   compile-variables:
     cmd: >
       python scripts/compile_variables.py
+      --risks models/full/risks.hdf5
+      --scenarios scenarios/risks.yaml
       --output _variables.dynamic.yml
     deps:
     - scripts/compile_variables.py
     - data/reduced.csv
+    - models/full/risks.hdf5
+    - scenarios/risks.yaml
     outs:
     - _variables.dynamic.yml
 

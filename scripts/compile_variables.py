@@ -3,18 +3,25 @@
 from pathlib import Path
 from typing import Any
 
+import h5py
 import lydata  # noqa: F401
+import numpy as np
 import pandas as pd
+import paths
 import shared
 import yaml
 from lydata.accessor import Q, QueryPortion
 from pandas.api.typing import DataFrameGroupBy
 from pydantic_settings import BaseSettings
 
+from lyscripts.scenario import Scenario
+
 
 class CmdSettings(BaseSettings, cli_parse_args=True):
     """Settings for the command-line arguments."""
 
+    risks: Path = paths.model_dir / "full" / "risks.hdf5"
+    scenarios: Path = paths.scenario_dir / "risks.yaml"
     output: Path = Path("_variables.dynamic.yaml")
     precision: int = 2
 
@@ -175,9 +182,60 @@ def get_model_variables(precision: int = 2) -> dict[str, Any]:
     return variables
 
 
-def get_risk_variables(precision: int = 2) -> dict[str, Any]:
+def get_short_label(
+    side_diagnosis,
+    prefix: str = "i",
+    joiner: str = "+",
+) -> str:
+    """Create a short label from a diagnosis."""
+    label = ""
+    is_n0 = True
+
+    positive = [
+        lnl for lnl, status in side_diagnosis.get("CT", {}).items() if status
+    ]
+    if len(positive) > 0:
+        is_n0 = False
+        label += prefix + joiner.join(positive)
+
+    if "FNA" in side_diagnosis:
+        is_n0 = False
+        label += "_FNA"
+
+    return label if not is_n0 else f"{prefix}N0"
+
+
+def get_variable_name(scenario: Scenario) -> str:
+    """Get the variable name for the scenario."""
+    return "_".join([
+        str(scenario.t_stages[0]),
+        "ext" if scenario.midext else "noext",
+        get_short_label(scenario.diagnosis.get("ipsi", {}), prefix="i"),
+        get_short_label(scenario.diagnosis.get("contra", {}), prefix="c"),
+        list(scenario.involvement["contra"].keys()).pop()
+    ])
+
+
+def get_risk_variables(
+    risks_file: Path,
+    scenarios_file: Path,
+    precision: int = 2,
+) -> dict[str, Any]:
     """Get the variables for the risk calculations."""
+    with h5py.File(risks_file, mode="r") as file:
+        risks = {key: dset[:] for key, dset in file.items()}
+
+    with open(scenarios_file, mode="r", encoding="utf-8") as file:
+        scenario_params = yaml.safe_load(file)
+        scenarios = Scenario.list_from_params(scenario_params)
+
     variables = {}
+
+    for scenario in scenarios:
+        hash_ = scenario.md5_hash(for_comp="risks")
+        key = get_variable_name(scenario)
+        mean_risk = round(100 * risks[hash_].mean().item(), precision)
+        variables[key] = mean_risk
 
     return variables
 
@@ -189,7 +247,11 @@ def main() -> None:
     variables = {}
     variables["data"] = get_data_variables(precision=cmd.precision)
     variables["model"] = get_model_variables(precision=cmd.precision)
-    variables["risk"] = get_risk_variables(precision=cmd.precision)
+    variables["risk"] = get_risk_variables(
+        risks_file=cmd.risks,
+        scenarios_file=cmd.scenarios,
+        precision=cmd.precision,
+    )
 
     with open(cmd.output, mode="w", encoding="utf-8") as file:
         yaml.dump(variables, file)
