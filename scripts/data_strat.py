@@ -5,10 +5,11 @@ import numpy as np
 import pandas as pd
 import paths
 import shared
-from lyscripts import utils
-from lyscripts.plot.utils import COLORS
 from matplotlib import gridspec
 from matplotlib.axes import Axes
+
+from lyscripts import utils
+from lyscripts.plot.utils import COLORS
 
 
 def group_and_plot(

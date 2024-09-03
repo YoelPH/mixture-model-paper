@@ -1,17 +1,141 @@
 """Script to compile variables from data and models and stores them in a YAML file."""
 
-import argparse
 from pathlib import Path
+from typing import Any
 
+import lydata  # noqa: F401
 import pandas as pd
+import shared
 import yaml
+from lydata.accessor import Q
+from pandas.api.typing import DataFrameGroupBy
 from pydantic_settings import BaseSettings
 
 
 class CmdSettings(BaseSettings, cli_parse_args=True):
     """Settings for the command-line arguments."""
 
-    output: Path = Path("_variables.yaml")
+    output: Path = Path("_variables.dynamic.yaml")
+    precision: int = 2
+
+
+def group_contra_inv(data: pd.DataFrame) -> DataFrameGroupBy:
+    """Group the data by T-stage, num of ipsi involved, and midline extension."""
+    lnl_cols = shared.get_lnl_cols("contra", lnls=["I", "II", "III", "IV"])
+    num_ipsi_inv = data[shared.get_lnl_cols("ipsi")].sum(axis="columns")
+    contra_inv = data[lnl_cols].copy()
+    contra_inv.columns = contra_inv.columns.droplevel([0,1])
+
+    contra_inv["t_stage"] = data[shared.COL.t_stage]
+    contra_inv["ipsi"] = num_ipsi_inv.map(lambda x: str(x) if x <= 1 else "≥ 2")
+    contra_inv["midext"] = data[shared.COL.midext]
+
+    return contra_inv.groupby(by=["t_stage", "ipsi", "midext"])
+
+
+def cast_numpy_to_native(variables: dict[str, Any]) -> dict[str, Any]:
+    """Convert numpy dtypes to native Python types."""
+    result = {}
+
+    for key, value in variables.items():
+        try:
+            result[key] = value.item()
+        except AttributeError:
+            result[key] = value
+
+    return result
+
+
+def get_data_variables(precision: int) -> dict:
+    """Get the variables from the data."""
+    variables = {}
+    data = shared.get_data()
+    grouped_contra_inv = group_contra_inv(data)
+    absolute = grouped_contra_inv.sum()
+    percent = absolute / grouped_contra_inv.count()
+
+    variables["num_patients"] = len(data)
+
+    is_early = Q("t_stage", "==", "early")
+    is_late = Q("t_stage", "==", "late")
+    has_midext = Q("midext", "==", True)
+    is_cII_involved = Q(("max_llh", "contra", "II"), "==", True)
+    is_ipsi_healthy = (
+        Q(("max_llh", "ipsi", "I"), "==", False)
+        & Q(("max_llh", "ipsi", "II"), "==", False)
+        & Q(("max_llh", "ipsi", "III"), "==", False)
+        & Q(("max_llh", "ipsi", "IV"), "==", False)
+        & Q(("max_llh", "ipsi", "V"), "==", False)
+    )
+    is_iII_involved = (
+        Q(("max_llh", "ipsi", "I"), "==", False)
+        & Q(("max_llh", "ipsi", "II"), "==", True)
+        & Q(("max_llh", "ipsi", "III"), "==", False)
+        & Q(("max_llh", "ipsi", "IV"), "==", False)
+        & Q(("max_llh", "ipsi", "V"), "==", False)
+    )
+    is_iIIandIII_involved = (
+        Q(("max_llh", "ipsi", "I"), "==", False)
+        & Q(("max_llh", "ipsi", "II"), "==", True)
+        & Q(("max_llh", "ipsi", "III"), "==", True)
+        & Q(("max_llh", "ipsi", "IV"), "==", False)
+        & Q(("max_llh", "ipsi", "V"), "==", False)
+    )
+
+    variables["early_with_midext_percent"] = round(
+        number=data.ly.portion(query=has_midext, given=is_early).percent,
+        ndigits=precision,
+    )
+    variables["advanced_with_midext_percent"] = round(
+        number=data.ly.portion(query=has_midext, given=is_late).percent,
+        ndigits=precision,
+    )
+
+    early_ipsin0_cII_portion = data.ly.portion(
+        query=is_cII_involved,
+        given=is_early & is_ipsi_healthy,
+    )
+    variables["early_ipsin0_cII_match"] = early_ipsin0_cII_portion.match
+    variables["early_ipsin0_cII_total"] = early_ipsin0_cII_portion.total
+    variables["early_ipsin0_cII_percent"] = round(
+        number=early_ipsin0_cII_portion.percent,
+        ndigits=precision,
+    )
+
+    early_ipsiII_cII_portion = data.ly.portion(
+        query=is_cII_involved,
+        given=is_early & is_iII_involved,
+    )
+    variables["early_ipsiII_cII_match"] = early_ipsiII_cII_portion.match
+    variables["early_ipsiII_cII_total"] = early_ipsiII_cII_portion.total
+    variables["early_ipsiII_cII_percent"] = round(
+        number=early_ipsiII_cII_portion.percent,
+        ndigits=precision,
+    )
+
+    early_ipsiIIandIII_cII_portion = data.ly.portion(
+        query=is_cII_involved,
+        given=is_early & is_iIIandIII_involved,
+    )
+    variables["early_ipsiIIandIII_cII_match"] = early_ipsiIIandIII_cII_portion.match
+    variables["early_ipsiIIandIII_cII_total"] = early_ipsiIIandIII_cII_portion.total
+    variables["early_ipsiIIandIII_cII_percent"] = round(
+        number=early_ipsiIIandIII_cII_portion.percent,
+        ndigits=precision,
+    )
+
+    late_ipsiIIandIII_cII_portion = data.ly.portion(
+        query=is_cII_involved,
+        given=is_late & is_iIIandIII_involved,
+    )
+    variables["late_ipsiIIandIII_cII_match"] = late_ipsiIIandIII_cII_portion.match
+    variables["late_ipsiIIandIII_cII_total"] = late_ipsiIIandIII_cII_portion.total
+    variables["late_ipsiIIandIII_cII_percent"] = round(
+        number=late_ipsiIIandIII_cII_portion.percent,
+        ndigits=precision,
+    )
+
+    return cast_numpy_to_native(variables)
 
 
 def main() -> None:
@@ -19,6 +143,11 @@ def main() -> None:
     cmd = CmdSettings()
 
     variables = {}
+    variables["data"] = get_data_variables(precision=cmd.precision)
 
     with open(cmd.output, mode="w", encoding="utf-8") as file:
         yaml.dump(variables, file)
+
+
+if __name__ == "__main__":
+    main()

@@ -23,3 +23,6 @@ sampling:
   nsteps: 10
   thin: 10
   cores: 12
+
+########################################################################################
+# Below the dynamically computed values are inserted

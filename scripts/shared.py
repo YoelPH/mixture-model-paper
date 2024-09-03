@@ -4,12 +4,12 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Any, Literal
 
-from lyscripts.plot.utils import COLORS
 import numpy as np
 import pandas as pd
 from lymph import types
 
 from lyscripts import utils
+from lyscripts.plot.utils import COLORS
 
 try:
     from . import paths
@@ -20,6 +20,34 @@ except ImportError:
 pd.options.mode.copy_on_write = False
 CM_TO_INCH = 0.393701
 GOLDEN_RATIO = 1.61803398875
+
+Columns = namedtuple(
+    "Columns", [
+        "inst",
+        "age",
+        "nd",
+        "t_stage",
+        "n_stage",
+        "midext",
+        "ipsi_III",
+    ])
+
+COL = Columns(
+    inst=("patient", "#", "institution"),
+    age=("patient", "#", "age"),
+    nd=("patient", "#", "neck_dissection"),
+    t_stage=("tumor", "1", "t_stage"),
+    n_stage=("patient", "#", "n_stage"),
+    midext=("tumor", "1", "extension"),
+    ipsi_III=("max_llh", "ipsi", "III"),
+)
+CONTRA_LNLS = [
+    ("max_llh", "contra", "I"),
+    ("max_llh", "contra", "II"),
+    ("max_llh", "contra", "III"),
+    ("max_llh", "contra", "IV"),
+    ("max_llh", "contra", "V"),
+]
 
 
 def get_params() -> dict[str, Any]:
@@ -56,7 +84,9 @@ def get_data(map_t_stage: bool = True) -> pd.DataFrame:
     data = utils.load_patient_data(paths.data)
 
     if map_t_stage:
-        data.ly.map_t_stage(lambda x: "early" if x <= 2 else "late")
+        data[COL.t_stage] = data[COL.t_stage].map(
+            lambda x: "early" if x <= 2 else "late"
+        )
 
     return data
 
@@ -139,36 +169,6 @@ def get_lnl_cols(
     """Get the columns of the LNL involvements."""
     lnls = lnls or ["I", "II", "III", "IV", "V"]
     return [("max_llh", side, lnl) for lnl in lnls]
-
-
-Columns = namedtuple(
-    "Columns", [
-        "inst",
-        "age",
-        "nd",
-        "t_stage",
-        "n_stage",
-        "midext",
-        "ipsi_III",
-    ])
-
-
-COL = Columns(
-    inst=("patient", "#", "institution"),
-    age=("patient", "#", "age"),
-    nd=("patient", "#", "neck_dissection"),
-    t_stage=("tumor", "1", "t_stage"),
-    n_stage=("patient", "#", "n_stage"),
-    midext=("tumor", "1", "extension"),
-    ipsi_III=("max_llh", "ipsi", "III"),
-)
-CONTRA_LNLS = [
-    ("max_llh", "contra", "I"),
-    ("max_llh", "contra", "II"),
-    ("max_llh", "contra", "III"),
-    ("max_llh", "contra", "IV"),
-    ("max_llh", "contra", "V"),
-]
 
 
 def get_axes_params() -> dict[str, Any]:

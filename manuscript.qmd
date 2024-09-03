@@ -25,7 +25,8 @@ from lymph import models
 from lyscripts import utils
 from lyscripts.plot.utils import COLORS
 
-from scripts import shared, paths, COL, get_lnl_cols
+from scripts import shared, paths
+from scripts.shared import COL, get_lnl_cols
 
 simple_model = shared.get_model("simple", load_samples=True)
 ```
@@ -50,7 +51,7 @@ To better quantify this personalized risk of occult disease we have previously d
 
 The main contributions of this paper are as follows:
 
-1. In section @sec-data we present a multi-centric dataset on lymph node involvement in 833 OPSCC patients. Based on the dataset the main risk factors for contralateral lymph node involvement are identified and the requirements for the bilateral model extension are described (@sec-requirements).
+1. In section @sec-data we present a multi-centric dataset on lymph node involvement in {{< var data.num_patients >}} OPSCC patients. Based on the dataset the main risk factors for contralateral lymph node involvement are identified and the requirements for the bilateral model extension are described (@sec-requirements).
 
 2. In @sec-ext-to-contra we present a bilateral HMM of lymphatic progression that accounts for the T-stage lateralization of the primary tumor as well as clinical involvement as risk factors for occult contralateral involvement. In @sec-methods we describe how the model training and the computational experiments were set up.
 
@@ -59,7 +60,7 @@ The main contributions of this paper are as follows:
 
 # Data on Lymphatic Progression Patterns {#sec-data}
 
-To be able to create models for lymphatic tumor progression that include all relevant LNLs including the contralateral side, we have collected a detailed dataset of 833<!-- num patients --> patients with newly diagnosed oropharyngeal squamous cell carcinomas [@ludwig_dataset_2022;@ludwig_multi-centric_2023]. It reports the lymph node involvement per LNL of every patient individually in tabular form, in addition to other primary tumor and patient characteristics such as T-category, subside, and lateralization of the primary tumor, and HPV p16 status. Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. The data from the Inselspital Bern and the Centre Léon Bérard only consist of patients who received a neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset. The majority of patients from the University Hospital Zürich and the Vall d'Hebron Barcelona Hospital was treated with definitive radiotherapy. For a subset of 83 patients in the CLB dataset, the lateralization of the primary tumor was not reported.
+To be able to create models for lymphatic tumor progression that include all relevant LNLs including the contralateral side, we have collected a detailed dataset of {{< var data.num_patients >}} patients with newly diagnosed oropharyngeal squamous cell carcinomas [@ludwig_dataset_2022;@ludwig_multi-centric_2023]. It reports the lymph node involvement per LNL of every patient individually in tabular form, in addition to other primary tumor and patient characteristics such as T-category, subside, and lateralization of the primary tumor, and HPV p16 status. Their patient records have been collected at four different institutions and a brief overview over some of their patients' characteristics are shown in @tbl-data-overview. The data from the Inselspital Bern and the Centre Léon Bérard only consist of patients who received a neck dissection. Since this treatment is more commonly chosen for early T-category patients, they also make up a larger portion of the respective dataset. The majority of patients from the University Hospital Zürich and the Vall d'Hebron Barcelona Hospital was treated with definitive radiotherapy. For a subset of 83 patients in the CLB dataset, the lateralization of the primary tumor was not reported.
 
 ```{python}
 #| echo: false
@@ -213,7 +214,7 @@ Similarly, ipsilateral involvement correlates with contralateral metastasis. The
 
 The bottom left panel in @fig-data-strat shows that patients with a tumor crossing the mid-sagittal line show contralateral involvement vastly more often compared to patients with clearly lateralized tumors. This makes intuitive sense, because the lymphatic system in the head and neck region is typically symmetric and thus no major vessels cross the midline. Therefore, interstitial fluids from the primary tumor -- which we assume to carry living malignant cells -- may only reach the blind-ended lymphatic vessels in the contralateral neck via short-ranged diffusion. Which in turn is only possible when the primary tumor is close enough to the mid-sagittal line or crosses it. <!-- citation(s) needed? or is this intuition good enough? -->
 
-The three risk factors for contralateral involvement, midline extension, T-category, and ipsilateral involvement are correlated. For example, midline extension was present in 48% of advanced T-category tumors but only in 7% of early T-category tumors. The higher prevalence of contralateral metastases in advanced T-category tumors may thus be partially explained by a higher rate of midline extension in these tumors. However, the bottom right panel of @fig-data-strat indicates that advanced T-category and severe ipsilateral involvement do represent additional risk factors. The figure considers only patients with lateralized tumors not extending over the midline. For early T-category and healthy ipsilateral levels I-V, only 1% (1 out of 84 patients) shows involvement of contralateral level II. This increases to 5% (9 out of 165 patients) if ipsilateral level II is involved, to 15% (9 out of 60 patients) if ipsilateral levels II and III are involved, and to 23% (6 out of 26 patients) for advanced T-category with ipsilateral levels II and III involved.<!-- TODO: make values here dynamic. -->
+The three risk factors for contralateral involvement, midline extension, T-category, and ipsilateral involvement are correlated. For example, midline extension was present in {{< var data.advanced_with_midext_percent >}}% of advanced T-category tumors but only in {{< var data.early_with_midext_percent >}}% of early T-category tumors. The higher prevalence of contralateral metastases in advanced T-category tumors may thus be partially explained by a higher rate of midline extension in these tumors. However, the bottom right panel of @fig-data-strat indicates that advanced T-category and severe ipsilateral involvement do represent additional risk factors. The figure considers only patients with lateralized tumors not extending over the midline. For early T-category and healthy ipsilateral levels I-V, only {{< var data.early_ipsin0_cII_percent >}}% ({{< var data.early_ipsin0_cII_match >}} out of {{< var data.early_ipsin0_cII_total >}} patients) shows involvement of contralateral level II. This increases to {{< var data.early_ipsiII_cII_percent >}}% ({{< var data.early_ipsiII_cII_match >}} out of {{< var data.early_ipsiII_cII_total >}} patients) if ipsilateral level II is involved, to {{< var data.early_ipsiIIandIII_cII_percent >}}% ({{< var data.early_ipsiIIandIII_cII_match >}} out of {{< var data.early_ipsiIIandIII_cII_total >}} patients) if ipsilateral levels II and III are involved, and to {{< var data.late_ipsiIIandIII_cII_percent >}}% ({{< var data.late_ipsiIIandIII_cII_match >}} out of {{< var data.late_ipsiIIandIII_cII_total >}} patients) for advanced T-category with ipsilateral levels II and III involved.
 
 
 ## Requirements for a Bilateral Model {#sec-requirements}
@@ -684,7 +685,7 @@ contra_inv["t_stage"] = raw[COL.t_stage].apply(lambda x: "early" if x <= 2 else 
 contra_inv["ipsi"] = num_ipsi_inv.map(lambda x: str(x) if x <= 1 else "≥ 2")
 contra_inv["midext"] = raw[COL.midext]
 
-grouped = contra_inv.groupby(by=["t_stage", "ipsi", "midext"])
+grouped = contra_inv.groupby(by=["t_stage", "ipsi", "midext"], dropna=False)
 num_involved = grouped.sum()
 total = grouped.count()
 percent_involved = num_involved / total
@@ -697,7 +698,7 @@ percent_involved.index = idx
 involved = num_involved.join(
   100 * percent_involved,
   rsuffix=" (%)",
-).sort_index(axis="columns")
+)
 involved.columns = pd.MultiIndex.from_product(
   [["I", "II", "III", "IV"],
    ["n", "%"]],
@@ -707,8 +708,10 @@ involved["total", "n"] = total["I"]
 (
   involved
   .reset_index()
-  .sort_values("ipsi", ascending=True)
-  .sort_values("T-cat.", ascending=False)
+  .sort_values(
+    by=["T-cat.", "ipsi", "Mid. ext."],
+    ascending=[False, True, True],
+  )
   .style
   .format(precision=2)
   .apply(right_align, subset=involved.columns[0:])

@@ -6083,6 +6083,10 @@ stages:
   render-pdf:
     cmd: "quarto render manuscript.qmd --to nature-pdf\n"
     deps:
+    - path: _variables.yml
+      hash: md5
+      md5: 492549f515d8d020d87e94907612bd3c
+      size: 1384
     - path: data/reduced.csv
       hash: md5
       md5: 0e948bcfa0b0521194f3cddb4a9f14cd
@@ -6094,22 +6098,22 @@ stages:
       nfiles: 10
     - path: manuscript.qmd
       hash: md5
-      md5: 2d51ac39c0825973ecb10b3eedb71c1c
-      size: 77412
+      md5: b9102d4c8bb58330cd0fe9ca00874c6b
+      size: 77915
     - path: models
       hash: md5
-      md5: c0bd7e1ce55a9d790e395fff08100f58.dir
-      size: 1664811391
-      nfiles: 20
+      md5: 3d60c30029cc89c18987bbf0de0d0c11.dir
+      size: 1663185727
+      nfiles: 17
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 2f2033a904332eb4270f5dd0b7f1f811
-      size: 83261
+      md5: d6cc974af469fd6cac73fe7ac0a9c9b0
+      size: 83702
     - path: .output/manuscript.pdf
       hash: md5
-      md5: b6487d6d0f9993efed1598518ef91409
-      size: 867207
+      md5: c1684317b77d8df3cfc0d64112d06553
+      size: 864212
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -10260,3 +10264,35 @@ stages:
       hash: md5
       md5: 91748bcaa5b319f8faa0fd2d868f63a9
       size: 33715
+  compile-variables:
+    cmd: "python scripts/compile_variables.py --output _variables.dynamic.yml\n"
+    deps:
+    - path: data/reduced.csv
+      hash: md5
+      md5: 0e948bcfa0b0521194f3cddb4a9f14cd
+      size: 557587
+    - path: scripts/compile_variables.py
+      hash: md5
+      md5: f39d104b2e8421874c388d96a963380e
+      size: 5302
+    outs:
+    - path: _variables.dynamic.yml
+      hash: md5
+      md5: 92175ef454d25022b54c7f98b1533803
+      size: 498
+  concat-variables:
+    cmd: "cat _variables.manual.yml _variables.dynamic.yml > _variables.yml\n"
+    deps:
+    - path: _variables.dynamic.yml
+      hash: md5
+      md5: 92175ef454d25022b54c7f98b1533803
+      size: 498
+    - path: _variables.manual.yml
+      hash: md5
+      md5: 07c30cec2563b994b01dbe477a9a579f
+      size: 886
+    outs:
+    - path: _variables.yml
+      hash: md5
+      md5: 492549f515d8d020d87e94907612bd3c
+      size: 1384
