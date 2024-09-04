@@ -205,5 +205,4 @@ model.*
 
 # VS Code
 .vscode
-/_variables.yml
 /_variables.dynamic.yml

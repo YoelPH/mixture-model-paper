@@ -6085,8 +6085,8 @@ stages:
     deps:
     - path: _variables.yml
       hash: md5
-      md5: b55f9bdedcedc9525297911a9c2a2a68
-      size: 3259
+      md5: fac728ed0c10e3102f8f712b48b3a009
+      size: 4007
     - path: data/reduced.csv
       hash: md5
       md5: 0e948bcfa0b0521194f3cddb4a9f14cd
@@ -6098,8 +6098,8 @@ stages:
       nfiles: 10
     - path: manuscript.qmd
       hash: md5
-      md5: 8ad19669927d747f96b4fa683eeb870e
-      size: 78744
+      md5: 59d554259ed548de36578d9a40ed201a
+      size: 78789
     - path: models
       hash: md5
       md5: e5e9cb7db556d61c0f5a4979001d5c4b.dir
@@ -6108,12 +6108,12 @@ stages:
     outs:
     - path: .output/_tex/manuscript.tex
       hash: md5
-      md5: 5e2b2a7d353654c689688d095d6d4535
-      size: 84313
+      md5: ab810ea2ce61e00ad654257e5415dd53
+      size: 84311
     - path: .output/manuscript.pdf
       hash: md5
-      md5: df6f0abb037472ed26ae3b9eedbca21c
-      size: 865169
+      md5: 091787730fb92d6cb5d1f2c6a567dabb
+      size: 865166
   compute-priors@contra-base:
     cmd: "lyscripts compute priors --samples models/contra/samples.hdf5 --priors models/contra/priors.hdf5
       --params models/contra/params.yaml --scenarios scenarios/base.yaml\n"
@@ -10413,37 +10413,46 @@ stages:
       md5: 91748bcaa5b319f8faa0fd2d868f63a9
       size: 33715
   compile-variables:
-    cmd: "python scripts/compile_variables.py --risks models/full/risks.hdf5 --scenarios
-      scenarios/risks.yaml --output _variables.dynamic.yml\n"
+    cmd: "python scripts/compile_variables.py --risk_hdf5 models/full/risks.hdf5 --risk_scenarios
+      scenarios/risks.yaml --prevalence_hdf5 models/full/prevalences_overall.hdf5
+      --prevalence_scenarios scenarios/overall.yaml --output _variables.dynamic.yml\n"
     deps:
     - path: data/reduced.csv
       hash: md5
       md5: 0e948bcfa0b0521194f3cddb4a9f14cd
       size: 557587
+    - path: models/full/prevalences_overall.hdf5
+      hash: md5
+      md5: 0554c735113652736e0e4355ae2b5f91
+      size: 295264
     - path: models/full/risks.hdf5
       hash: md5
       md5: 878f14213786075e984e8a0147a3a08e
       size: 366560
+    - path: scenarios/overall.yaml
+      hash: md5
+      md5: 3c5c7f89bd0169337ce24106c90cea4f
+      size: 1500
     - path: scenarios/risks.yaml
       hash: md5
       md5: a002ee783f81d6d4f7f409f68955b477
       size: 4727
     - path: scripts/compile_variables.py
       hash: md5
-      md5: 471f60109b41d6b96caec7cef93fd372
-      size: 8051
+      md5: ca14c4e6bd69752d598fad5538d505bb
+      size: 10117
     outs:
     - path: _variables.dynamic.yml
       hash: md5
-      md5: 387ecbd8acf9aa68d064109a0a0df95e
-      size: 2373
+      md5: e67fb9bf2f1bc4994710e07f37b3b708
+      size: 3121
   concat-variables:
     cmd: "cat _variables.manual.yml _variables.dynamic.yml > _variables.yml\n"
     deps:
     - path: _variables.dynamic.yml
       hash: md5
-      md5: 387ecbd8acf9aa68d064109a0a0df95e
-      size: 2373
+      md5: e67fb9bf2f1bc4994710e07f37b3b708
+      size: 3121
     - path: _variables.manual.yml
       hash: md5
       md5: 07c30cec2563b994b01dbe477a9a579f
@@ -10451,5 +10460,5 @@ stages:
     outs:
     - path: _variables.yml
       hash: md5
-      md5: b55f9bdedcedc9525297911a9c2a2a68
-      size: 3259
+      md5: fac728ed0c10e3102f8f712b48b3a009
+      size: 4007

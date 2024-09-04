@@ -20,8 +20,10 @@ from lyscripts.scenario import Scenario
 class CmdSettings(BaseSettings, cli_parse_args=True):
     """Settings for the command-line arguments."""
 
-    risks: Path = paths.model_dir / "full" / "risks.hdf5"
-    scenarios: Path = paths.scenario_dir / "risks.yaml"
+    risk_hdf5: Path = paths.model_dir / "full" / "risks.hdf5"
+    risk_scenarios: Path = paths.scenario_dir / "risks.yaml"
+    prevalence_hdf5: Path = paths.model_dir / "full" / "prevalences_overall.hdf5"
+    prevalence_scenarios: Path = paths.scenario_dir / "overall.yaml"
     output: Path = Path("_variables.dynamic.yaml")
     precision: int = 2
 
@@ -64,6 +66,59 @@ def variables_from_portion(
         f"{key}_total": portion.total,
         f"{key}_percent": round(portion.percent, precision),
     }
+
+
+def get_diagnosis_label(
+    side_diagnosis,
+    modality: str = "CT",
+    prefix: str = "i",
+    joiner: str = "+",
+) -> str:
+    """Create a short label from a diagnosis."""
+    label = ""
+    is_n0 = True
+
+    positive = [
+        lnl for lnl, status in side_diagnosis.get(modality, {}).items() if status
+    ]
+    if len(positive) > 0:
+        is_n0 = False
+        label += prefix + joiner.join(positive)
+
+    if "FNA" in side_diagnosis:
+        is_n0 = False
+        label += "_FNA"
+
+    return label if not is_n0 else f"{prefix}N0"
+
+
+def get_variable_name_for_prevalence(scenario: Scenario) -> str:
+    """Get the variable name for the scenario."""
+    return "_".join([
+        str(scenario.t_stages[0]),
+        "ext" if scenario.midext else "noext",
+        get_diagnosis_label(
+            scenario.diagnosis.get("ipsi", {}),
+            modality="max_llh",
+            prefix="i",
+        ),
+        get_diagnosis_label(
+            scenario.diagnosis.get("contra", {}),
+            modality="max_llh",
+            prefix="c",
+        ),
+    ])
+
+
+def get_variable_name_for_risk(scenario: Scenario) -> str:
+    """Get the variable name for the scenario."""
+    return "_".join([
+        str(scenario.t_stages[0]),
+        "ext" if scenario.midext else "noext",
+        get_diagnosis_label(scenario.diagnosis.get("ipsi", {}), prefix="i"),
+        get_diagnosis_label(scenario.diagnosis.get("contra", {}), prefix="c"),
+        list(scenario.involvement["contra"].keys()).pop()
+    ])
 
 
 def get_data_variables(precision: int = 2) -> dict[str, Any]:
@@ -182,38 +237,38 @@ def get_model_variables(precision: int = 2) -> dict[str, Any]:
     return variables
 
 
-def get_short_label(
-    side_diagnosis,
-    prefix: str = "i",
-    joiner: str = "+",
-) -> str:
-    """Create a short label from a diagnosis."""
-    label = ""
-    is_n0 = True
+def get_prevalence_variables(
+    prevalences_file: Path,
+    scenarios_file: Path,
+    precision: int = 2,
+) -> dict[str, Any]:
+    """Get the variables of the prevalence calculations."""
+    with h5py.File(prevalences_file, mode="r") as file:
+        prevalences = {key: dset[:] for key, dset in file.items()}
+        portions = {
+            key: QueryPortion(
+                match=dset.attrs["num_match"],
+                total=dset.attrs["num_total"],
+            )
+            for key, dset in file.items()
+        }
 
-    positive = [
-        lnl for lnl, status in side_diagnosis.get("CT", {}).items() if status
-    ]
-    if len(positive) > 0:
-        is_n0 = False
-        label += prefix + joiner.join(positive)
+    with open(scenarios_file, mode="r", encoding="utf-8") as file:
+        scenario_params = yaml.safe_load(file)
+        scenarios = Scenario.list_from_params(scenario_params)
 
-    if "FNA" in side_diagnosis:
-        is_n0 = False
-        label += "_FNA"
+    variables = {}
 
-    return label if not is_n0 else f"{prefix}N0"
+    for scenario in scenarios:
+        hash_ = scenario.md5_hash(for_comp="prevalences")
+        key = get_variable_name_for_prevalence(scenario)
+        mean_prevalence = round(100 * prevalences[hash_].mean().item(), precision)
+        variables[key] = {
+            "predicted": mean_prevalence,
+            "observed": round(portions[hash_].percent.item(), precision),
+        }
 
-
-def get_variable_name(scenario: Scenario) -> str:
-    """Get the variable name for the scenario."""
-    return "_".join([
-        str(scenario.t_stages[0]),
-        "ext" if scenario.midext else "noext",
-        get_short_label(scenario.diagnosis.get("ipsi", {}), prefix="i"),
-        get_short_label(scenario.diagnosis.get("contra", {}), prefix="c"),
-        list(scenario.involvement["contra"].keys()).pop()
-    ])
+    return variables
 
 
 def get_risk_variables(
@@ -233,7 +288,7 @@ def get_risk_variables(
 
     for scenario in scenarios:
         hash_ = scenario.md5_hash(for_comp="risks")
-        key = get_variable_name(scenario)
+        key = get_variable_name_for_risk(scenario)
         mean_risk = round(100 * risks[hash_].mean().item(), precision)
         variables[key] = mean_risk
 
@@ -247,9 +302,14 @@ def main() -> None:
     variables = {}
     variables["data"] = get_data_variables(precision=cmd.precision)
     variables["model"] = get_model_variables(precision=cmd.precision)
+    variables["prevalence"] = get_prevalence_variables(
+        prevalences_file=cmd.prevalence_hdf5,
+        scenarios_file=cmd.prevalence_scenarios,
+        precision=cmd.precision,
+    )
     variables["risk"] = get_risk_variables(
-        risks_file=cmd.risks,
-        scenarios_file=cmd.scenarios,
+        risks_file=cmd.risk_hdf5,
+        scenarios_file=cmd.risk_scenarios,
         precision=cmd.precision,
     )
 

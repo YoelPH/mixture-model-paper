@@ -182,14 +182,18 @@ stages:
   compile-variables:
     cmd: >
       python scripts/compile_variables.py
-      --risks models/full/risks.hdf5
-      --scenarios scenarios/risks.yaml
+      --risk_hdf5 models/full/risks.hdf5
+      --risk_scenarios scenarios/risks.yaml
+      --prevalence_hdf5 models/full/prevalences_overall.hdf5
+      --prevalence_scenarios scenarios/overall.yaml
       --output _variables.dynamic.yml
     deps:
     - scripts/compile_variables.py
     - data/reduced.csv
     - models/full/risks.hdf5
+    - models/full/prevalences_overall.hdf5
     - scenarios/risks.yaml
+    - scenarios/overall.yaml
     outs:
     - _variables.dynamic.yml
 
@@ -200,7 +204,9 @@ stages:
     - _variables.manual.yml
     - _variables.dynamic.yml
     outs:
-    - _variables.yml
+    - _variables.yml:
+        persist: true
+        cache: false
 
   render-pdf:
     cmd: >
