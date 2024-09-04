@@ -1,0 +1,28 @@
+version: 1                      # version of this parameter specification
+
+########################################################################################
+# Under this key we define the specificity and sensitivity for a range
+# of diagnostic modalities. They are taken from literature.
+modalities:
+  CT: [0.76, 0.81]
+  MRI: [0.63, 0.81]
+  PET: [0.86, 0.79]
+  FNA: [0.98, 0.80]
+  diagnostic_consensus: [0.86, 0.81]
+  pathology: [1.0, 1.0]
+  pCT: [0.86, 0.81]
+  max_llh: [1.0, 1.0]
+
+########################################################################################
+# Here, we define sampling parameters
+sampling:
+  walkers_per_dim: 12
+  check_interval: 50
+  trust_fac: 50.0
+  rel_thresh: 0.05
+  nsteps: 10
+  thin: 10
+  cores: 12
+
+########################################################################################
+# Below the dynamically computed values are inserted

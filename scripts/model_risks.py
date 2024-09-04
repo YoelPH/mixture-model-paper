@@ -79,7 +79,10 @@ def main():
         for dset in h5file.values():
             scenario = Scenario.from_dict(dict(dset.attrs))
             for_subplot = list(eval(scenario.involvement)["contra"].keys()).pop()
-            mean_lists[for_subplot].append(dset[:].mean())
+            try:
+                mean_lists[for_subplot].append(dset[:].mean())
+            except KeyError:
+                continue
 
     indices = {}
     for lnl, means in mean_lists.items():
@@ -90,7 +93,10 @@ def main():
         for dset in h5file.values():
             scenario = Scenario.from_dict(dict(dset.attrs))
             for_subplot = list(eval(scenario.involvement)["contra"].keys()).pop()
-            c = counter[for_subplot]
+            try:
+                c = counter[for_subplot]
+            except KeyError:
+                continue
             counter[for_subplot] += 1
             contents[for_subplot].append(
                 Histogram(

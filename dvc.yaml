@@ -1,5 +1,5 @@
 vars:
-  - _variables.yml
+  - _variables.manual.yml
 
 stages:
   join:
@@ -23,12 +23,12 @@ stages:
   enhance:
     cmd: >
       lyscripts data enhance
-      --params _variables.yml
+      --params _variables.manual.yml
       data/joined.csv data/enhanced.csv
     deps:
     - data/joined.csv
     params:
-    - _variables.yml:
+    - _variables.manual.yml:
         - modalities
     outs:
     - data/enhanced.csv
@@ -179,6 +179,35 @@ stages:
         persist: true
         cache: false
 
+  compile-variables:
+    cmd: >
+      python scripts/compile_variables.py
+      --risk_hdf5 models/full/risks.hdf5
+      --risk_scenarios scenarios/risks.yaml
+      --prevalence_hdf5 models/full/prevalences_overall.hdf5
+      --prevalence_scenarios scenarios/overall.yaml
+      --output _variables.dynamic.yml
+    deps:
+    - scripts/compile_variables.py
+    - data/reduced.csv
+    - models/full/risks.hdf5
+    - models/full/prevalences_overall.hdf5
+    - scenarios/risks.yaml
+    - scenarios/overall.yaml
+    outs:
+    - _variables.dynamic.yml
+
+  concat-variables:
+    cmd: >
+      cat _variables.manual.yml _variables.dynamic.yml > _variables.yml
+    deps:
+    - _variables.manual.yml
+    - _variables.dynamic.yml
+    outs:
+    - _variables.yml:
+        persist: true
+        cache: false
+
   render-pdf:
     cmd: >
       quarto render manuscript.qmd --to nature-pdf
@@ -187,6 +216,7 @@ stages:
     - figures
     - data/reduced.csv
     - manuscript.qmd
+    - _variables.yml
     outs:
     - .output/manuscript.pdf
     - .output/_tex/manuscript.tex
