@@ -15,7 +15,7 @@ manuscript:
   meca-bundle: true
   code-links:
     - text: GitHub Repo
-      href: https://github.com/rmnldwg/bilateral-paper
+      href: https://github.com/YoelPH/mixture-model-paper.git
       icon: github
   resources: 
     - data/reduced.csv
@@ -45,6 +45,13 @@ execute:
 
 # authors, affiliations, bibliography, ...
 authors:
+  - name: Yoel Perez Haas
+    orcid: 0000-0002-4282-0643
+    email: yoel.perezhaas@usz.ch
+    corresponsing: false
+    affiliations:
+      - ref: 1
+      - ref: 2
   - name: Roman Ludwig
     orcid: 0000-0001-9434-328X
     email: roman.ludwig@usz.ch
@@ -52,12 +59,58 @@ authors:
     affiliations:
       - ref: 1
       - ref: 2
-  - name: Yoel Perez Haas
-    email: yoel.perezhaas@usz.ch
-    corresponsing: false
+  - name: Julian Brönnimann
     affiliations:
       - ref: 1
       - ref: 2
+  - name: Esmée Lauren Looman
+    affiliations:
+      - ref: 1
+      - ref: 2
+  - name: Panagiotis Balermpas
+    orcid: 0000-0001-5261-6446
+    affiliations:
+      - ref: 2
+  - name: Sergi Benavente
+    orcid: 0000-0002-2700-3522
+    affiliations:
+      - ref: 11
+  - name: Adrian Schubert
+    affiliations:
+      - ref: 3
+      - ref: 4
+      - ref: 7
+  - name: Dorothea Barbatei
+    affiliations:
+      - ref: 8
+  - name: Laurence Bauwens
+    affiliations:
+      - ref: 8
+  - name: Jean-Marc Hoffmann
+    orcid: 0000-0003-1193-0863
+    affiliations:
+      - ref: 2
+  - name: Olgun Elicin
+    orcid: 0000-0002-6996-0646
+    affiliations:
+      - ref: 3
+  - name: Matthias Dettmer
+    orcid: 0000-0003-0948-1392
+    affiliations:
+      - ref: 6
+      - ref: 10
+  - name: Bertrand Pouymayou
+    orcid: 0000-0002-8060-7827
+    affiliations:
+      - ref: 2
+  - name: Roland Giger
+    orcid: 0000-0002-5574-3210
+    affiliations:
+      - ref: 4
+      - ref: 5
+  - name: Vincent Grégoire
+    affiliations:
+      - ref: 8
   - name: Jan Unkelbach
     orcid: 0000-0002-4275-990X
     email: jan.unkelbach@usz.ch
@@ -76,6 +129,51 @@ affiliations:
     name: University Hospital Zurich
     city: Zurich
     country: Switzerland
+  - id: 3
+    name: Bern University Hospital
+    department: Department of Radiation Oncology
+    city: Bern
+    country: Switzerland
+  - id: 4
+    name: Bern University Hospital
+    department: Department of ENT, Head & Neck Surgery
+    city: Bern
+    country: Switzerland
+  - id: 5
+    name: Bern University Hospital
+    department: Head and Neck Anticancer Center
+    city: Bern
+    country: Switzerland
+  - id: 6
+    name: Bern University Hospital
+    department: Institute of Tissue Medicine and Pathology
+    city: Bern
+    country: Switzerland
+  - id: 7
+    name: Réseau Hospitalier Neuchâtelois
+    department: Department of ENT, Head & Neck Surgery
+    city: Neuchâtelois
+    country: Switzerland
+  - id: 8
+    name: Centre Léon Bérard
+    department: Department of Radiation Oncology
+    city: Lyon
+    country: France
+  - id: 9
+    name: Centre Léon Bérard
+    department: Department of Head and Neck Surgery
+    city: Lyon
+    country: France
+  - id: 10
+    name: Klinikum Stuttgart
+    department: Institute of Pathology
+    city: Stuttgart
+    country: Germany
+  - id: 11
+    name: Hospital Vall d'Hebron
+    department: Departement of Radiation Oncology
+    city: Barcelona
+    country: Spain
 bibliography: references.bib
 crossref:
   fig-prefix: "figure"
