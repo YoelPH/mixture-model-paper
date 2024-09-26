@@ -42,6 +42,41 @@ The prevelance of involvement in LNLs I, II, III, IV and V is shown in @fig-invo
 
 # Unilateral Model for Lymphatic Progression {#sec-unilateral}
 
+A patient's state of lymph node involvement $\mathbf{X}[t]$ evolves over discrete time steps $t$. Let us enumerate all $2^V$ possible states, representing all combinations of LNLs. In this paper, we consider ipsilateral LNLs I, II, III, IV and V, which amounts to 32 possible states. The HMM is specified by a transition matrix $\mathbf{A}$:
+
+$$
+\mathbf{A} = \begin{pmatrix} A_{ij} \end{pmatrix} = P \left( \mathbf{X}[t+1] = \boldsymbol{\xi}_j \mid \mathbf{X}[t] = \boldsymbol{\xi}_i \right)
+$$ {#eq-transition-matrix}
+
+whose elements $A_{ij}$ contain the conditional probabilities that a state $\mathbf{X}[t]=\boldsymbol{\xi}_i$ transitions to $\mathbf{X}[t+1]=\boldsymbol{\xi}_j$ over one time step. The transition matrix is specified and parameterised via the graphical model shown in @fig-schematic-and-graph. The red arcs in the graph of @fig-schematic-and-graph (right panel) are associated with the probability that the primary tumor spreads directly to a LNL (parameters $b_v$). The blue arcs describe the spread from an upstream LNL -- given it is already metastatic -- to a downstream level (parameters $t_{v \rightarrow v+1}$).
+
+
+Now, let $\boldsymbol{\pi}$ be the _starting distribution_
+
+$$
+\boldsymbol{\pi} = \begin{pmatrix} \pi_i \end{pmatrix} = P \left( \mathbf{X}[0] = \boldsymbol{\xi}_i \right)
+$$ {#eq-starting-distribution}
+
+denoting the probability to start in state $\boldsymbol{\xi}_i$ at time step 0. Assuming that every patient started with all LNLs being healthy, we set $\pi_i$ to zero for all states  except the completly healthy state $\boldsymbol{\xi} = \begin{pmatrix} 0, 0, 0, 0 \end{pmatrix}$, which has probability one.
+
+Using the quantities introduced so far, the probability $P \left( \mathbf{X}[t]=\boldsymbol{\xi}_i \right)$ to be in state $\boldsymbol{\theta}_i$ in time step $t$ can now be conveniently expressed as a matrix product:
+
+$$
+P \left( \mathbf{X}[t]=\boldsymbol{\xi}_i \right) = \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i
+$$ {#eq-evolution}
+
+This evolution implicitly marginalizes over all possible paths to arrive at state $\boldsymbol{\xi}_i$ after $t$ time-steps. Additionally, we must marginalize over the unknown time of diagnosis using a time-prior $P_T(t)$. This finally defines the probability distribution over all states of lymph node involvement used in @eq-bayes-law.
+
+$$
+P \left( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\theta} \right) = \sum_{t=0}^{t_\text{max}} P_T(t) \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i
+$$ {#eq-marginalized-evolution}
+
+
+where $\boldsymbol{\theta}=\{ b_v, t_{v \rightarrow v+1} \}$ denotes the set of all model parameters (7 in our case). Fortunately, the exact length and shape of this distribution has little impact as previously shown [@ludwig_hidden_2021]. We set $t_\text{max}=$ {{< var model.max_t >}} and $P_\text{early}(t)$ to a binomial distribution with parameter {{< var model.first_binom_prob >}}. Further details on the HMM can be found in @ludwig_hidden_2021 and @zora231470.
+
+![On the left: Anatomical sketch of the tumor subsites and corresponding ICD-10 codes considered in this work. The subsite "other parts of mouth" (C06) was not drawn. On the right: Parametrized graphical model of the lymphatic network considering four LNLs. Blue nodes represent the hidden states of LNLs $X_v$, while the red one is the tumor. Arcs represent possible routes of metastatic spread, associated with a probability.](../static/schematic_and_graph.png){#fig-schematic-and-graph fig-pos="th"}
+
+
 # Mixture Model for Lymphatic Spread {#sec-mixture}
 
 Since primary tumors at different subsites have different patterns of lymphatic spread patterns one would need to either generalize over several subsites as introduced in [@ludwig_dynamic_2021], where the HMM has been introduced for oropharyngeal cancer, or train a distinct model for each subsite. The former approach leads to less precise predictions for each subsite, especially those subsites with few patients. Training one HMM per subsite would be rather time intensive and lead to large uncertainties for subsites with only few patients such as C04 Floor of mouth or C05 Palate. Further we would not exploit the anatomical similarities which are expected for anatomically nearby locations. 
@@ -60,10 +95,10 @@ $$
 \ln p(\mathbf{X}|\boldsymbol{\theta},\boldsymbol{\pi}) = \left\{\sum_{\boldsymbol{\epsilon}} p(\mathbf{X},\boldsymbol{\epsilon}|\boldsymbol{\theta}, \boldsymbol{\pi})\right\}
 $$ {#eq-mixture-llh}
 
- The EM algorithm evaluates the model parameters $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$ in two steps. In the expectation step the latent variables are evaluated. To do so, we fix the current model parameters $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$ and compute the expectation value of the latent variables. We can compute the expectation values $\boldsymbol{\gamma}$ of the latent variables for each diagnosis $Z_i$ separatly.
+ The EM algorithm evaluates the model parameters $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$ in two steps. In the expectation step the latent variables are evaluated. To do so, we fix the current model parameters $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$ and compute the expectation value of the latent variables. We can compute the expectation values $\boldsymbol{\gamma}$ of the latent variables for each observed involvement pattern $\mathbf{X}_i$ in subsite $s$ separatly.
 
  $$
-\mathbb{E}[\epsilon_m] = \gamma(\epsilon_m^i) = \frac{\pi_m^s p(Z_i|\theta_m)}{\sum_{j=1}^M \pi_j^sp(Z_i|\theta_j)} 
+\mathbb{E}[\epsilon_m] = \gamma(\epsilon_m^i) = \frac{\pi_m^s p(\mathbf{X}_i|\theta_m)}{\sum_{j=1}^M \pi_j^sp(\mathbf{X}_i|\theta_j)} 
  $$ {#eq-expectation-step}
  
 The @eq-expectation-step includes a superscript $s$ for the mixture parameters $\pi$ which depends on the tumor subsite of diagnosis $Z_i$. 
