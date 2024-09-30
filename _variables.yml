@@ -1,0 +1,18 @@
+model:
+  class: Unilateral
+  first_binom_prob: 0.3
+  kwargs:
+    base_symmetric: false
+    trans_symmetric: true
+    use_mixing: true
+  max_t: 10
+
+patients: 
+  USZ_oropharynx: 0
+  CLB_oropharynx: 0
+  ISB_multiside: 0
+  CLB_multiside: 0
+  USZ_multiside: 0
+  HVH: 164
+  HMC: 979
+  total: 2741
