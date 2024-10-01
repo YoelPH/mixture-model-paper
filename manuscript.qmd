@@ -11,12 +11,17 @@ abstract: |
 ---
 
 # Introduction
-Head and Neck Squamous Cell Carcinoma (HNSCC) are known to spread through the lymphatic system and form metastases in lymph nodes [@mukherji_cervical_2001, @shah_patterns_1990]. To avoid nodal recurrences, lymph node levels (LNL) at risk of harbouring occult metastases are electively irradiated. Guidelines for different tumor locations [@biau_selection_2019] are based on the overall prevalence of nodal disease as reported in the literature [@mukherji_cervical_2001, @shah_patterns_1990].
-To personalize the prediction of the risk of occult metastases, given a patient's individual diagnosis, we first published a large, multi-centric dataset where the lymphatic involvement per LNL is available for each patient[@ludwig_dataset_2022, @ludwig_multi-centric_2023].
-Subsequently we published an interpretable hidden Markov model (HMM), trained with the data to predict the risk for occult nodal disease, given an individual patient's diagnosis [@ludwig_hidden_2021].
-A personalized risk prediction may allow clinicians to safely reduce the elective clinical target volume (CTV-N) and reduce side-effects that degrade the patient's quality of life without compromising treatment efficacy [@batth_practical_2014].
+Head and Neck Squamous Cell Carcinoma (HNSCC) are known to spread through the lymphatic system  often leading to metastases in the lymph nodes [@mukherji_cervical_2001, @shah_patterns_1990].  To minimize nodal recurrences, lymph node levels (LNL) at risk of harboring occult metastases are typically irradiated electively.  Current guidelines for different tumor locations are based on the overall prevalence of nodal disease as reported in literature [@biau_selection_2019, @mukherji_cervical_2001, @shah_patterns_1990].
 
-So far we trained different models for different tumor locations such as oropharynx and oral cavity tumors. However, this approach does not describe differences in lymphatic spread between different subsites within the oropharynx and oral cavity. This resulted in distorted predictions for each subsite, as the spread patterns were pooled into one single model. To address this issue, we present an approach using mixtures of HMMs. The intuition is that the lymphatic spread of a tumor that lies anatomically at the border of oropharynx and oral cavity (e.g. tumors in the palate) may be described by a mixture of different models. We further extend the analysis to a mixture model that considers oral cavity, oropharynx, hypopharynx and larynx.
+To personalize the prediction of the risk of occult metastases, given a patient's individual diagnosis, we previously published a large, multi-centric dataset where the lymphatic involvement per LNL is available for each patient[@ludwig_dataset_2022, @ludwig_multi-centric_2023].Building on this dataset, we introduced an interpretable hidden Markov model (HMM), trained to predict the risk for occult nodal disease, given an individual patient's diagnosis [@ludwig_hidden_2021].
+
+Personalized risk predictions could enable clinicians to safely reduce the elective clinical target volume (CTV-N), potentially decreasing treatment-related side effects that impair a patient's quality of life, without compromising the efficacy of the treatment [@batth_practical_2014].
+
+Initially, separate models were trained for distinct tumor locations, such as the oropharynx and oral cavity. These tumor locations are also used in guidelines to define the elective target volumes [@biau_selection_2019]. However, this approach did not account for variations in lymphatic spread between subsites within these tumor regions. With data for more than 2700 patients available, we can now further analyze subsite specific spread patterns. Closer analysis showed that pooling subsites into a single model led to inaccurate predictions, as it failed to capture distinct lymphatic spread patterns. To resolve this, we propose using a mixture of HMMs, which allows us to model the lymphatic spread more accurately for tumors located near anatomical borders, such as those between the oropharynx and oral cavity (e.g., tumors in the palate).
+
+Additionally, we extend the analysis to a broader mixture model that encompasses tumors of the oral cavity, oropharynx, hypopharynx, and larynx, offering a more comprehensive understanding of lymphatic spread across these regions.
+
+
 
 
 # Data on Lymphatic Progression Patterns {#sec-data}
@@ -69,10 +74,10 @@ $$
 P \left( \mathbf{X}[t]=\boldsymbol{\xi}_i \right) = \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i
 $$ {#eq-evolution}
 
-This evolution implicitly marginalizes over all possible paths to arrive at state $\boldsymbol{\xi}_i$ after $t$ time-steps. Additionally, we must marginalize over the unknown time of diagnosis using a time-prior $P_T(t)$ which is defined by a binomial distribution. The t-stage of the tumor can be included in the model by choosing different parameterizations of the binomial distribution, considering that a tumor in late t-stages was diagnosed later than a tumor in early t-stages, therefore shifting the probability of diagnosis to later time steps. This finally defines the probability distribution over all states of lymph node involvement used in @eq-bayes-law.
+This evolution implicitly marginalizes over all possible paths to arrive at state $\boldsymbol{\xi}_i$ after $t$ time-steps. Additionally, we must marginalize over the unknown time of diagnosis using a time-prior $P_T(t)$ which is defined by a binomial distribution. The t-stage of the tumor can be included in the model by choosing different parameterizations of the binomial distribution, considering that a tumor in late t-stages was diagnosed later than a tumor in early t-stages, therefore shifting the probability of diagnosis to later time steps. This finally defines the probability distribution over all states of lymph node involvement.
 
 $$
-P \left( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\theta} \right) = \sum_{t=0}^{t_\text{max}} P_T(t) \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i
+P \left( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}, \mathbf{T} \right) = \sum_{t=0}^{t_\text{max}} P_T(t) \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i
 $$ {#eq-marginalized-evolution}
 
 
@@ -84,54 +89,72 @@ With @eq-marginalized-evolution we can compute the probability of a patient bein
 For model training we assume that the diagnoses in our data $\mathbf{D}$ we observe correspond to the hidden state $\mathbf{X}$ of the patient. Thus, learning the model parameters corresponds to maximizing the probability of observing the dataset $\mathbf{D}$:
 
 $$
-P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_i \left[ \sum_{t=0}^{t_\text{max}} P_{T_i}(t) \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i \right]^{N_{i}}
+P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_i \left[P \left( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}, T_i \right) \right]^{N_{i}}
 $$ {#eq-likelihood-HMM}
 
 In @eq-likelihood-HMM we take the likelihood of observing a patient in t-stage $T_i$ and with involvement $\xi_i$ to the power of $N_i$, corresponding to the number of observations of the specific diagnosis $i$ in the dataset $\mathbf{D}$. By multiplying over all diagnoses $i$ we get the likelihood of observing dataset $\mathbf{D}$ given the previously intoduced model with parameters $\boldsymbol{\theta}$
 
 # Mixture Model for Lymphatic Spread {#sec-mixture}
 
-Since primary tumors at different subsites have different patterns of lymphatic spread patterns one would need to either generalize over several subsites as introduced in [@ludwig_dynamic_2021], where the HMM has been introduced for oropharyngeal cancer, or train a distinct model for each subsite. The former approach leads to less precise predictions for each subsite, especially those subsites with few patients. Training one HMM per subsite would be rather time intensive and lead to large uncertainties for subsites with only few patients such as C04 Floor of mouth or C05 Palate. Further we would not exploit the anatomical similarities which are expected for anatomically nearby locations. 
+Primary tumors at different subsites exhibit distinct lymphatic spread patterns. This presents a challenge when attempting to generalize predictive models across subsites. One approach, as introduced in [@ludwig_dynamic_2021], uses a Hidden Markov Model (HMM) trained specifically for oropharyngeal cancer. However, extending this model to other subsites would either require generalizing over several subsites or training a separate model for each. The former approach sacrifices precision, particularly for subsites with fewer patients, while the latter approach becomes computationally intensive and introduces large uncertainties for subsites with limited patient data, such as C04 (Floor of mouth) or C05 (Palate).
 
-Therefore we introduce a mixture model which combines all subsites in a single model exploiting anatomical proximities. Let us assume that we have a dataset $\mathbf{D}$ that is specified via the number of patients $N_{is}$ that were diagnosed in LNL involvement state $i$ and had a primary tutor in subsite $s$. Let us further assume that we want to describe this dataset using a mixture of $M$ HMMs, each with a different set of model parameters $\boldsymbol{\theta_m}$. As the generative model of the data, we assume that a patient with subsite $s$ is generated with probability $\pi_m^s$ from model $m$, where the mixing components $\pi_m^s$ need to satisfy $\sum_{m = 1}^{M}\pi_m^s = 1$, with $\pi_m^s \geq 0$ for all $m$ and all subsites $s$. The likelihood of the dataset can then be written as  
+To address these challenges and exploit the anatomical similarities between nearby subsites, we introduce a mixture model that combines data from all subsites into a single model. This model accounts for anatomical proximities, thereby improving predictive power while maintaining computational efficiency.
+
+## Mixture Model Formulation
+
+Assume we have a dataset $\mathbf{D}$ comprising the number of patients $N_{is}$ diagnosed with LNL involvement state $i$ and having a primary tutor in subsite $s$. Let us further assume that we want to describe this dataset using a mixture of $M$ HMMs, each with a different set of model parameters $\boldsymbol{\theta_m}$. 
+
+As the generative model of the data, we assume that a patient with subsite $s$ is generated with probability $\pi_m^s$ from model $m$,which satisfies the constraints $\sum_{m = 1}^{M}\pi_m^s = 1$ and $\pi_m^s \geq 0$ for all $m$ and all subsites $s$. 
+
+The likelihood of the dataset is expressed as:  
 
 $$
-P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_s \prod_i \left[ \sum_{m=1}^M \pi_m^s P_m \left( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}_m \right) \right]^{N_{is}}
+P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_s \prod_i \left[ \sum_{m=1}^M \pi_m^s P_m \left( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}_m, T_i \right) \right]^{N_{is}}
 $$ {#eq-mixture-distribution}
 
-The model now contains two types of parameters. The rpobabilities of tumor spread for the different models, $\mathbf{\theta_m}$, and the mixing coefficients $\pi_m^s$. The posterior distribution over the parameters $P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})$ can be calculated assuming a uniform prior in the interval [0,1] for all parameters. However, $P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})$ is a multimodal-distribution as one can permute the different models. To address this problem, we apply an expectation-maximization (EM) algorithm. We introduce latent variables $\boldsymbol{\epsilon}$ which assigns to each observation $\mathbf{B}$ in our dataset the probability to originate from each model $m$. The log-likelihood can be expressed as:
+In @eq-mixture-distribution we compute the probability of each state $\boldsymbol{\xi}_i$ under model $m$ similarly to @eq-likelihood-HMM. However, we weight each model with the mixing parameter $\pi_m^s$. Since the mixing parameters are subsite dependent, we differ between each subsite. 
 
+The model now contains two sets of parameters: the tumor spread probabilities $\mathbf{\theta_m}$ for each model, and the mixing coefficients $\pi_m^s$. The posterior distribution over these parameters $P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})$ can be estimated assuming a uniform prior on the interval [0,1] for all parameters. However, $P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})$ is a multimodal-distribution as one can permute the different models and achieve the same result. To address this problem, we apply an expectation-maximization (EM) algorithm. 
 
+## Expectation-Maximization (EM) Algorithm
+To solve for the model parameters, we apply the EM algorithm, which iterates between two steps: the **Expectation (E) step** and **the Maximization (M) step**.
+
+#### Expectation Step
+
+In the E-step, we compute the expected value of the latent variables $\boldsymbol{\epsilon}$, which represent the probability that each observation $\mathbf{X} = \boldsymbol{\xi}_i$ originates from model $m$. Given the current estimates of $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$, the expectation value $\gamma(\epsilon_m^i)$ is calculated as:
 
 $$
-\ln p(\mathbf{X}|\boldsymbol{\theta},\boldsymbol{\pi}) = \left\{\sum_{\boldsymbol{\epsilon}} p(\mathbf{X},\boldsymbol{\epsilon}|\boldsymbol{\theta}, \boldsymbol{\pi})\right\}
+\mathbb{E}[\epsilon_m] = \gamma(\epsilon_m^i) = \frac{\pi_m^s P(\mathbf{X} = \boldsymbol{\xi}_i \mid \boldsymbol{\theta_m}, T_i)}{\sum_{j=1}^M \pi_j^s P(\mathbf{X} = \boldsymbol{\xi}_i \mid \boldsymbol{\theta_j}, T_i)}
+$${#eq-expectation-step}
+
+Here, the mixing parameter $\pi_m^s$ depends on the subsite of diagnosis, $Z_i$, as denoted by the superscript $s$.
+
+#### Maximization Step
+
+In the M-step, the model parameters are updated by maximizing the following likelihood, based on the expectations computed in the E-step:
+
+$$
+\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \sum_{i=1}^{N} \sum_{m=1}^M \gamma(\epsilon_m^i) \left( \ln \pi_m^s + \ln P(\mathbf{X} = \boldsymbol{\xi}_i \mid \boldsymbol{\theta_m}, T_i) \right)
+$${#eq-maximization-step}
+
+In this step, the mixture parameters $\pi_m^s$ and the model parameters $\boldsymbol{\theta}_m$ can be optimized separately. The mixture parameters $\pi_m^s$ can be updated analytically:
+
+$$
+\pi_m^s = \frac{1}{N^s} \sum_i^{N^s} \gamma(\epsilon_m^i)
+$${#eq-mixture-maximization}
+
+On the other hand, the model parameters $\boldsymbol{\theta_m}$ are optimized component-wise using an optimization algorithm, as an analytic solution is not feasible. The updated log-likelihood for each model is:
+
+$$
+\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}_m) = \sum_{i=1}^{N} \gamma(\epsilon_m^i) \ln P(\mathbf{X} = \boldsymbol{\xi}_i \mid \theta_m, T_i)
+$$
+
+By iterating these steps, the EM algorithm converges to a (local) maximum of the likelihood.
+
+$$
+\ln p(\mathbf{D}|\boldsymbol{\theta},\boldsymbol{\pi}) = \left\{\sum_{\boldsymbol{\epsilon}} p(\mathbf{D},\boldsymbol{\epsilon}|\boldsymbol{\theta}, \boldsymbol{\pi})\right\}
 $$ {#eq-mixture-llh}
 
- The EM algorithm evaluates the model parameters $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$ in two steps. In the expectation step the latent variables are evaluated. To do so, we fix the current model parameters $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$ and compute the expectation value of the latent variables. We can compute the expectation values $\boldsymbol{\gamma}$ of the latent variables for each observed involvement pattern $\mathbf{X}_i$ in subsite $s$ separatly.
-
- $$
-\mathbb{E}[\epsilon_m] = \gamma(\epsilon_m^i) = \frac{\pi_m^s p(\mathbf{X}_i|\theta_m)}{\sum_{j=1}^M \pi_j^sp(\mathbf{X}_i|\theta_j)} 
- $$ {#eq-expectation-step}
- 
-The @eq-expectation-step includes a superscript $s$ for the mixture parameters $\pi$ which depends on the tumor subsite of diagnosis $Z_i$. 
-After computing the expectation value for all components $M$ and patients $N$, the model parameters are updated by in the maximization step by maximizing the following likelihood:
-$$
- \ln p(\mathbf{Z},\boldsymbol{\epsilon}|\boldsymbol{\theta},\boldsymbol{\pi}) = \sum_{i=1}^{N}\sum_{m=1}^M \gamma(\epsilon_m^i)\{\ln \pi_m^s + \ln p(Z_i|\theta_m)\}
- $$ {#eq-maximization-step}
-
-In @eq-maximization-step one can see, that we can evaluate the mixture parameters $\boldsymbol{\pi}$ and model parameter $\boldsymbol{\theta}$ idependently of each other. The mixture parameters can be calculated analytically:
-
-$$
-\pi_m^s = \frac{1}{N^s}\sum_i^{N^s}\gamma(\epsilon_m^i)
-$$ {#eq-mixture-maximization}
-
-The model parameters $\boldsymbol{\theta}$ can be optimized component-wise with an optimization algorithm, since an analytic solution is not feasible:
-
-$$
-\ln p(\mathbf{Z},\boldsymbol{\epsilon}|\boldsymbol{\theta_m}) = \sum_{i=1}^{N} \gamma(\epsilon_m^i)\{\ln p(Z_i|\theta_m)\}
-$$
-
-By repeating these steps the algorithm is guaranteed to converge to a (local) maximum.
 
 # Three component Mixture Model {#sec-3comp}
 
@@ -157,7 +180,15 @@ As subsites anatomically approach the oropharynx, their mixture coefficients for
 
 We can extend the mixture model to include the larynx. The larynx patients are more finely divided into ICD codes C32.0, C32.1 and C32.2 as there is a notable difference between these ICD codes in @fig-involvement. 
 
-Simlarly to the three component model, we can analyze the convergence over the iterations of the EM-algorithm. In @fig-fig-convergence4 we can see that in this more complex model, the likelihood space becomes more complex as at around 200 iterations, the negative log-likelihood starts to increase faster again.
+Simlarly to the three component model, we can analyze the convergence over the iterations of the EM-algorithm. In @fig-convergence4 we can see that in this more complex model, the likelihood space becomes more complex as at around 200 iterations, the negative log-likelihood starts to increase faster again.
 
 ![The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters.](figures/convergence_4_components_4_loc.png){#fig-convergence4}
 
+The component assignment is shown in @fig-4-matrix. Similarly to the 3-component model the different tumor locations are assigned to a one of the components....
+
+
+Here i probably should permute the components such that we have the same ordering as in the 3-component model. 
+
+![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_4_t_staging_add_larynx.png){#fig-4-matrix}
+
+--> Add predictions and compare to the prevalence. Additionally we could compare to tumor location predictions. 
