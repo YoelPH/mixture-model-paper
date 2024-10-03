@@ -190,5 +190,3 @@ The component assignment is shown in @fig-4-matrix. Similarly to the 3-component
 Here i probably should permute the components such that we have the same ordering as in the 3-component model. 
 
 ![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_4_t_staging_add_larynx.png){#fig-4-matrix}
-
---> Add predictions and compare to the prevalence. Additionally we could compare to tumor location predictions. 
