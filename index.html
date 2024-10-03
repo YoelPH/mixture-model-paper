@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="quarto-1.5.57" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+
+
+<title>A mixture of hidden Markov models to predict the lymphatic spread in head and neck cancer depending on primary tumor location</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<!-- htmldependencies:E3FAD763 -->
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <div id="quarto-toc-target"></div>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default toc-left">
+  <div class="quarto-title-banner">
+    <div class="quarto-title column-body">
+      <h1 class="title">A mixture of hidden Markov models to predict the lymphatic spread in head and neck cancer depending on primary tumor location</h1>
+          </div>
+
+    
+    <div class="quarto-title-meta-container">
+      <div class="quarto-title-meta-column-start">
+            <div class="quarto-title-meta-author">
+          <div class="quarto-title-meta-heading">Authors</div>
+          <div class="quarto-title-meta-heading">Affiliations</div>
+          
+                <div class="quarto-title-meta-contents">
+            <p class="author">Yoel Perez Haas <a href="mailto:yoel.perezhaas@usz.ch" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0002-4282-0643" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Zurich
+                      </p>
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Roman Ludwig <a href="mailto:roman.ludwig@usz.ch" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0001-9434-328X" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Zurich
+                      </p>
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Julian Brönnimann </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Zurich
+                      </p>
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Esmée Lauren Looman </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Zurich
+                      </p>
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Panagiotis Balermpas <a href="https://orcid.org/0000-0001-5261-6446" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Sergi Benavente <a href="https://orcid.org/0000-0002-2700-3522" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Hospital Vall d’Hebron
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Adrian Schubert </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Bern University Hospital
+                      </p>
+                    <p class="affiliation">
+                        Bern University Hospital
+                      </p>
+                    <p class="affiliation">
+                        Réseau Hospitalier Neuchâtelois
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Dorothea Barbatei </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Centre Léon Bérard
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Laurence Bauwens </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Centre Léon Bérard
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Jean-Marc Hoffmann <a href="https://orcid.org/0000-0003-1193-0863" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Olgun Elicin <a href="https://orcid.org/0000-0002-6996-0646" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Bern University Hospital
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Matthias Dettmer <a href="https://orcid.org/0000-0003-0948-1392" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Bern University Hospital
+                      </p>
+                    <p class="affiliation">
+                        Klinikum Stuttgart
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Bertrand Pouymayou <a href="https://orcid.org/0000-0002-8060-7827" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Roland Giger <a href="https://orcid.org/0000-0002-5574-3210" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Bern University Hospital
+                      </p>
+                    <p class="affiliation">
+                        Bern University Hospital
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Vincent Grégoire </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Centre Léon Bérard
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Jan Unkelbach <a href="mailto:jan.unkelbach@usz.ch" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0002-4275-990X" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Zurich
+                      </p>
+                    <p class="affiliation">
+                        University Hospital Zurich
+                      </p>
+                  </div>
+                    </div>
+        
+        <div class="quarto-title-meta">
+
+                      
+          
+                
+              </div>
+      </div>
+      <div class="quarto-title-meta-column-end quarto-other-formats-target">
+      </div>
+    </div>
+
+    <div>
+      <div class="abstract">
+        <div class="block-title">Abstract</div>
+        <p>Purpose: to be done</p>
+        <p>Methods: to be done</p>
+        <p>Results: to be done</p>
+        <p>Conclusions: to be done</p>
+      </div>
+    </div>
+
+
+    <div class="quarto-other-links-text-target">
+    </div>  </div>
+</header>
+
+  
+
+<nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+  <li><a href="#sec-data" id="toc-sec-data">Data on Lymphatic Progression Patterns</a></li>
+  <li><a href="#sec-unilateral" id="toc-sec-unilateral">Unilateral Model for Lymphatic Progression</a></li>
+  <li><a href="#sec-mixture" id="toc-sec-mixture">Mixture Model for Lymphatic Spread</a>
+  <ul>
+  <li><a href="#mixture-model-formulation" id="toc-mixture-model-formulation">Mixture Model Formulation</a></li>
+  <li><a href="#expectation-maximization-em-algorithm" id="toc-expectation-maximization-em-algorithm">Expectation-Maximization (EM) Algorithm</a></li>
+  </ul></li>
+  <li><a href="#sec-3comp" id="toc-sec-3comp">Three component Mixture Model</a></li>
+  <li><a href="#sec-4comp" id="toc-sec-4comp">Four component Mixture Model</a></li>
+  </ul>
+</nav>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>Head and Neck Squamous Cell Carcinoma (HNSCC) are known to spread through the lymphatic system often leading to metastases in the lymph nodes <span class="citation" data-cites="mukherji_cervical_2001">Shah, Candela, and Poddar (<a href="#ref-shah_patterns_1990" role="doc-biblioref">1990</a>)</span>. To minimize nodal recurrences, lymph node levels (LNL) at risk of harboring occult metastases are typically irradiated electively. Current guidelines for different tumor locations are based on the overall prevalence of nodal disease as reported in literature <span class="citation" data-cites="biau_selection_2019">Shah, Candela, and Poddar (<a href="#ref-shah_patterns_1990" role="doc-biblioref">1990</a>)</span>.</p>
+<p>To personalize the prediction of the risk of occult metastases, given a patient’s individual diagnosis, we previously published a large, multi-centric dataset where the lymphatic involvement per LNL is available for each patient<span class="citation" data-cites="ludwig_dataset_2022">Ludwig et al. (<a href="#ref-ludwig_multi-centric_2023" role="doc-biblioref">2023</a>)</span>.Building on this dataset, we introduced an interpretable hidden Markov model (HMM), trained to predict the risk for occult nodal disease, given an individual patient’s diagnosis <span class="citation" data-cites="ludwig_hidden_2021">(<a href="#ref-ludwig_hidden_2021" role="doc-biblioref">Ludwig et al. 2021b</a>)</span>.</p>
+<p>Personalized risk predictions could enable clinicians to safely reduce the elective clinical target volume (CTV-N), potentially decreasing treatment-related side effects that impair a patient’s quality of life, without compromising the efficacy of the treatment <span class="citation" data-cites="batth_practical_2014">(<a href="#ref-batth_practical_2014" role="doc-biblioref">Batth, Caudell, and Chen 2014</a>)</span>.</p>
+<p>Initially, separate models were trained for distinct tumor locations, such as the oropharynx and oral cavity. These tumor locations are also used in guidelines to define the elective target volumes <span class="citation" data-cites="biau_selection_2019">(<a href="#ref-biau_selection_2019" role="doc-biblioref">Biau et al. 2019</a>)</span>. However, this approach did not account for variations in lymphatic spread between subsites within these tumor regions. With data for more than 2700 patients available, we can now further analyze subsite specific spread patterns. Closer analysis showed that pooling subsites into a single model led to inaccurate predictions, as it failed to capture distinct lymphatic spread patterns. To resolve this, we propose using a mixture of HMMs, which allows us to model the lymphatic spread more accurately for tumors located near anatomical borders, such as those between the oropharynx and oral cavity (e.g., tumors in the palate).</p>
+<p>Additionally, we extend the analysis to a broader mixture model that encompasses tumors of the oral cavity, oropharynx, hypopharynx, and larynx, offering a more comprehensive understanding of lymphatic spread across these regions.</p>
+</section>
+<section id="sec-data" class="level1">
+<h1>Data on Lymphatic Progression Patterns</h1>
+<p>For the analyses in this work, we used seven datasets from 5 institutions resulting in 2741 patients in total.</p>
+<ol type="1">
+<li>0 oropharyngeal patients from the University of Zurich in Switzerland</li>
+<li>0 oropharyngeal patients from the Centre Léon Bérard in France</li>
+<li>0 oropharyngeal, larynx and oral cavity patients from the Inselspital Bern in Switzerland</li>
+<li>0 oropharyngeal, larynx and oral cavity patients from the Centre Léon Bérard in France</li>
+<li>0 oropharyngeal, larynx and oral cavity patients from the University of Zurich in Switzerland</li>
+<li>164 oropharyngeal patients from the Hospital Vall d’Hebron in Spain (not yet public)</li>
+<li>979 hypopharynx, larynx and oral cavity patients from University Medical Center Groningen (not yet public)</li>
+</ol>
+<p>The datasets 1-4 are publicly available as CSV tables (<span class="citation" data-cites="ludwig_multi-centric_2023">Ludwig et al. (<a href="#ref-ludwig_multi-centric_2023" role="doc-biblioref">2023</a>)</span> <span class="citation" data-cites="ludwig_detailed_2022">Ludwig, Hoffmann, Pouymayou, Däppen, et al. (<a href="#ref-ludwig_detailed_2022" role="doc-biblioref">2022</a>)</span>) and can be interactively explored on <a href="https://lyprox.org">LyProX</a>. For each patient the primary tumor subsite is reportd and each indicidual LNL is reported as either metastatic or healthy given the available diagnostic modalities, which include pathology after neck dissection in some patients. In this work we will stratify the tumor locations into different ICD codes which are depicted in <a href="#fig-subsites" class="quarto-xref">figure 1</a>.</p>
+<div id="fig-subsites" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-subsites-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/Subsites.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1" title="Figure 1: Anatomical sketch of the tumor subsites and their corresponding ICD-10 codes. Subsite C06 “other parts of mouth” has not been included. Further the The tumor locations are color coded in the following pattern: blue-oral cavity, green-oropharynx, red-hypopharynx, orange-larynx."><img src="figures/Subsites.png" class="img-fluid" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-subsites-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 1: Anatomical sketch of the tumor subsites and their corresponding ICD-10 codes. Subsite C06 “other parts of mouth” has not been included. Further the The tumor locations are color coded in the following pattern: blue-oral cavity, green-oropharynx, red-hypopharynx, orange-larynx.
+</figcaption>
+</figure>
+</div>
+<p>The prevelance of involvement in LNLs I, II, III, IV and V is shown in <a href="#fig-involvement" class="quarto-xref">figure 2</a>. The involvement is stratified per tumor subsite and t-stage. The figure illustrates the variations in LNL involvement between subsites within oral cavity (blue), oropharynx (green), hypopharynx (red) and larynx (orange). The involvement pattern presents a continuous change over the tumor subsites. Where tumors in the oral cavity show the most prominent LNL I involvement. As the tumor location moves towards the oropharynx LNL II involvement increases. Moving the tumor location further in caudal direction towards the hypopharynx increases LNL III involvement while LNL I and II involvement decrease. Larnygeal tumors show the least LNL I involvement.</p>
+<div id="fig-involvement" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-involvement-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/involvement_I_to_V_all_sites_t_staging.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure 2: Prevalence of ipsilateral LNL involvement stratified by subsite. The subsites are sorted in natural order to represent the continuously changing LNL involvement. The different tumo locations are color coded, where oral cavity subsistes are depicted in blue, larynx in green, hypopharynx in red and larynx in orange. The patient data is further stratified in early t-stage (0-2) and late t-stage (3-4). The legend furter specifies the number of patients in each subsite."><img src="figures/involvement_I_to_V_all_sites_t_staging.png" class="img-fluid" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-involvement-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 2: Prevalence of ipsilateral LNL involvement stratified by subsite. The subsites are sorted in natural order to represent the continuously changing LNL involvement. The different tumo locations are color coded, where oral cavity subsistes are depicted in blue, larynx in green, hypopharynx in red and larynx in orange. The patient data is further stratified in early t-stage (0-2) and late t-stage (3-4). The legend furter specifies the number of patients in each subsite.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="sec-unilateral" class="level1">
+<h1>Unilateral Model for Lymphatic Progression</h1>
+<p>In this chapter we will briefly summarize unilateral model for ipsilateral lymph node involvement introduced in <span class="citation" data-cites="ludwig_hidden_2021">Ludwig et al. (<a href="#ref-ludwig_hidden_2021" role="doc-biblioref">2021b</a>)</span>, presenting the notation which is then needed to extend the HMM to a mixture model encompassing multiple tumor subsites.</p>
+<p>The HMM describes each LNL <span class="math inline">\(v \in 1, 2, ..., V\)</span> by a binary random variable corresponding to the status of the LNL; healthy (0) or involved (1). The entire state of a patient with <span class="math inline">\(V\)</span> LNLs is defined by the <span class="math inline">\(v\)</span>-dimensional vector <span class="math inline">\(\mathbf{X} = [X_1, X_2, ...,X_V]\)</span>. In the HMM, a patient’s involvement is modeled over time <span class="math inline">\(t\)</span>. Thus, a patient’s state of lymph node involvement <span class="math inline">\(\mathbf{X}[t]\)</span> evolves over discrete time steps <span class="math inline">\(t\)</span>. Let us enumerate all <span class="math inline">\(2^V\)</span> possible states, representing all combinations of LNL involvement. In this paper, we consider ipsilateral LNLs I, II, III, IV and V, which amounts to 32 possible states. The HMM is then specified by a transition matrix <span class="math inline">\(\mathbf{A}\)</span>:</p>
+<p><span id="eq-transition-matrix"><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} A_{ij} \end{pmatrix} = P \left( \mathbf{X}[t+1] = \boldsymbol{\xi}_j \mid \mathbf{X}[t] = \boldsymbol{\xi}_i \right)
+\tag{1}\]</span></span></p>
+<p>whose elements <span class="math inline">\(A_{ij}\)</span> contain the conditional probabilities that a state <span class="math inline">\(\mathbf{X}[t]=\boldsymbol{\xi}_i\)</span> transitions to <span class="math inline">\(\mathbf{X}[t+1]=\boldsymbol{\xi}_j\)</span> over one time step. The transition matrix is specified and parameterised via the graphical model shown in <a href="#fig-graph" class="quarto-xref">figure 3</a>. The red arcs in the graph of <a href="#fig-graph" class="quarto-xref">figure 3</a> are associated with the probability that the primary tumor spreads directly to a LNL (parameters <span class="math inline">\(b_v\)</span>). The blue arcs describe the spread from an upstream LNL – given it is already metastatic – to a downstream level (parameters <span class="math inline">\(t_{v \rightarrow v+1}\)</span>).</p>
+<div id="fig-graph" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/Model_5_LNL.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure 3: Parametrized graphical model of the lymphatic network considering four LNLs. Blue nodes represent the hidden states of LNLs X_v, while the red one is the tumor. Arcs represent possible routes of metastatic spread, associated with a probability."><img src="figures/Model_5_LNL.png" class="img-fluid" style="width:20.0%" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-graph-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 3: Parametrized graphical model of the lymphatic network considering four LNLs. Blue nodes represent the hidden states of LNLs <span class="math inline">\(X_v\)</span>, while the red one is the tumor. Arcs represent possible routes of metastatic spread, associated with a probability.
+</figcaption>
+</figure>
+</div>
+<p>Now, let <span class="math inline">\(\boldsymbol{\pi}\)</span> be the <em>starting distribution</em></p>
+<p><span id="eq-starting-distribution"><span class="math display">\[
+\boldsymbol{\pi} = \begin{pmatrix} \pi_i \end{pmatrix} = P \left( \mathbf{X}[0] = \boldsymbol{\xi}_i \right)
+\tag{2}\]</span></span></p>
+<p>denoting the probability to start in state <span class="math inline">\(\boldsymbol{\xi}_i\)</span> at time step 0. Assuming that every patient started with all LNLs being healthy, we set <span class="math inline">\(\pi_i\)</span> to zero for all states except the completly healthy state <span class="math inline">\(\boldsymbol{\xi} = \begin{pmatrix} 0, 0, 0, 0, 0 \end{pmatrix}\)</span>, which has probability one.</p>
+<p>Using the quantities introduced so far, the probability <span class="math inline">\(P \left( \mathbf{X}[t]=\boldsymbol{\xi}_i \right)\)</span> to be in state <span class="math inline">\(\boldsymbol{\xi}_i\)</span> in time step <span class="math inline">\(t\)</span> can now be conveniently expressed as a matrix product:</p>
+<p><span id="eq-evolution"><span class="math display">\[
+P \left( \mathbf{X}[t]=\boldsymbol{\xi}_i \right) = \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i
+\tag{3}\]</span></span></p>
+<p>This evolution implicitly marginalizes over all possible paths to arrive at state <span class="math inline">\(\boldsymbol{\xi}_i\)</span> after <span class="math inline">\(t\)</span> time-steps. Additionally, we must marginalize over the unknown time of diagnosis using a time-prior <span class="math inline">\(P_T(t)\)</span> which is defined by a binomial distribution. The t-stage of the tumor can be included in the model by choosing different parameterizations of the binomial distribution, considering that a tumor in late t-stages was diagnosed later than a tumor in early t-stages, therefore shifting the probability of diagnosis to later time steps. This finally defines the probability distribution over all states of lymph node involvement.</p>
+<p><span id="eq-marginalized-evolution"><span class="math display">\[
+P \left( \mathbf{X}=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}, \mathbf{T} \right) = \sum_{t=0}^{t_\text{max}} P_T(t) \left( \boldsymbol{\pi} \cdot \mathbf{A}^t \right)_i
+\tag{4}\]</span></span></p>
+<p>where <span class="math inline">\(\boldsymbol{\theta}=\{ b_v, t_{v \rightarrow v+1} \}\)</span> denotes the set of all model parameters (7 in our case). Fortunately, the exact length and shape of this distribution has little impact as previously shown <span class="citation" data-cites="ludwig_hidden_2021">(<a href="#ref-ludwig_hidden_2021" role="doc-biblioref">Ludwig et al. 2021b</a>)</span>. We set <span class="math inline">\(t_\text{max}=\)</span> 10 and <span class="math inline">\(P_\text{early}(t)\)</span> to a binomial distribution with parameter 0.3. Further details on the HMM can be found in <span class="citation" data-cites="ludwig_hidden_2021">Ludwig et al. (<a href="#ref-ludwig_hidden_2021" role="doc-biblioref">2021b</a>)</span> and <span class="citation" data-cites="zora231470">Ludwig (<a href="#ref-zora231470" role="doc-biblioref">2023</a>)</span>.</p>
+<p>With <a href="#eq-marginalized-evolution" class="quarto-xref">equation 4</a> we can compute the probability of a patient being in any state <span class="math inline">\(\xi_i\)</span>. Therefore the likelihood of observing a the For model training we assume that the diagnoses in our data <span class="math inline">\(\mathbf{D}\)</span> we observe correspond to the hidden state <span class="math inline">\(\mathbf{X}\)</span> of the patient. Thus, learning the model parameters corresponds to maximizing the probability of observing the dataset <span class="math inline">\(\mathbf{D}\)</span>:</p>
+<p><span id="eq-likelihood-HMM"><span class="math display">\[
+P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_k^K \left[P \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}, T_k \right) \right]
+\tag{5}\]</span></span></p>
+<p>In <a href="#eq-likelihood-HMM" class="quarto-xref">equation 5</a> we compute the likelihood of observing patient the diagnosis of each patient <span class="math inline">\(k\)</span>, i.e. t-stage <span class="math inline">\(T_k\)</span> and involvement <span class="math inline">\(\xi_k\)</span>.</p>
+</section>
+<section id="sec-mixture" class="level1">
+<h1>Mixture Model for Lymphatic Spread</h1>
+<p>Primary tumors at different subsites exhibit distinct lymphatic spread patterns. This presents a challenge when attempting to generalize predictive models across subsites. One approach, as introduced in <span class="citation" data-cites="ludwig_dynamic_2021">(<a href="#ref-ludwig_dynamic_2021" role="doc-biblioref">Ludwig et al. 2021a</a>)</span>, uses a Hidden Markov Model (HMM) trained specifically for oropharyngeal cancer. However, extending this model to other subsites would either require generalizing over several subsites or training a separate model for each. The former approach sacrifices precision, particularly for subsites with fewer patients, while the latter approach becomes computationally intensive and introduces large uncertainties for subsites with limited patient data, such as C04 (Floor of mouth) or C05 (Palate).</p>
+<p>To address these challenges and exploit the anatomical similarities between nearby subsites, we introduce a mixture model that combines data from all subsites into a single model. This model accounts for anatomical proximities, thereby improving predictive power while maintaining computational efficiency.</p>
+<section id="mixture-model-formulation" class="level2">
+<h2>Mixture Model Formulation</h2>
+<p>The mixture model assumes that the data is generated by a set of <span class="math inline">\(M\)</span> different underlying models. In our case, we introduce <span class="math inline">\(M\)</span> distinct lymphatic spread models. Each patient <span class="math inline">\(k\)</span> is assumed to be generated by one specific model from this set of <span class="math inline">\(M\)</span> models.</p>
+<p>To formalize this, each patient <span class="math inline">\(k\)</span> can be assigned to a specific model via a binary latent vector <span class="math inline">\(\boldsymbol{\epsilon}_k\)</span>. The vector <span class="math inline">\(\boldsymbol{\epsilon}_k\)</span> has length <span class="math inline">\(M\)</span>, with exactly one element set to 1, indicating which model generated the patient’s data, and all other elements set to 0. Thus, for patient <span class="math inline">\(k\)</span>, the latent variable <span class="math inline">\(\boldsymbol{\epsilon}_k\)</span> can be interpreted as a categorical indicator variable that encodes the assignment to one of the <span class="math inline">\(M\)</span> lymphatic spread models.</p>
+<p>Next, we introduce subsite-specific mixing parameters <span class="math inline">\(\boldsymbol{\pi}^s = \{\pi_1^s, \pi_2^s, \dots, \pi_M^s\}\)</span>, where each <span class="math inline">\(\pi_m^s\)</span> represents the prior probability that a patient with tumors in subsite <span class="math inline">\(s\)</span> is generated by model <span class="math inline">\(m\)</span>. These mixing parameters must satisfy the condition:</p>
+<p><span class="math display">\[
+\sum_{m}^M \pi_m^s = 1, \quad \forall s
+\]</span></p>
+<p>The mixing parameters <span class="math inline">\(\boldsymbol{\pi}^s\)</span> determine the proportion of patients with tumors in subsite <span class="math inline">\(s\)</span> that are expected to be generated by each model. Specifically, <span class="math inline">\(\pi_m^s\)</span> is the probability that a randomly chosen patient with a tumor in subsite <span class="math inline">\(s\)</span> is generated by model <span class="math inline">\(m\)</span>.</p>
+<p>The latent variables <span class="math inline">\(\boldsymbol{\epsilon}_{k}\)</span>, on the other hand, are patient-specific and represent the assignment of each patient to a particular model. The latent variables are central to the model, as they are hidden (unobserved) and must be inferred.</p>
+<p>The joint probability of the observed data <span class="math inline">\(\mathbf{D}\)</span> (i.e., patient data) and the latent variables <span class="math inline">\(\boldsymbol{\epsilon}\)</span> is given by:</p>
+<p><span id="eq-complete-likelihood"><span class="math display">\[
+P(\mathbf{D}, \boldsymbol{\epsilon} | \boldsymbol{\theta}, \boldsymbol{\pi}) = \prod_{k}^{K} \prod_{m}^{M} \left[ \pi_m^{s_k} P(\mathbf{D}_k | \boldsymbol{\theta}_m, \boldsymbol{\pi}) \right]^{\epsilon_{k}^m}
+\tag{6}\]</span></span></p>
+<p>Here:</p>
+<ul>
+<li><span class="math inline">\(\pi_m^{s_k}\)</span> is the mixing parameter for patient <span class="math inline">\(k\)</span> with a primary tumor in subsite <span class="math inline">\(s_k\)</span> and model <span class="math inline">\(m\)</span>,</li>
+<li><span class="math inline">\(P(\mathbf{D}_k | \boldsymbol{\theta}_m)\)</span> is the likelihood of patient <span class="math inline">\(k\)</span>’s data given that it was generated by model <span class="math inline">\(m\)</span>,</li>
+<li><span class="math inline">\(\boldsymbol{\theta}_m\)</span> represents the parameters of model <span class="math inline">\(m\)</span>,</li>
+<li><span class="math inline">\(\epsilon_{k}^m\)</span> is the latent variable that indicates whether patient <span class="math inline">\(k\)</span> was generated by model <span class="math inline">\(m\)</span>.</li>
+</ul>
+<p><strong>Incomplete data likelihood which can probably be skipped</strong></p>
+<p>Since the latent variables <span class="math inline">\(\boldsymbol{\epsilon}_k\)</span> are unobserved, the incomplete complete data likelihood marginalizes over all possible latent assignments to reflect the uncertainty about which model generated each patient’s data:</p>
+<p><span class="math display">\[
+P(\mathbf{D} | \boldsymbol{\theta}, \boldsymbol{\pi}) = \sum_{\boldsymbol{\epsilon}} P(\mathbf{D}, \boldsymbol{\epsilon} | \boldsymbol{\theta}, \boldsymbol{\pi})
+\]</span></p>
+<p>This allows us to integrate out the latent variables <span class="math inline">\(\boldsymbol{\epsilon}\)</span>, as their true values are unknown.</p>
+<p><strong>Continues from here</strong></p>
+<p>The latent variables <span class="math inline">\(\boldsymbol{\epsilon}_k\)</span> are unknown and must be inferred from the observed data. The mixture model assumes that each patient is generated by exactly one of the <span class="math inline">\(M\)</span> models. However, in our application, this assumption does not reflect continuous or overlapping behaviors between subsites. Instead, we infer a probabilistic distribution over the latent variables, given the observed data and model parameters. The posterior distribution:</p>
+<p><span class="math display">\[
+P(\boldsymbol{\epsilon}_k | \mathbf{D}_k, \boldsymbol{\theta}, \boldsymbol{\pi})
+\]</span></p>
+<p>describes the probability that patient <span class="math inline">\(k\)</span> was generated by each of the <span class="math inline">\(M\)</span> models, allowing for soft assignments where each patient is associated with multiple models with certain probabilities, as opposed to being strictly assigned to just one. Given the probability distribution for the latent variables <span class="math inline">\(\boldsymbol{\epsilon}_k\)</span>, we compute the expectation value <span class="math inline">\(\mathbb{E}[\boldsymbol{\epsilon}_k] = \boldsymbol{\gamma}(\boldsymbol{\epsilon}_k)\)</span> for each patient to then apply the complete data likelihood given in <a href="#eq-complete-likelihood" class="quarto-xref">equation 6</a>.</p>
+<p>The likelihood of the complete dataset is then expressed as:</p>
+<p><span id="eq-complete-likelihood-explicite"><span class="math display">\[
+P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_k^K \left[ \prod_{m}^M \pi_m^{s_k} P_m \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}_m, T_k \right) \right]^{\gamma(\epsilon_k^m)}
+\tag{7}\]</span></span></p>
+<p>In <a href="#eq-complete-likelihood" class="quarto-xref">equation 6</a> we compute the likelihood of observing the patient’s state <span class="math inline">\(\boldsymbol{\xi}_k\)</span> with t-stage <span class="math inline">\(T_k\)</span> under model <span class="math inline">\(m\)</span> similarly to <a href="#eq-likelihood-HMM" class="quarto-xref">equation 5</a>. However, we weight each model with the mixing parameter <span class="math inline">\(\pi_m^{s_k}\)</span>. Since the mixing parameters are subsite dependent, we differ between each subsite.</p>
+<p>The model now contains two sets of parameters: the tumor spread probabilities <span class="math inline">\(\mathbf{\theta_m}\)</span> for each model, and the mixing coefficients <span class="math inline">\(\pi_m^s\)</span>. The posterior distribution over these parameters <span class="math inline">\(P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})\)</span> can be estimated assuming a uniform prior on the interval [0,1] for all parameters. However, <span class="math inline">\(P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})\)</span> is a multimodal-distribution as one can permute the different models and achieve the same result. To address this problem, we apply an expectation-maximization (EM) algorithm.</p>
+</section>
+<section id="expectation-maximization-em-algorithm" class="level2">
+<h2>Expectation-Maximization (EM) Algorithm</h2>
+<p>To solve for the model parameters, we apply the EM algorithm, which iterates between two steps: the <strong>Expectation (E) step</strong> and <strong>the Maximization (M) step</strong>.</p>
+<section id="expectation-step" class="level4">
+<h4>Expectation Step</h4>
+<p>In the E-step, we compute the expected value of the latent variables <span class="math inline">\(\boldsymbol{\epsilon}\)</span>, which represent the probabilities of a patient <span class="math inline">\(k\)</span> originating from one of the models <span class="math inline">\(m\)</span>. Given the current estimates of <span class="math inline">\(\boldsymbol{\theta}\)</span> and <span class="math inline">\(\boldsymbol{\pi}\)</span>, the expectation value <span class="math inline">\(\gamma(\epsilon_k^m)\)</span> is calculated as:</p>
+<p><span id="eq-expectation-step"><span class="math display">\[
+\mathbb{E}[\epsilon^m_k] = \gamma(\epsilon^m_{k}) = \frac{\pi_m^{s_k} P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_m}, T_k)}{\sum_{n}^M \pi_n^{s_k} P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_n}, T_k)}
+\tag{8}\]</span></span></p>
+</section>
+<section id="maximization-step" class="level4">
+<h4>Maximization Step</h4>
+<p>In the M-step, the model parameters are updated by maximizing the complete data likelihood in equation <a href="#eq-complete-likelihood-explicite" class="quarto-xref">equation 7</a>. For better handling, we are optimizing the log likelihood:</p>
+<p><span id="eq-maximization-step"><span class="math display">\[
+\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \sum_k^K \sum_{m}^M \gamma(\epsilon^m_{k}) \left( \ln \pi_m^{s_k} + \ln P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_m}, T_k) \right)
+\tag{9}\]</span></span></p>
+<p>In this step, the mixture parameters <span class="math inline">\(\pi_m^s\)</span> and the model parameters <span class="math inline">\(\boldsymbol{\theta}_m\)</span> can be optimized separately. The mixture parameters <span class="math inline">\(\pi_m^s\)</span> can be updated analytically:</p>
+<p><span id="eq-mixture-maximization"><span class="math display">\[
+\pi_m^s = \frac{1}{N^s} \sum_k^{N^s} \gamma(\epsilon^m_k)
+\tag{10}\]</span></span></p>
+<p>On the other hand, the model parameters <span class="math inline">\(\boldsymbol{\theta_m}\)</span> are optimized component-wise using an optimization algorithm, as an analytic solution is not feasible. The updated log-likelihood for each model is:</p>
+<p><span class="math display">\[
+\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}_m) = \sum_{k}^K \gamma(\epsilon^m_{k}) \ln P(\mathbf{X} = \boldsymbol{\xi}_i \mid \theta_m, T_k)
+\]</span></p>
+<p>By iterating these steps, the EM algorithm converges to a (local) maximum of the complete data likelihood <a href="#eq-complete-likelihood" class="quarto-xref">equation 6</a>.</p>
+</section>
+</section>
+</section>
+<section id="sec-3comp" class="level1">
+<h1>Three component Mixture Model</h1>
+<p>We illustrate the methodology for a mixture model with M = 3 components, considering the ipsilateral involvement of LNLs I, II, III, IV, and V. We include the ICD codes as subsites for oral cavity, hypopharynx and oropharynx. In <a href="#fig-convergence" class="quarto-xref">figure 4</a> the convergence of the negative log-likelihood and change in model parameters is depicted. After a random inizialization, the algorithm rapidly converges. The algorithm was stopped when the difference of log-likelihood between two iterations was below 0.01.</p>
+<div id="fig-convergence" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-convergence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/Convergence_3_comp.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure 4: The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters showing that the parameter values stabilize rapidly as well."><img src="figures/Convergence_3_comp.png" class="img-fluid" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-convergence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 4: The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters showing that the parameter values stabilize rapidly as well.
+</figcaption>
+</figure>
+</div>
+<p>In <a href="#fig-3_simplex" class="quarto-xref">figure 5</a>, we visualize the resulting mixture coefficients <span class="math inline">\(\boldsymbol{\pi}\)</span> using a spatial representation, where the vertices of the triangle correspond to the three components. In <a href="#fig-3-matrix" class="quarto-xref">figure 6</a>, these mixture coefficients are presented in matrix form, with the y-axis representing the ICD codes, showing how the mixture components in each row add up to 1.</p>
+<p>The spatial plot in <a href="#fig-3_simplex" class="quarto-xref">figure 5</a> illustrates how the model assigns the three components to different tumor subsites. Component 0, located at the bottom right of the triangle, primarily characterizes oropharyngeal subsites. For instance, the base of tongue subsite (C01), which exhibits the highest involvement of LNL II, is fully assigned to this component. Similarly, subsite C10, which includes several oropharyngeal regions, is assigned roughly 50% to the oropharynx-like component, with the remaining mixture distributed across the other two components.</p>
+<p>Hypopharyngeal subsites, on the other hand, are fully assigned to Component 2, located at the top vertex of the triangle. Meanwhile, the gum subsite (C03), with predominant LNL I involvement, is entirely assigned to Component 1, situated at the bottom left. As subsites anatomically approach the oropharynx, their mixture coefficients for the oropharynx-like component increase. This is evident in the subsites C02 (tongue) and C05 (palate), which display a higher proportion of oropharyngeal influence in their mixture. These results conform well with the involvement patterns observed in the data.</p>
+<div>
+
+</div>
+<div class="quarto-layout-panel" data-layout="[75,30]">
+<div class="quarto-layout-row quarto-layout-valign-bottom">
+<div class="quarto-layout-cell" style="flex-basis: 71.4%;justify-content: flex-start;">
+<div id="fig-3_simplex" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-3_simplex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/mixture_components_3_simplex_t_stages_new.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure 5: Assignment of each subsite to each of the three components. The closer a subsite is to a vertex, the more it is assigned to the corresponding component, with component 0 on the bottom right, 1 on the bottom left and 2 on the top. The size of the marker (area) corresponds to the number of patients in each subsite."><img src="figures/mixture_components_3_simplex_t_stages_new.png" class="img-fluid" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-3_simplex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 5: Assignment of each subsite to each of the three components. The closer a subsite is to a vertex, the more it is assigned to the corresponding component, with component 0 on the bottom right, 1 on the bottom left and 2 on the top. The size of the marker (area) corresponds to the number of patients in each subsite.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 28.6%;justify-content: flex-start;">
+<div id="fig-3-matrix" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-3-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/mixture_components_3_t_stages_new.png" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure 6: Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components"><img src="figures/mixture_components_3_t_stages_new.png" class="img-fluid" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-3-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 6: Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="sec-4comp" class="level1">
+<h1>Four component Mixture Model</h1>
+<p>We can extend the mixture model to include the larynx. The larynx patients are more finely divided into ICD codes C32.0, C32.1 and C32.2 as there is a notable difference between these ICD codes in <a href="#fig-involvement" class="quarto-xref">figure 2</a>.</p>
+<p>Simlarly to the three component model, we can analyze the convergence over the iterations of the EM-algorithm. In <a href="#fig-convergence4" class="quarto-xref">figure 7</a> we can see that in this more complex model, the likelihood space becomes more complex as at around 200 iterations, the negative log-likelihood starts to increase faster again.</p>
+<div id="fig-convergence4" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-convergence4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/convergence_4_components_4_loc.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure 7: The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters."><img src="figures/convergence_4_components_4_loc.png" class="img-fluid" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-convergence4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 7: The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters.
+</figcaption>
+</figure>
+</div>
+<p>The component assignment is shown in <a href="#fig-4-matrix" class="quarto-xref">figure 8</a>. Similarly to the 3-component model the different tumor locations are assigned to a one of the components….</p>
+<p>Here i probably should permute the components such that we have the same ordering as in the 3-component model.</p>
+<div id="fig-4-matrix" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig">
+<div aria-describedby="fig-4-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="figures/mixture_components_4_t_staging_add_larynx.png" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure 8: Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components"><img src="figures/mixture_components_4_t_staging_add_larynx.png" class="img-fluid" /></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-4-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 8: Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components
+</figcaption>
+</figure>
+</div>
+<p>add some analysis (level specific predictions and also comparison to single tumor location models.)</p>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-batth_practical_2014" class="csl-entry" role="listitem">
+Batth, S S, J J Caudell, and A M Chen. 2014. <span>“Practical Considerations in Reducing Swallowing Dysfunction Following Concurrent Chemoradiotherapy with Intensity-Modulated Radiotherapy for Head and Neck Cancer.”</span> <em>Head Neck</em> 36: 291–98. <a href="https://doi.org/10.1002/hed.23246">https://doi.org/10.1002/hed.23246</a>.
+</div>
+<div id="ref-biau_selection_2019" class="csl-entry" role="listitem">
+Biau, Julian, Michel Lapeyre, Idriss Troussier, Wilfried Budach, Jordi Giralt, Cai Grau, Joanna Kazmierska, et al. 2019. <span>“Selection of Lymph Node Target Volumes for Definitive Head and Neck Radiation Therapy: A 2019 <span>Update</span>.”</span> <em>Radiotherapy and Oncology</em> 134 (May): 1–9. <a href="https://doi.org/10.1016/j.radonc.2019.01.018">https://doi.org/10.1016/j.radonc.2019.01.018</a>.
+</div>
+<div id="ref-zora231470" class="csl-entry" role="listitem">
+Ludwig, Roman. 2023. <span>“Modelling Lymphatic Metastatic Progression in Head and Neck Cancer.”</span> PhD thesis, Zurich: University of Zurich.
+</div>
+<div id="ref-ludwig_detailed_2022" class="csl-entry" role="listitem">
+Ludwig, Roman, Jean-Marc Hoffmann, Bertrand Pouymayou, Martina Broglie Däppen, Grégoire Morand, Matthias Guckenberger, Vincent Grégoire, Panagiotis Balermpas, and Jan Unkelbach. 2022. <span>“Detailed Patient-Individual Reporting of Lymph Node Involvement in Oropharyngeal Squamous Cell Carcinoma with an Online Interface.”</span> <em>Radiotherapy and Oncology</em> 169 (April): 1–7. <a href="https://doi.org/10.1016/j.radonc.2022.01.035">https://doi.org/10.1016/j.radonc.2022.01.035</a>.
+</div>
+<div id="ref-ludwig_dataset_2022" class="csl-entry" role="listitem">
+Ludwig, Roman, Jean-Marc Hoffmann, Bertrand Pouymayou, Grégoire Morand, Martina Broglie Däppen, Matthias Guckenberger, Vincent Grégoire, Panagiotis Balermpas, and Jan Unkelbach. 2022. <span>“A Dataset on Patient-Individual Lymph Node Involvement in Oropharyngeal Squamous Cell Carcinoma.”</span> <em>Data in Brief</em> 43 (August): 108345. <a href="https://doi.org/10.1016/j.dib.2022.108345">https://doi.org/10.1016/j.dib.2022.108345</a>.
+</div>
+<div id="ref-ludwig_dynamic_2021" class="csl-entry" role="listitem">
+Ludwig, Roman, Bertrand Pouymayou, Panagiotis Balermpas, and Jan Unkelbach. 2021a. <span>“A Dynamic Model for Lymphatic Progression of Cancer Through the Head &amp; Neck.”</span> In <em><span>ESTRO</span></em>, 75. Madrid.
+</div>
+<div id="ref-ludwig_hidden_2021" class="csl-entry" role="listitem">
+———. 2021b. <span>“A Hidden <span>Markov</span> Model for Lymphatic Tumor Progression in the Head and Neck.”</span> <em>Scientific Reports</em> 11 (1): 12261. <a href="https://doi.org/10.1038/s41598-021-91544-1">https://doi.org/10.1038/s41598-021-91544-1</a>.
+</div>
+<div id="ref-ludwig_multi-centric_2023" class="csl-entry" role="listitem">
+Ludwig, Roman, Adrian Schubert, Dorothea Barbatei, Laurence Bauwens, Sandrine Werlen, Olgun Elicin, Matthias Dettmer, et al. 2023. <span>“A Multi-Centric Dataset on Patient-Individual Pathological Lymph Node Involvement in Head and Neck Squamous Cell Carcinoma.”</span> <em>Data in Brief</em>, December, 110020. <a href="https://doi.org/10.1016/j.dib.2023.110020">https://doi.org/10.1016/j.dib.2023.110020</a>.
+</div>
+<div id="ref-mukherji_cervical_2001" class="csl-entry" role="listitem">
+Mukherji, S. K., D. Armao, and V. M. Joshi. 2001. <span>“Cervical Nodal Metastases in Squamous Cell Carcinoma of the Head and Neck: <span>What</span> to Expect.”</span> <em>Head and Neck</em> 23 (11): 995–1005. <a href="https://doi.org/10.1002/hed.1144">https://doi.org/10.1002/hed.1144</a>.
+</div>
+<div id="ref-shah_patterns_1990" class="csl-entry" role="listitem">
+Shah, Jatin P., Frank C. Candela, and Anil K. Poddar. 1990. <span>“The Patterns of Cervical Lymph Node Metastases from Squamous Carcinoma of the Oral Cavity.”</span> <em>Cancer</em> 66 (1): 109–13. <a href="https://doi.org/10.1002/1097-0142(19900701)66:1&lt;109::AID-CNCR2820660120&gt;3.0.CO;2-A">https://doi.org/10.1002/1097-0142(19900701)66:1&lt;109::AID-CNCR2820660120&gt;3.0.CO;2-A</a>.
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id = "quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","loop":false,"descPosition":"bottom","selector":".lightbox","openEffect":"zoom"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+</body>
+
+</html>
