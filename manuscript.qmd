@@ -11,9 +11,9 @@ abstract: |
 ---
 
 # Introduction
-Head and Neck Squamous Cell Carcinoma (HNSCC) are known to spread through the lymphatic system  often leading to metastases in the lymph nodes [@mukherji_cervical_2001, @shah_patterns_1990].  To minimize nodal recurrences, lymph node levels (LNL) at risk of harboring occult metastases are typically irradiated electively.  Current guidelines for different tumor locations are based on the overall prevalence of nodal disease as reported in literature [@biau_selection_2019, @mukherji_cervical_2001, @shah_patterns_1990].
+Head and Neck Squamous Cell Carcinoma (HNSCC) are known to spread through the lymphatic system  often leading to metastases in the lymph nodes [@mukherji_cervical_2001;@shah_patterns_1990].  To minimize nodal recurrences, lymph node levels (LNL) at risk of harboring occult metastases are typically irradiated electively.  Current guidelines for different tumor locations are based on the overall prevalence of nodal disease as reported in literature [@biau_selection_2019;@mukherji_cervical_2001;@shah_patterns_1990].
 
-To personalize the prediction of the risk of occult metastases, given a patient's individual diagnosis, we previously published a large, multi-centric dataset where the lymphatic involvement per LNL is available for each patient[@ludwig_dataset_2022, @ludwig_multi-centric_2023].Building on this dataset, we introduced an interpretable hidden Markov model (HMM), trained to predict the risk for occult nodal disease, given an individual patient's diagnosis [@ludwig_hidden_2021].
+To personalize the prediction of the risk of occult metastases, given a patient's individual diagnosis, we previously published a large, multi-centric dataset where the lymphatic involvement per LNL is available for each patient[@ludwig_dataset_2022;@ludwig_multi-centric_2023].Building on this dataset, we introduced an interpretable hidden Markov model (HMM), trained to predict the risk for occult nodal disease, given an individual patient's diagnosis [@ludwig_hidden_2021].
 
 Personalized risk predictions could enable clinicians to safely reduce the elective clinical target volume (CTV-N), potentially decreasing treatment-related side effects that impair a patient's quality of life, without compromising the efficacy of the treatment [@batth_practical_2014].
 
