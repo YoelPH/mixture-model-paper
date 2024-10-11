@@ -34,8 +34,8 @@ For the analyses in this work, we used seven datasets from 5 institutions result
 6. {{< var patients.HVH >}} oropharyngeal patients from the Hospital Vall d'Hebron in Spain (not yet public)
 7. {{< var patients.HMC >}} hypopharynx, larynx and oral cavity patients from University Medical Center Groningen (not yet public)
 
-The datasets 1-4 are publicly available as CSV tables [@ludwig_multi-centric_2023;@ludwig_detailed_2022] and can be interactively explored on [LyProX](https://lyprox.org). For each patient the primary tumor subsite is reportd and each indicidual LNL is reported as either metastatic or healthy given the available diagnostic modalities, which include pathology after neck dissection in some patients. 
-In this work we will stratify the tumor locations into different ICD codes which are depicted in @fig-subsites. 
+The datasets 1-4 are publicly available as CSV tables [@ludwig_multi-centric_2023;@ludwig_detailed_2022] and can be interactively explored on [LyProX](https://lyprox.org). For each patient the primary tumor subsite is reportd and each indicidual LNL is reported as either metastatic or healthy given the available diagnostic modalities, which include pathology after neck dissection in some patients.
+In this work we will stratify the tumor locations into different ICD codes which are depicted in @fig-subsites.
 
 ![Anatomical sketch of the tumor subsites and their corresponding ICD-10 codes. Subsite C06 "other parts of mouth" has not been included. Further the The tumor locations are color coded in the following pattern: blue-oral cavity, green-oropharynx, red-hypopharynx, orange-larynx.](figures/Subsites.png){#fig-subsites}
 
@@ -79,11 +79,11 @@ $$ {#eq-marginalized-evolution}
 
 where $\boldsymbol{\theta}=\{ b_v, t_{v \rightarrow v+1} \}$ denotes the set of all model parameters (7 in our case). Fortunately, the exact length and shape of this distribution has little impact as previously shown [@ludwig_hidden_2021]. We set $t_\text{max}=$ {{< var model.max_t >}} and $P_\text{early}(t)$ to a binomial distribution with parameter {{< var model.first_binom_prob >}}. Further details on the HMM can be found in @ludwig_hidden_2021 and @zora231470.
 
-With @eq-marginalized-evolution we can compute the probability of a patient being in any state $\xi_i$. Therefore the likelihood of observing a the 
+With @eq-marginalized-evolution we can compute the probability of a patient being in any state $\xi_i$. Therefore the likelihood of observing a the
 For model training we assume that the diagnoses in our data $\mathbf{D}$ we observe correspond to the hidden state $\mathbf{X}$ of the patient. Thus, learning the model parameters corresponds to maximizing the probability of observing the dataset $\mathbf{D}$:
 
 $$
-P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_k^K \left[P \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}, T_k \right) \right]
+P \left( \mathbf{D} \mid \boldsymbol{\theta} \right) = \prod_k^K P \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}, T_k \right)
 $$ {#eq-likelihood-HMM}
 
 In @eq-likelihood-HMM we compute the likelihood of observing patient the diagnosis of each patient $k$, i.e. t-stage $T_k$ and involvement $\xi_k$.
@@ -102,90 +102,72 @@ $$
 \sum_{m}^M \pi_m^s = 1, \quad \forall s
 $$
 
-If we could record the componet $m$ from which a patient $k$ was drawn from, we could store this information in a binary latent vector $\boldsymbol{\epsilon}_k$. The vector $\boldsymbol{\epsilon}_k$ has length $M$, with exactly the $m$-th element set to 1, indicating which model generated the patient’s data, and all other elements set to 0. Thus, for patient $k$, the latent variable $\boldsymbol{\epsilon}_k$ can be interpreted as a categorical indicator variable that encodes the assignment to one of the $M$ lymphatic spread models. Unfortunately, the latent variables are hidden (unobserved) and must be inferred.
+If we could record the componet $m$ from which a patient $k$ was drawn from, we could store this information in a binary latent vector $\boldsymbol{\epsilon}_k$. The vector $\boldsymbol{\epsilon}_k$ has length $M$, with exactly the $m$-th element set to 1, indicating which model generated the patient’s data, and all other elements set to 0. Thus, for patient $k$, the latent variable $\boldsymbol{\epsilon}_k$ can be interpreted as a categorical indicator variable that encodes the assignment to one of the $M$ lymphatic spread models. Typically in mixture models, this so-called _latent variable_ is unknown. However, it can be inferred and is useful for inferring the models' parameters.
 
-The joint probability of the observed data $\mathbf{D}$ (i.e., patient data) and the latent variables $\boldsymbol{\epsilon}$ is given by:
+The joint probability of the observed data $\mathbf{D}$ (i.e., patient data) and the latent variables $\boldsymbol{\epsilon}$ - sometimes called the _complete data likelihood_ - is given by:
 
 $$
-P(\mathbf{D}, \boldsymbol{\epsilon} | \boldsymbol{\theta}, \boldsymbol{\pi}) = \prod_{k}^{K} \prod_{m}^{M} \left[ \pi_m^{s_k} P(\mathbf{D}_k | \boldsymbol{\theta}_m, \boldsymbol{\pi}) \right]^{\epsilon_{k}^m}
-$${#eq-complete-likelihood}
+P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \prod_{k}^{K} \prod_{m}^{M} \left[ \pi_m^{s_k} P(\mathbf{D}_k \mid \boldsymbol{\theta}_m) \right]^{\epsilon_{k}^m}
+$$ {#eq-complete-likelihood}
 
 Here:
 
-* $\pi_m^{s_k}$ is the mixing parameter for patient $k$ with a primary tumor in subsite $s_k$ and model $m$,
-* $P(\mathbf{D}_k | \boldsymbol{\theta}_m)$ is the likelihood of patient $k$'s data given that it was generated by model $m$,
-* $\boldsymbol{\theta}_m$ represents the parameters of model $m$,
-* $\epsilon_{k}^m$ is the latent variable that indicates whether patient $k$ was generated by model $m$.
+- $\pi_m^{s_k}$ is the mixing coefficient for subsite $s_k$ (where patient $k$ has their tumor) and model $m$,
+- $P(\mathbf{D}_k \mid \boldsymbol{\theta}_m)$ is the likelihood of patient $k$'s diagnosis, given that it was generated by model $m$,
+- $\boldsymbol{\theta}_m$ represents the parameters of model $m$,
+- $\epsilon_{k}^m$ is the latent variable that indicates patient $k$ was generated by model $m$.
 
+::: {.callout-note}
 
-**Incomplete data likelihood which can probably be skipped**
+## TODO: Discuss if we need this
+<!-- Not sure we can skip it. We want to maximize this w.r.t. the model parameters. -->
 
-Since the latent variables $\boldsymbol{\epsilon}_k$ are unobserved, the incomplete complete data likelihood marginalizes over all possible latent assignments to reflect the uncertainty about which model generated each patient’s data:
-
-$$
-P(\mathbf{D} | \boldsymbol{\theta}, \boldsymbol{\pi}) = \sum_{\boldsymbol{\epsilon}} P(\mathbf{D}, \boldsymbol{\epsilon} | \boldsymbol{\theta}, \boldsymbol{\pi})
-$$
-
-This allows us to integrate out the latent variables $\boldsymbol{\epsilon}$, as their true values are unknown.
- 
-**Continues from here**
-
-
-The latent variables $\boldsymbol{\epsilon}_k$ are unknown and must be inferred from the observed data. The mixture model assumes that each patient is generated by exactly one of the $M$ models. To do so a probabilistic distribution over the latent variables, given the observed data and model parameters is computed, the posterior distribution:
+In contrast, the _incomplete data likelihood_ marginalizes over all possible latent assignments to reflect the uncertainty about which model generated each patient’s data:
 
 $$
-P(\boldsymbol{\epsilon}_k | \mathbf{D}_k, \boldsymbol{\theta}, \boldsymbol{\pi})
+P(\mathbf{D}, \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \prod_{k}^{K} \sum_{m}^{M} \pi_m^{s_k} P(\mathbf{D}_k \mid \boldsymbol{\theta}_m)
+$$ {#eq-incomplete-likelihood}
+
+Ultimately, we want to find the parameters which maximize this likelihood function for the given data.
+
+Note the summation inside the product. This structure of mixture models makes naive inference difficult, because the logarithm of this quantity is expensive to compute and not easy to differentiate. Thus, inferring the latent assignment is helpful, because the complete data (log-)likelihood (@eq-complete-likelihood) does not suffer from this shortcoming.
+
+:::
+
+To infer the latent assignment $\boldsymbol{\epsilon}_k$, we start with its distribution, given the observed data and model parameters:
+
 $$
+\gamma(\epsilon_k^m) := \mathbb{E}[\epsilon_k^m] = \frac{\pi_m^{s_k} P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_m \right)}{\sum_{j \leq M} \pi_j^{s_k} P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_j \right)}
+$$ {#eq-responsibilities}
 
-describes the probability that patient $k$ was generated by each of the $M$ models, allowing for soft assignments where each patient is associated with multiple models with certain probabilities, as opposed to being strictly assigned to just one. Given the probability distribution for the latent variables $\boldsymbol{\epsilon}_k$, we compute the expectation value $\mathbb{E}[\boldsymbol{\epsilon}_k] = \boldsymbol{\gamma}(\boldsymbol{\epsilon}_k)$ for each patient to then apply the complete data likelihood given in @eq-complete-likelihood.
-
-The likelihood of the complete dataset is then expressed as:  
+This expectation value - often called the _responsibility_ - describes the probability that patient $k$ was generated by model $m$. It can be used to compute the expected complete data likelihood:
 
 $$
-P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_k^K \left[ \prod_{m}^M \pi_m^{s_k} P_m \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}_m, T_k \right) \right]^{\gamma(\epsilon_k^m)} 
-$$ {#eq-complete-likelihood-explicite}
+\mathbb{E}_{\boldsymbol{\epsilon}} \left[ P \left( \mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi} \right) \right] = \prod_{k=1}^K \prod_{m=1}^M \left[ \pi_m^{s_k} P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_m \right) \right]^{\gamma(\epsilon_k^m)}
+$$ {#eq-expected-complete-likelihood}
 
-In @eq-complete-likelihood we compute the likelihood of observing the patient's state $\boldsymbol{\xi}_k$ with t-stage $T_k$ under model $m$ similarly to @eq-likelihood-HMM. However, we weight each model with the mixing parameter $\pi_m^{s_k}$. Since the mixing parameters are subsite dependent, we differ between each subsite.
+This expected complete data likelihood has the same tractable form as @eq-complete-likelihood and thus allows us to infer both the mixing coefficients $\boldsymbol{\pi}$ as well as each component model's parameters $\boldsymbol{\theta}_m$ using straightformward inference. Also, these two sets of parameters are the only ones used for the later risk prediction. The responsiblities $\gamma(\epsilon_k^m)$ are only used during inference.
 
-It is important to mention, that the latent variables $\boldsymbol{\epsilon}$ are only used for parameter estimation. The subsite specific mixture parameters $\boldsymbol{\pi}^s$ are the only parameters which are used for later risk predictions. In @fig-model-simple the mixture parameters are illustrated. Subsites with different spread patterns, such as Gum (C03) and Base of tongue (C01), are expected to get different model assignments. Nonetheless, the latent variables for two patients with the same diagnosis, i.e. same involvement $\boldsymbol{\xi}$ and and t-stage $T$, but different subsites are the same. 
+In @fig-model-simple the mixture coefficients are illustrated. Subsites with different spread patterns, such as Gum (C03) and Base of tongue (C01), are expected to get different model assignments. Nonetheless, the latent variables for two patients with the same diagnosis, i.e. same involvement $\boldsymbol{\xi}$ and and t-stage $T$, but different subsites are the same.
 
 ![Illustration of mixture parameter assignment. Since Gum and Base of tongue express different spread patterns, the two models are expected to have different model assignments. The arrow visibility represents the value of the mixture parameter $\pi$, where the more visible the arrow, the larger the value for $\pi$](figures/mixture_model_simplified.png){#fig-model-simple}
 
-The model now contains two sets of parameters: the tumor spread probabilities $\mathbf{\theta_m}$ for each model, and the mixing coefficients $\pi_m^s$. The posterior distribution over these parameters $P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})$ can be estimated assuming a uniform prior on the interval [0,1] for all parameters. However, $P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})$ is a multimodal-distribution as one can permute the different models and achieve the same result. To address this problem, we apply an expectation-maximization (EM) algorithm. 
-
 ## Expectation-Maximization (EM) Algorithm
-To solve for the model parameters, we apply the EM algorithm, which iterates between two steps: the **Expectation (E) step** and **the Maximization (M) step**.
 
-#### Expectation Step
+To actually find the mixing coefficients $\boldsymbol{\pi}$ and all models' parameters $\boldsymbol{\theta}_m$ that maximize @eq-incomplete-likelihood, we follow an iterative approach called _expectation-maximization_ or _EM-algorithm_. With arbitrarily initialized starting parameters, we alternate between the following two steps:
 
-In the E-step, we compute the expected value of the latent variables $\boldsymbol{\epsilon}$, which represent the probabilities of a patient $k$ originating from one of the models $m$. Given the current estimates of $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$, the expectation value $\gamma(\epsilon_k^m)$ is calculated as:
+1. In the **E**xpectation step, we compute the responsibilities $\gamma(\epsilon_k^m)$, which represent the probabilities of a patient $k$ originating from one of the models $m$, given the current estimates of $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$, as given in @eq-responsibilities.
+2. During the **M**maximization step, we find a new set of parameters that maximize the new expected complete data likelihood (@eq-expected-complete-likelihood). For the mixture coefficients, we can even find an analytic solution to the new maximum:
+   $$
+   \pi_m^s = \frac{1}{|K_s|} \sum_{k \in K_s} \gamma(\epsilon_k^m)
+   $$
+   where we sum over the set of all patients $K_s$ with their tumor in subsite $s$.\
+   The models' new parameters are found by numerically maximizing the respective likelihood, weighted by the responsibilities:
+   $$
+   \ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}_m) = \sum_k^K \gamma(\epsilon^m_{k}) \big[ \ln \pi_m^{s_k} + \ln P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_m \right) \big]
+   $$ {#eq-maximization-step}
 
-$$
-\mathbb{E}[\epsilon^m_k] = \gamma(\epsilon^m_{k}) = \frac{\pi_m^{s_k} P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_m}, T_k)}{\sum_{n}^M \pi_n^{s_k} P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_n}, T_k)}
-$${#eq-expectation-step}
-
-
-#### Maximization Step
-
-In the M-step, the model parameters are updated by maximizing the complete data likelihood in equation @eq-complete-likelihood-explicite. For better handling, we are optimizing the log likelihood:
-
-$$
-\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \sum_k^K \sum_{m}^M \gamma(\epsilon^m_{k}) \left( \ln \pi_m^{s_k} + \ln P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_m}, T_k) \right)
-$${#eq-maximization-step}
-
-In this step, the mixture parameters $\pi_m^s$ and the model parameters $\boldsymbol{\theta}_m$ can be optimized separately. The mixture parameters $\pi_m^s$ can be updated analytically:
-
-$$
-\pi_m^s = \frac{1}{N^s} \sum_k^{N^s} \gamma(\epsilon^m_k)
-$${#eq-mixture-maximization}
-
-On the other hand, the model parameters $\boldsymbol{\theta_m}$ are optimized component-wise using an optimization algorithm, as an analytic solution is not feasible. The updated log-likelihood for each model is:
-
-$$
-\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}_m) = \sum_{k}^K \gamma(\epsilon^m_{k}) \ln P(\mathbf{X} = \boldsymbol{\xi}_i \mid \theta_m, T_k)
-$$
-
-By iterating these steps, the EM algorithm converges to a (local) maximum of the complete data likelihood @eq-complete-likelihood.
+By iterating these steps, the EM algorithm is guaranteed to converge to a (local) maximum of the complete data likelihood (@eq-complete-likelihood).
 
 
 # Three component Mixture Model {#sec-3comp}
@@ -199,7 +181,7 @@ In @fig-3_simplex, we visualize the resulting mixture coefficients $\boldsymbol{
 The spatial plot in @fig-3_simplex illustrates how the model assigns the three components to different tumor subsites. Component 0, located at the bottom right of the triangle, primarily characterizes oropharyngeal subsites. For instance, the base of tongue subsite (C01), which exhibits the highest involvement of LNL II, is fully assigned to this component. Similarly, subsite C10, which includes several oropharyngeal regions, is assigned roughly 50% to the oropharynx-like component, with the remaining mixture distributed across the other two components.
 
 Hypopharyngeal subsites, on the other hand, are fully assigned to Component 2, located at the top vertex of the triangle. Meanwhile, the gum subsite (C03), with predominant LNL I involvement, is entirely assigned to Component 1, situated at the bottom left.
-As subsites anatomically approach the oropharynx, their mixture coefficients for the oropharynx-like component increase. This is evident in the subsites C02 (tongue) and C05 (palate), which display a higher proportion of oropharyngeal influence in their mixture. These results conform well with the involvement patterns observed in the data. 
+As subsites anatomically approach the oropharynx, their mixture coefficients for the oropharynx-like component increase. This is evident in the subsites C02 (tongue) and C05 (palate), which display a higher proportion of oropharyngeal influence in their mixture. These results conform well with the involvement patterns observed in the data.
 
 ::: {layout="[75,30]" layout-valign="bottom"}
 
@@ -210,7 +192,7 @@ As subsites anatomically approach the oropharynx, their mixture coefficients for
 
 # Four component Mixture Model {#sec-4comp}
 
-We can extend the mixture model to include the larynx. The larynx patients are more finely divided into ICD codes C32.0, C32.1 and C32.2 as there is a notable difference between these ICD codes in @fig-involvement. 
+We can extend the mixture model to include the larynx. The larynx patients are more finely divided into ICD codes C32.0, C32.1 and C32.2 as there is a notable difference between these ICD codes in @fig-involvement.
 
 Simlarly to the three component model, we can analyze the convergence over the iterations of the EM-algorithm. In @fig-convergence4 we can see that in this more complex model, the likelihood space becomes more complex as at around 200 iterations, the negative log-likelihood starts to increase faster again.
 
@@ -219,7 +201,7 @@ Simlarly to the three component model, we can analyze the convergence over the i
 The component assignment is shown in @fig-4-matrix. Similarly to the 3-component model the different tumor locations are assigned to a one of the components....
 
 
-Here i probably should permute the components such that we have the same ordering as in the 3-component model. 
+Here i probably should permute the components such that we have the same ordering as in the 3-component model.
 
 ![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_4_t_staging_add_larynx.png){#fig-4-matrix}
 
