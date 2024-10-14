@@ -1,6 +1,6 @@
 project: 
   type: manuscript
-  output-dir: output
+  output-dir: .output
   render: 
     - "*.qmd"
   preview: 

@@ -83,10 +83,10 @@ With @eq-marginalized-evolution we can compute the probability of a patient bein
 For model training we assume that the diagnoses in our data $\mathbf{D}$ we observe correspond to the hidden state $\mathbf{X}$ of the patient. Thus, learning the model parameters corresponds to maximizing the probability of observing the dataset $\mathbf{D}$:
 
 $$
-P \left( \mathbf{D} \mid \boldsymbol{\theta} \right) = \prod_k^K P \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}, T_k \right)
+P \left( \mathbf{D} \mid \boldsymbol{\theta} \right) = \prod_k^K P \left( \mathbf{X}_k=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}, T_k \right)
 $$ {#eq-likelihood-HMM}
 
-In @eq-likelihood-HMM we compute the likelihood of observing patient the diagnosis of each patient $k$, i.e. t-stage $T_k$ and involvement $\xi_k$.
+In @eq-likelihood-HMM we compute the likelihood of observing patient the diagnosis of each patient $k$, i.e. t-stage $T_k$ and involvement  $\mathbf{X}_k=\boldsymbol{\xi}_i$.
 
 # Mixture Model for Lymphatic Spread {#sec-mixture}
 
