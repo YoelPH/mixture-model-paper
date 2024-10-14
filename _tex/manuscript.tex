@@ -116,6 +116,22 @@
 \usepackage{multirow}
 \usepackage{centernot}
 \makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\@ifpackageloaded{fontawesome5}{}{\usepackage{fontawesome5}}
+\definecolor{quarto-callout-color}{HTML}{909090}
+\definecolor{quarto-callout-note-color}{HTML}{0758E5}
+\definecolor{quarto-callout-important-color}{HTML}{CC1914}
+\definecolor{quarto-callout-warning-color}{HTML}{EB9113}
+\definecolor{quarto-callout-tip-color}{HTML}{00A047}
+\definecolor{quarto-callout-caution-color}{HTML}{FC5300}
+\definecolor{quarto-callout-color-frame}{HTML}{acacac}
+\definecolor{quarto-callout-note-color-frame}{HTML}{4582ec}
+\definecolor{quarto-callout-important-color-frame}{HTML}{d9534f}
+\definecolor{quarto-callout-warning-color-frame}{HTML}{f0ad4e}
+\definecolor{quarto-callout-tip-color-frame}{HTML}{02b875}
+\definecolor{quarto-callout-caution-color-frame}{HTML}{fd7e14}
+\makeatother
+\makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \AtBeginDocument{%
 \ifdefined\contentsname
@@ -223,20 +239,20 @@ Conclusions: to be done}
 
 \section{Introduction}\label{introduction}
 
-Head and Neck Squamous Cell Carcinoma (HNSCC) are known to spread
+Head and neck squamous cell carcinomas (HNSCCs) are known to spread
 through the lymphatic system often leading to metastases in the lymph
-nodes \citep[@shah\_patterns\_1990]{mukherji_cervical_2001}. To minimize
-nodal recurrences, lymph node levels (LNL) at risk of harboring occult
+nodes \citep{mukherji_cervical_2001, shah_patterns_1990}. To minimize
+nodal recurrences, lymph node levels (LNLs) at risk of harboring occult
 metastases are typically irradiated electively. Current guidelines for
 different tumor locations are based on the overall prevalence of nodal
 disease as reported in literature
-\citep[@mukherji\_cervical\_2001, @shah\_patterns\_1990]{biau_selection_2019}.
+\citep{biau_selection_2019, mukherji_cervical_2001, shah_patterns_1990}.
 
 To personalize the prediction of the risk of occult metastases, given a
 patient's individual diagnosis, we previously published a large,
 multi-centric dataset where the lymphatic involvement per LNL is
 available for each
-patient\citep[@ludwig\_multi-centric\_2023]{ludwig_dataset_2022}.Building
+patient\citep{ludwig_dataset_2022, ludwig_multi-centric_2023}. Building
 on this dataset, we introduced an interpretable hidden Markov model
 (HMM), trained to predict the risk for occult nodal disease, given an
 individual patient's diagnosis \citep{ludwig_hidden_2021}.
@@ -252,7 +268,7 @@ such as the oropharynx and oral cavity. These tumor locations are also
 used in guidelines to define the elective target volumes
 \citep{biau_selection_2019}. However, this approach did not account for
 variations in lymphatic spread between subsites within these tumor
-regions. With data for more than 2700 patients available, we can now
+regions. With data from more than 2700 patients available, we can now
 further analyze subsite specific spread patterns. Closer analysis showed
 that pooling subsites into a single model led to inaccurate predictions,
 as it failed to capture distinct lymphatic spread patterns. To resolve
@@ -263,8 +279,8 @@ tumors in the palate).
 
 Additionally, we extend the analysis to a broader mixture model that
 encompasses tumors of the oral cavity, oropharynx, hypopharynx, and
-larynx, offering a more comprehensive understanding of lymphatic spread
-across these regions.
+larynx, resulting in further personalized predictions of lymphatic
+spread across these regions.
 
 \section{Data on Lymphatic Progression Patterns}\label{sec-data}
 
@@ -296,8 +312,8 @@ institutions resulting in 2741 patients in total.
 \end{enumerate}
 
 The datasets 1-4 are publicly available as CSV tables
-(\citet{ludwig_multi-centric_2023} \citet{ludwig_detailed_2022}) and can
-be interactively explored on \href{https://lyprox.org}{LyProX}. For each
+\citep{ludwig_multi-centric_2023, ludwig_detailed_2022} and can be
+interactively explored on \href{https://lyprox.org}{LyProX}. For each
 patient the primary tumor subsite is reportd and each indicidual LNL is
 reported as either metastatic or healthy given the available diagnostic
 modalities, which include pathology after neck dissection in some
@@ -363,7 +379,7 @@ subsites.
 The HMM describes each LNL \(v \in 1, 2, ..., V\) by a binary random
 variable corresponding to the status of the LNL; healthy (0) or involved
 (1). The entire state of a patient with \(V\) LNLs is defined by the
-\(v\)-dimensional vector \(\mathbf{X} = [X_1, X_2, ...,X_V]\). In the
+\(V\)-dimensional vector \(\mathbf{X} = [X_1, X_2, ...,X_V]\). In the
 HMM, a patient's involvement is modeled over time \(t\). Thus, a
 patient's state of lymph node involvement \(\mathbf{X}[t]\) evolves over
 discrete time steps \(t\). Let us enumerate all \(2^V\) possible states,
@@ -456,12 +472,12 @@ corresponds to maximizing the probability of observing the dataset
 \(\mathbf{D}\):
 
 \begin{equation}\phantomsection\label{eq-likelihood-HMM}{
-P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_k^K \left[P \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}, T_k \right) \right]
+P \left( \mathbf{D} \mid \boldsymbol{\theta} \right) = \prod_k^K P \left( \mathbf{X}_k=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}, T_k \right)
 }\end{equation}
 
 In equation~\ref{eq-likelihood-HMM} we compute the likelihood of
 observing patient the diagnosis of each patient \(k\), i.e.~t-stage
-\(T_k\) and involvement \(\xi_k\).
+\(T_k\) and involvement \(\mathbf{X}_k=\boldsymbol{\xi}_i\).
 
 \section{Mixture Model for Lymphatic Spread}\label{sec-mixture}
 
@@ -486,44 +502,36 @@ maintaining computational efficiency.
 \subsection{Mixture Model Formulation}\label{mixture-model-formulation}
 
 The mixture model assumes that the data is generated by a set of \(M\)
-different lymphatic spread models. Each patient \(k\) is then assumed to
-be generated by one specific model from this set of \(M\) models.
-
-To formalize this, each patient \(k\) can be assigned to a specific
-model via a binary latent vector \(\boldsymbol{\epsilon}_k\). The vector
-\(\boldsymbol{\epsilon}_k\) has length \(M\), with exactly one element
-set to 1, indicating which model generated the patient's data, and all
-other elements set to 0. Thus, for patient \(k\), the latent variable
-\(\boldsymbol{\epsilon}_k\) can be interpreted as a categorical
-indicator variable that encodes the assignment to one of the \(M\)
-lymphatic spread models.
-
-Next, we introduce subsite-specific mixing parameters
-\(\boldsymbol{\pi}^s = \{\pi_1^s, \pi_2^s, \dots, \pi_M^s\}\), where
-each \(\pi_m^s\) represents the prior probability that a patient with
-tumors in subsite \(s\) is generated by model \(m\). These mixing
-parameters must satisfy the condition:
+different lymphatic spread models. Each patient \(k\), with their
+primary tumor in subsite \(s \in (1, 2, \ldots, S)\), is assumed to be
+generated by one specific model \(m \in (1, 2, \ldots, M)\) from this
+set of \(M\) models with probability \(\pi_m^s\). These so-called
+\emph{mixing parameters}
+\(\boldsymbol{\pi}^s = \{\pi_1^s, \pi_2^s, \dots, \pi_M^s\}\) must
+satisfy the condition
 
 \[
 \sum_{m}^M \pi_m^s = 1, \quad \forall s
 \]
 
-The mixing parameters \(\boldsymbol{\pi}^s\) determine the proportion of
-patients with tumors in subsite \(s\) that are expected to be generated
-by each model. Specifically, \(\pi_m^s\) is the probability that a
-randomly chosen patient with a tumor in subsite \(s\) is generated by
-model \(m\).
-
-The latent variables \(\boldsymbol{\epsilon}_{k}\), on the other hand,
-are patient-specific and represent the assignment of each patient to a
-particular model. The latent variables are central to the model, as they
-are hidden (unobserved) and must be inferred.
+If we could record the componet \(m\) from which a patient \(k\) was
+drawn from, we could store this information in a binary latent vector
+\(\boldsymbol{\epsilon}_k\). The vector \(\boldsymbol{\epsilon}_k\) has
+length \(M\), with exactly the \(m\)-th element set to 1, indicating
+which model generated the patient's data, and all other elements set to
+0. Thus, for patient \(k\), the latent variable
+\(\boldsymbol{\epsilon}_k\) can be interpreted as a categorical
+indicator variable that encodes the assignment to one of the \(M\)
+lymphatic spread models. Typically in mixture models, this so-called
+\emph{latent variable} is unknown. However, it can be inferred and is
+useful for inferring the models' parameters.
 
 The joint probability of the observed data \(\mathbf{D}\) (i.e., patient
-data) and the latent variables \(\boldsymbol{\epsilon}\) is given by:
+data) and the latent variables \(\boldsymbol{\epsilon}\) - sometimes
+called the \emph{complete data likelihood} - is given by:
 
 \begin{equation}\phantomsection\label{eq-complete-likelihood}{
-P(\mathbf{D}, \boldsymbol{\epsilon} | \boldsymbol{\theta}, \boldsymbol{\pi}) = \prod_{k}^{K} \prod_{m}^{M} \left[ \pi_m^{s_k} P(\mathbf{D}_k | \boldsymbol{\theta}_m, \boldsymbol{\pi}) \right]^{\epsilon_{k}^m}
+P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \prod_{k}^{K} \prod_{m}^{M} \left[ \pi_m^{s_k} P(\mathbf{D}_k \mid \boldsymbol{\theta}_m) \right]^{\epsilon_{k}^m}
 }\end{equation}
 
 Here:
@@ -531,77 +539,69 @@ Here:
 \begin{itemize}
 \tightlist
 \item
-  \(\pi_m^{s_k}\) is the mixing parameter for patient \(k\) with a
-  primary tumor in subsite \(s_k\) and model \(m\),
+  \(\pi_m^{s_k}\) is the mixing coefficient for subsite \(s_k\) (where
+  patient \(k\) has their tumor) and model \(m\),
 \item
-  \(P(\mathbf{D}_k | \boldsymbol{\theta}_m)\) is the likelihood of
-  patient \(k\)'s data given that it was generated by model \(m\),
+  \(P(\mathbf{D}_k \mid \boldsymbol{\theta}_m)\) is the likelihood of
+  patient \(k\)'s diagnosis, given that it was generated by model \(m\),
 \item
   \(\boldsymbol{\theta}_m\) represents the parameters of model \(m\),
 \item
-  \(\epsilon_{k}^m\) is the latent variable that indicates whether
-  patient \(k\) was generated by model \(m\).
+  \(\epsilon_{k}^m\) is the latent variable that indicates patient \(k\)
+  was generated by model \(m\).
 \end{itemize}
 
-\textbf{Incomplete data likelihood which can probably be skipped}
+\begin{tcolorbox}[enhanced jigsaw, breakable, colbacktitle=quarto-callout-note-color!10!white, left=2mm, colback=white, coltitle=black, arc=.35mm, bottomrule=.15mm, rightrule=.15mm, bottomtitle=1mm, opacitybacktitle=0.6, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{TODO: Discuss if we need this}, titlerule=0mm, toptitle=1mm, toprule=.15mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0]
 
-Since the latent variables \(\boldsymbol{\epsilon}_k\) are unobserved,
-the incomplete complete data likelihood marginalizes over all possible
-latent assignments to reflect the uncertainty about which model
+In contrast, the \emph{incomplete data likelihood} marginalizes over all
+possible latent assignments to reflect the uncertainty about which model
 generated each patient's data:
 
-\[
-P(\mathbf{D} | \boldsymbol{\theta}, \boldsymbol{\pi}) = \sum_{\boldsymbol{\epsilon}} P(\mathbf{D}, \boldsymbol{\epsilon} | \boldsymbol{\theta}, \boldsymbol{\pi})
-\]
-
-This allows us to integrate out the latent variables
-\(\boldsymbol{\epsilon}\), as their true values are unknown.
-
-\textbf{Continues from here}
-
-The latent variables \(\boldsymbol{\epsilon}_k\) are unknown and must be
-inferred from the observed data. The mixture model assumes that each
-patient is generated by exactly one of the \(M\) models. To do so a
-probabilistic distribution over the latent variables, given the observed
-data and model parameters is computed, the posterior distribution:
-
-\[
-P(\boldsymbol{\epsilon}_k | \mathbf{D}_k, \boldsymbol{\theta}, \boldsymbol{\pi})
-\]
-
-describes the probability that patient \(k\) was generated by each of
-the \(M\) models, allowing for soft assignments where each patient is
-associated with multiple models with certain probabilities, as opposed
-to being strictly assigned to just one. Given the probability
-distribution for the latent variables \(\boldsymbol{\epsilon}_k\), we
-compute the expectation value
-\(\mathbb{E}[\boldsymbol{\epsilon}_k] = \boldsymbol{\gamma}(\boldsymbol{\epsilon}_k)\)
-for each patient to then apply the complete data likelihood given in
-equation~\ref{eq-complete-likelihood}.
-
-The likelihood of the complete dataset is then expressed as:
-
-\begin{equation}\phantomsection\label{eq-complete-likelihood-explicite}{
-P \left( \mathbf{D} \mid \boldsymbol{\theta}, \boldsymbol{\pi}\right) = \prod_k^K \left[ \prod_{m}^M \pi_m^{s_k} P_m \left( \mathbf{X}=\boldsymbol{\xi}_k \mid \boldsymbol{\theta}_m, T_k \right) \right]^{\gamma(\epsilon_k^m)} 
+\begin{equation}\phantomsection\label{eq-incomplete-likelihood}{
+P(\mathbf{D}, \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \prod_{k}^{K} \sum_{m}^{M} \pi_m^{s_k} P(\mathbf{D}_k \mid \boldsymbol{\theta}_m)
 }\end{equation}
 
-In equation~\ref{eq-complete-likelihood} we compute the likelihood of
-observing the patient's state \(\boldsymbol{\xi}_k\) with t-stage
-\(T_k\) under model \(m\) similarly to equation~\ref{eq-likelihood-HMM}.
-However, we weight each model with the mixing parameter \(\pi_m^{s_k}\).
-Since the mixing parameters are subsite dependent, we differ between
-each subsite.
+Ultimately, we want to find the parameters which maximize this
+likelihood function for the given data.
 
-It is important to mention, that the latent variables
-\(\boldsymbol{\epsilon}\) are only used for parameter estimation. The
-subsite specific mixture parameters \(\boldsymbol{\pi}^s\) are the only
-parameters which are used for later risk predictions. In
-figure~\ref{fig-model-simple} the mixture parameters are illustrated.
-Subsites with different spread patterns, such as Gum (C03) and Base of
-tongue (C01), are expected to get different model assignments.
-Nonetheless, the latent variables for two patients with the same
-diagnosis, i.e.~same involvement \(\boldsymbol{\xi}\) and and t-stage
-\(T\), but different subsites are the same.
+Note the summation inside the product. This structure of mixture models
+makes naive inference difficult, because the logarithm of this quantity
+is expensive to compute and not easy to differentiate. Thus, inferring
+the latent assignment is helpful, because the complete data
+(log-)likelihood (equation~\ref{eq-complete-likelihood}) does not suffer
+from this shortcoming.
+
+\end{tcolorbox}
+
+To infer the latent assignment \(\boldsymbol{\epsilon}_k\), we start
+with its distribution, given the observed data and model parameters:
+
+\begin{equation}\phantomsection\label{eq-responsibilities}{
+\gamma(\epsilon_k^m) := \mathbb{E}[\epsilon_k^m] = \frac{\pi_m^{s_k} P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_m \right)}{\sum_{j \leq M} \pi_j^{s_k} P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_j \right)}
+}\end{equation}
+
+This expectation value - often called the \emph{responsibility} -
+describes the probability that patient \(k\) was generated by model
+\(m\). It can be used to compute the expected complete data likelihood:
+
+\begin{equation}\phantomsection\label{eq-expected-complete-likelihood}{
+\mathbb{E}_{\boldsymbol{\epsilon}} \left[ P \left( \mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi} \right) \right] = \prod_{k=1}^K \prod_{m=1}^M \left[ \pi_m^{s_k} P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_m \right) \right]^{\gamma(\epsilon_k^m)}
+}\end{equation}
+
+This expected complete data likelihood has the same tractable form as
+equation~\ref{eq-complete-likelihood} and thus allows us to infer both
+the mixing coefficients \(\boldsymbol{\pi}\) as well as each component
+model's parameters \(\boldsymbol{\theta}_m\) using straightformward
+inference. Also, these two sets of parameters are the only ones used for
+the later risk prediction. The responsiblities \(\gamma(\epsilon_k^m)\)
+are only used during inference.
+
+In figure~\ref{fig-model-simple} the mixture coefficients are
+illustrated. Subsites with different spread patterns, such as Gum (C03)
+and Base of tongue (C01), are expected to get different model
+assignments. Nonetheless, the latent variables for two patients with the
+same diagnosis, i.e.~same involvement \(\boldsymbol{\xi}\) and and
+t-stage \(T\), but different subsites are the same.
 
 \begin{figure}
 
@@ -620,66 +620,44 @@ value for \(\pi\)}
 
 \end{figure}%
 
-The model now contains two sets of parameters: the tumor spread
-probabilities \(\mathbf{\theta_m}\) for each model, and the mixing
-coefficients \(\pi_m^s\). The posterior distribution over these
-parameters \(P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})\) can be
-estimated assuming a uniform prior on the interval {[}0,1{]} for all
-parameters. However,
-\(P(\boldsymbol{\theta},\boldsymbol{\pi}|\mathbf{D})\) is a
-multimodal-distribution as one can permute the different models and
-achieve the same result. To address this problem, we apply an
-expectation-maximization (EM) algorithm.
-
 \subsection{Expectation-Maximization (EM)
 Algorithm}\label{expectation-maximization-em-algorithm}
 
-To solve for the model parameters, we apply the EM algorithm, which
-iterates between two steps: the \textbf{Expectation (E) step} and
-\textbf{the Maximization (M) step}.
+To actually find the mixing coefficients \(\boldsymbol{\pi}\) and all
+models' parameters \(\boldsymbol{\theta}_m\) that maximize
+equation~\ref{eq-incomplete-likelihood}, we follow an iterative approach
+called \emph{expectation-maximization} or \emph{EM-algorithm}. With
+arbitrarily initialized starting parameters, we alternate between the
+following two steps:
 
-\paragraph{Expectation Step}\label{expectation-step}
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  In the \textbf{E}xpectation step, we compute the responsibilities
+  \(\gamma(\epsilon_k^m)\), which represent the probabilities of a
+  patient \(k\) originating from one of the models \(m\), given the
+  current estimates of \(\boldsymbol{\theta}\) and \(\boldsymbol{\pi}\),
+  as given in equation~\ref{eq-responsibilities}.
+\item
+  During the \textbf{M}maximization step, we find a new set of
+  parameters that maximize the new expected complete data likelihood
+  (equation~\ref{eq-expected-complete-likelihood}). For the mixture
+  coefficients, we can even find an analytic solution to the new
+  maximum: \[
+  \pi_m^s = \frac{1}{|K_s|} \sum_{k \in K_s} \gamma(\epsilon_k^m)
+  \] where we sum over the set of all patients \(K_s\) with their tumor
+  in subsite \(s\).\\
+  The models' new parameters are found by numerically maximizing the
+  respective likelihood, weighted by the responsibilities:
+  \begin{equation}\phantomsection\label{eq-maximization-step}{
+  \ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}_m) = \sum_k^K \gamma(\epsilon^m_{k}) \big[ \ln \pi_m^{s_k} + \ln P \left( \mathbf{D}_k \mid \boldsymbol{\theta}_m \right) \big]
+  }\end{equation}
+\end{enumerate}
 
-In the E-step, we compute the expected value of the latent variables
-\(\boldsymbol{\epsilon}\), which represent the probabilities of a
-patient \(k\) originating from one of the models \(m\). Given the
-current estimates of \(\boldsymbol{\theta}\) and \(\boldsymbol{\pi}\),
-the expectation value \(\gamma(\epsilon_k^m)\) is calculated as:
-
-\begin{equation}\phantomsection\label{eq-expectation-step}{
-\mathbb{E}[\epsilon^m_k] = \gamma(\epsilon^m_{k}) = \frac{\pi_m^{s_k} P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_m}, T_k)}{\sum_{n}^M \pi_n^{s_k} P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_n}, T_k)}
-}\end{equation}
-
-\paragraph{Maximization Step}\label{maximization-step}
-
-In the M-step, the model parameters are updated by maximizing the
-complete data likelihood in equation
-equation~\ref{eq-complete-likelihood-explicite}. For better handling, we
-are optimizing the log likelihood:
-
-\begin{equation}\phantomsection\label{eq-maximization-step}{
-\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}, \boldsymbol{\pi}) = \sum_k^K \sum_{m}^M \gamma(\epsilon^m_{k}) \left( \ln \pi_m^{s_k} + \ln P(\mathbf{X} = \boldsymbol{\xi}_k \mid \boldsymbol{\theta_m}, T_k) \right)
-}\end{equation}
-
-In this step, the mixture parameters \(\pi_m^s\) and the model
-parameters \(\boldsymbol{\theta}_m\) can be optimized separately. The
-mixture parameters \(\pi_m^s\) can be updated analytically:
-
-\begin{equation}\phantomsection\label{eq-mixture-maximization}{
-\pi_m^s = \frac{1}{N^s} \sum_k^{N^s} \gamma(\epsilon^m_k)
-}\end{equation}
-
-On the other hand, the model parameters \(\boldsymbol{\theta_m}\) are
-optimized component-wise using an optimization algorithm, as an analytic
-solution is not feasible. The updated log-likelihood for each model is:
-
-\[
-\ln P(\mathbf{D}, \boldsymbol{\epsilon} \mid \boldsymbol{\theta}_m) = \sum_{k}^K \gamma(\epsilon^m_{k}) \ln P(\mathbf{X} = \boldsymbol{\xi}_i \mid \theta_m, T_k)
-\]
-
-By iterating these steps, the EM algorithm converges to a (local)
-maximum of the complete data likelihood
-equation~\ref{eq-complete-likelihood}.
+By iterating these steps, the EM algorithm is guaranteed to converge to
+a (local) maximum of the complete data likelihood
+(equation~\ref{eq-complete-likelihood}).
 
 \section{Three component Mixture Model}\label{sec-3comp}
 
