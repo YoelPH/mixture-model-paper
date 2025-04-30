@@ -8,11 +8,11 @@ model:
   max_t: 10
 
 patients: 
-  USZ_oropharynx: 0
-  CLB_oropharynx: 0
-  ISB_multiside: 0
-  CLB_multiside: 0
-  USZ_multiside: 0
+  USZ_oropharynx: 287
+  CLB_oropharynx: 263
+  ISB_multiside: 327
+  CLB_multiside: 276
+  USZ_multiside: 273
   HVH: 164
-  HMC: 979
-  total: 2741
+  HMC: 847
+  total: 2437
