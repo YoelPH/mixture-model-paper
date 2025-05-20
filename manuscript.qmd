@@ -153,7 +153,7 @@ It is important to note that this mixture model algorithm diverges from the conv
 To actually find the mixing coefficients $\boldsymbol{\pi}$ and all models' parameters $\boldsymbol{\theta}_m$ that maximize @eq-incomplete-likelihood, we follow an iterative approach called _expectation-maximization_ or _EM-algorithm_. With arbitrarily initialized starting parameters, we alternate between the following two steps:
 
 1. In the **E**xpectation step, we compute the responsibilities $\gamma(\epsilon_k^m)$, which represent the probabilities of a patient $k$ originating from one of the models $m$, given the current estimates of $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$, as given in @eq-responsibilities.
-2. During the **M**maximization step, we find a new set of parameters that maximize the new expected complete data likelihood (@eq-expected-complete-likelihood). For the mixture coefficients, we can even find an analytic solution to the new maximum:
+2. During the **M**aximization step, we find a new set of parameters that maximize the new expected complete data likelihood (@eq-expected-complete-likelihood). For the mixture coefficients, we can even find an analytic solution to the new maximum:
    $$
    \pi_m^s = \frac{1}{|K_s|} \sum_{k \in K_s} \gamma(\epsilon_k^m)
    $$
@@ -165,6 +165,19 @@ To actually find the mixing coefficients $\boldsymbol{\pi}$ and all models' para
 
 By iterating these steps, the EM algorithm is guaranteed to converge to a (local) maximum of the incomplete data likelihood (@eq-incomplete-likelihood).
 
+## Uncertainty estimation
+
+To estimate the uncertainty associated with both the model parameters and the resulting risk estimates, we employ a bootstrapping approach. Although more comprehensive sampling methods exist for the EM algorithm—such as the imputation-posterior (IP) algorithm, which samples from both model parameters and latent variables—we opt for a computationally more efficient alternative that still yields multiple estimates of all parameters.
+
+Our resampling procedure involves the following steps:
+
+1. Resample the observed data with replacement, maintaining the original number of samples per ICD code.
+
+2. Fit the model to each resampled dataset.
+
+3. Extract the model parameters and risk estimates from each fitted model.
+
+This method enables a straightforward uncertainty analysis while avoiding the computational cost of more intensive sampling techniques.
 
 # Three component Mixture Model {#sec-3comp}
 
