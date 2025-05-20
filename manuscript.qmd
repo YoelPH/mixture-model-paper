@@ -154,7 +154,7 @@ In @fig-model-simple the mixture coefficients are illustrated. Subsites with dif
 
 ## Expectation-Maximization (EM) Algorithm
 
-To actually find the mixing coefficients $\boldsymbol{\pi}$ and all models' parameters $\boldsymbol{\theta}_m$ that maximize @eq-incomplete-likelihood, we follow an iterative approach called _expectation-maximization_ or _EM-algorithm_. With arbitrarily initialized starting parameters, we alternate between the following two steps:
+To find the mixing coefficients $\boldsymbol{\pi}$ and all models' parameters $\boldsymbol{\theta}_m$ that maximize @eq-incomplete-likelihood, we follow an iterative approach called _expectation-maximization_ or _EM-algorithm_. With arbitrarily initialized starting parameters, we alternate between the following two steps:
 
 1. In the **E**xpectation step, we compute the responsibilities $\gamma(\epsilon_k^m)$, which represent the probabilities of a patient $k$ originating from one of the models $m$, given the current estimates of $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$, as given in @eq-responsibilities.
 2. During the **M**maximization step, we find a new set of parameters that maximize the new expected complete data likelihood (@eq-expected-complete-likelihood). For the mixture coefficients, we can even find an analytic solution to the new maximum:
@@ -169,10 +169,33 @@ To actually find the mixing coefficients $\boldsymbol{\pi}$ and all models' para
 
 By iterating these steps, the EM algorithm is guaranteed to converge to a (local) maximum of the complete data likelihood (@eq-complete-likelihood).
 
+## Model Uncertainty estimation
+
+After fitting models using the Expectation-Maximization (EM) algorithm, we want to quantify the uncertainty associated with the estimated parameters and predictions. Understanding this uncertainty is critical, especially in applications where model outputs inform significant decisions. A robust estimation of uncertainty provides insights into the confidence we can place in the model and identifies potential limitations in its predictions.
+
+To estimate model uncertainty, we employ a Bayesian approach in which the model parameters are treated as random variables with prior distributions. Given the data \(\mathbf{D}\) and model parameters \(\boldsymbol{\theta}\), the posterior distribution is expressed as:
+
+$$
+P(\boldsymbol{\theta} \mid \mathbf{D}) \propto P(\mathbf{D} \mid \boldsymbol{\theta}) P(\boldsymbol{\theta})
+$$ {#eq-bayesian-posterior}
+
+where $P(\mathbf{D} \mid \boldsymbol{\theta})$ is the likelihood of the data, and $P(\boldsymbol{\theta})$ represents the prior distribution which we set to a uniform distribution.
+
+To address this, we adopt a simplified sampling strategy. In this approach, the mixture parameters $\boldsymbol{\pi}$ are fixed to the values obtained from the EM algorithm. We then sample only the model parameters $\boldsymbol{\theta}$ from the incomplete data likelihood:
+
+However, the AIP alorithm is computationally expensive for our application with a large latent space.
+Therefore, we employ a simpified parameter sampling where we fix the mixture parameters to the results obtained from the EM algorithm. We then only sample the model parameters $\mathbf{\theta}$ from the incomplete data likelihood @eq-incomplete-likelihood:
+
+$$
+P(\boldsymbol{\theta} \mid \mathbf{D}) \propto \prod_{k}^{K} \sum_{m}^{M} \pi_m^{s_k} P(\mathbf{D}_k \mid \boldsymbol{\theta}_m) P(\mathbf{\theta})
+$$
+
+While this method provides an efficient approximation, it underestimates model uncertainty. Fixing the latent variables $\mathbf{\epsilon}$ and mixture parameters $\boldsymbol{\pi}$ implies the assumption of no uncertainty in these components. Consequently, the resulting uncertainty estimates serve as a lower bound for the true model uncertainty.
+Despite its limitations, this approach balances computational efficiency with a practical estimation of uncertainty, making it a useful compromise.
 
 # Three component Mixture Model {#sec-3comp}
 
-We illustrate the methodology for a mixture model with M = 3 components, considering the ipsilateral involvement of LNLs I, II, III, IV, and V. We include the ICD codes as subsites for oral cavity, hypopharynx and oropharynx. In @fig-convergence the convergence of the negative log-likelihood and change in model parameters is depicted. After a random inizialization, the algorithm rapidly converges. The algorithm was stopped when the difference of log-likelihood between two iterations was below 0.01.
+We illustrate the methodology for a mixture model with M = 3 components, considering the ipsilateral involvement of LNLs I, II, III, IV, VI and VII. We include the ICD codes as subsites for oral cavity, hypopharynx and oropharynx. In @fig-convergence the convergence of the negative log-likelihood and change in model parameters is depicted. After a random inizialization, the algorithm rapidly converges. The algorithm was stopped when the difference of log-likelihood between two iterations was below 0.01.
 
 ![The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters showing that the parameter values stabilize rapidly as well.](figures/Convergence_3_comp.png){#fig-convergence}
 
