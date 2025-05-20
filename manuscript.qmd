@@ -150,7 +150,7 @@ It is important to note that this mixture model algorithm diverges from the conv
 
 ## Expectation-Maximization (EM) Algorithm
 
-To actually find the mixing coefficients $\boldsymbol{\pi}$ and all models' parameters $\boldsymbol{\theta}_m$ that maximize @eq-incomplete-likelihood, we follow an iterative approach called _expectation-maximization_ or _EM-algorithm_. With arbitrarily initialized starting parameters, we alternate between the following two steps:
+To find the mixing coefficients $\boldsymbol{\pi}$ and all models' parameters $\boldsymbol{\theta}_m$ that maximize @eq-incomplete-likelihood, we follow an iterative approach called _expectation-maximization_ or _EM-algorithm_. With arbitrarily initialized starting parameters, we alternate between the following two steps:
 
 1. In the **E**xpectation step, we compute the responsibilities $\gamma(\epsilon_k^m)$, which represent the probabilities of a patient $k$ originating from one of the models $m$, given the current estimates of $\boldsymbol{\theta}$ and $\boldsymbol{\pi}$, as given in @eq-responsibilities.
 2. During the **M**aximization step, we find a new set of parameters that maximize the new expected complete data likelihood (@eq-expected-complete-likelihood). For the mixture coefficients, we can even find an analytic solution to the new maximum:
@@ -181,7 +181,7 @@ This method enables a straightforward uncertainty analysis while avoiding the co
 
 # Three component Mixture Model {#sec-3comp}
 
-We illustrate the methodology for a mixture model with M = 3 components, considering the ipsilateral involvement of LNLs I, II, III, IV, and V. We include the ICD codes as subsites for oral cavity, hypopharynx and oropharynx. In @fig-convergence the convergence of the negative log-likelihood and change in model parameters is depicted. After a random inizialization, the algorithm rapidly converges. The algorithm was stopped when the difference of log-likelihood between two iterations was below 0.01.
+We illustrate the methodology for a mixture model with M = 3 components, considering the ipsilateral involvement of LNLs I, II, III, IV, VI and VII. We include the ICD codes as subsites for oral cavity, hypopharynx and oropharynx. In @fig-convergence the convergence of the negative log-likelihood and change in model parameters is depicted. After a random inizialization, the algorithm rapidly converges. The algorithm was stopped when the difference of log-likelihood between two iterations was below 0.01.
 
 ![The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters showing that the parameter values stabilize rapidly as well.](figures/Convergence_3_comp.png){#fig-convergence}
 
