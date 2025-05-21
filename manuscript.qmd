@@ -79,14 +79,36 @@ $$ {#eq-marginalized-evolution}
 
 where $\boldsymbol{\theta}=\{ b_v, t_{v \rightarrow v+1} \}$ denotes the set of all model parameters (7 in our case). Fortunately, the exact length and shape of this distribution has little impact as previously shown [@ludwig_hidden_2021]. We set $t_\text{max}=$ {{< var model.max_t >}} and $P_\text{early}(t)$ to a binomial distribution with parameter {{< var model.first_binom_prob >}}. Further details on the HMM can be found in @ludwig_hidden_2021 and @zora231470.
 
-With @eq-marginalized-evolution we can compute the probability of a patient being in any state $\xi_i$. Therefore the likelihood of observing a the
-For model training we assume that the diagnoses in our data $\mathbf{D}$ we observe correspond to the hidden state $\mathbf{X}$ of the patient. Thus, learning the model parameters corresponds to maximizing the probability of observing the dataset $\mathbf{D}$:
+With @eq-marginalized-evolution we can compute the probability of a patient being in any state $\xi_i$. 
+To train the model, we assume that the observed diagnoses in our dataset $\mathbf{D}$ directly reflect the underlying hidden states $\mathbf{X}$ of the patient. Thus, learning the model parameters corresponds to maximizing the probability of observing the dataset $\mathbf{D}$:
 
 $$
 P \left( \mathbf{D} \mid \boldsymbol{\theta} \right) = \prod_k^K P \left( \mathbf{X}_k=\boldsymbol{\xi}_i \mid \boldsymbol{\theta}, T_k \right)
 $$ {#eq-likelihood-HMM}
 
-In @eq-likelihood-HMM we compute the likelihood of observing patient the diagnosis of each patient $k$, i.e. t-stage $T_k$ and involvement  $\mathbf{X}_k=\boldsymbol{\xi}_i$.
+In @eq-likelihood-HMM we compute the likelihood of observing the diagnosis of each patient $k$, i.e. t-stage $T_k$ and involvement  $\mathbf{X}_k=\boldsymbol{\xi}_i$.
+
+## Risk Estimation
+The goal of the HMM is to predict the risk of occult metastases in LNLs, given a patient's diagnosis. In this framework this corresponds to computing the probability of a hidden state $\mathbf{X}=\boldsymbol{\xi}_i$ given the observed diagnosis $\mathbf{Z}$ and the model parameters $\boldsymbol{\theta}$. With Baye's theorem we can compute this probability as follows:
+
+$$
+P(\mathbf{X} =\boldsymbol{\xi}_i \mid \mathbf{Z}, \boldsymbol{\theta}) = \frac{P(\mathbf{Z} \mid \mathbf{X}=\boldsymbol{\xi}_i, \boldsymbol{\theta}) P(\mathbf{X}_k=\boldsymbol{\xi}_i \mid \boldsymbol{\theta})}{P(\mathbf{Z} \mid \boldsymbol{\theta})}
+$$ {#eq-bayes}
+
+where $P(\mathbf{Z} \mid \boldsymbol{\theta})$ is the marginal likelihood of the data, which can be computed by summing over all possible hidden states $\boldsymbol{\xi}_i$:
+
+$$
+P(\mathbf{Z} \mid \boldsymbol{\theta}) = \sum_{\boldsymbol{\xi}_i} P(\mathbf{Z} \mid \boldsymbol{\xi}_i, \boldsymbol{\theta}) P(\boldsymbol{\xi}_i \mid \boldsymbol{\theta})
+$$ {#eq-marginal-likelihood}
+
+With this we can compute the probability for each hidden state and subsequently we can compute the probability for each LNL $v$ to be involved given the diagnosis $\mathbf{Z}$ and the model parameters $\boldsymbol{\theta}$ by summing over all possible hidden states $\boldsymbol{\xi}_{i,v}$ where the LNL $v$ is involved:
+
+$$
+P(X_v=1 \mid \mathbf{Z}, \boldsymbol{\theta}) = \sum_{\boldsymbol{\xi}_{i,v}} P(\mathbf{X} =\boldsymbol{\xi}_i \mid \mathbf{Z}, \boldsymbol{\theta})
+$$ {#eq-risk}
+
+As opposed to the model training, we do not assume anymore that the diagnoses correspond to the hidden states. Instead, we consider the sensitivity and specificity of the diagnostic modalities used to determine the involvement of LNLs. Enabling the uncertainty originating from diagnostic modalities to be considered in the model. Here we chose the sensitivity of 0.81 for clinical modalities corresponding to the literature value for imaging modalities [@de_bondt_detection_2007] and specificity of 1.0, indicating that all positively diagnosed LNLs are indeed involved.
+
 
 # Mixture Model for Lymphatic Spread {#sec-mixture}
 
@@ -165,7 +187,7 @@ To find the mixing coefficients $\boldsymbol{\pi}$ and all models' parameters $\
 
 By iterating these steps, the EM algorithm is guaranteed to converge to a (local) maximum of the incomplete data likelihood (@eq-incomplete-likelihood).
 
-## Uncertainty estimation
+## Uncertainty estimation {#sec-uncert}
 
 To estimate the uncertainty associated with both the model parameters and the resulting risk estimates, we employ a bootstrapping approach. Although more comprehensive sampling methods exist for the EM algorithm—such as the imputation-posterior (IP) algorithm, which samples from both model parameters and latent variables—we opt for a computationally more efficient alternative that still yields multiple estimates of all parameters.
 
@@ -179,18 +201,20 @@ Our resampling procedure involves the following steps:
 
 This method enables a straightforward uncertainty analysis while avoiding the computational cost of more intensive sampling techniques.
 
-# Three component Mixture Model {#sec-3comp}
+# Model Training Evaluation {#sec-model_train}
+In the following sections we will analyze the model training for three components first, considering Oral Cavity, Oropharynx and Hypopharynx data. Then we extend the model to four components, additionally including Larynx data. Both models will include LNLs I, II, III, IV and V. LNLs VI and VII are omitted for simplicity and since the prevalence for these LNLs never exceeds 11% (@fig-involvement), meaning that the risk of involvement is low in most cases. 
 
-We illustrate the methodology for a mixture model with M = 3 components, considering the ipsilateral involvement of LNLs I, II, III, IV, VI and VII. We include the ICD codes as subsites for oral cavity, hypopharynx and oropharynx. In @fig-convergence the convergence of the negative log-likelihood and change in model parameters is depicted. After a random inizialization, the algorithm rapidly converges. The algorithm was stopped when the difference of log-likelihood between two iterations was below 0.01.
+## Three Component Mixture Model {#sec-3comp}
+
+We first evualuate the methodology for a mixture model with M = 3 components. We include the ICD codes as subsites for oral cavity, hypopharynx and oropharynx. In @fig-convergence the convergence of the negative log-likelihood and change in model parameters is depicted. After a random inizialization, the algorithm rapidly converges. The algorithm was stopped when the difference of log-likelihood between two iterations was below 0.01.
 
 ![The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters showing that the parameter values stabilize rapidly as well.](figures/Convergence_3_comp.png){#fig-convergence}
 
 In @fig-3_simplex, we visualize the resulting mixture coefficients $\boldsymbol{\pi}$ using a spatial representation, where the vertices of the triangle correspond to the three components. In @fig-3-matrix, these mixture coefficients are presented in matrix form, with the y-axis representing the ICD codes, showing how the mixture components in each row add up to 1.
 
-The spatial plot in @fig-3_simplex illustrates how the model assigns the three components to different tumor subsites. Component 0, located at the bottom right of the triangle, primarily characterizes oropharyngeal subsites. For instance, the base of tongue subsite (C01), which exhibits the highest involvement of LNL II, is fully assigned to this component. Similarly, subsite C10, which includes several oropharyngeal regions, is assigned roughly 50% to the oropharynx-like component, with the remaining mixture distributed across the other two components.
-
-Hypopharyngeal subsites, on the other hand, are fully assigned to Component 2, located at the top vertex of the triangle. Meanwhile, the gum subsite (C03), with predominant LNL I involvement, is entirely assigned to Component 1, situated at the bottom left.
-As subsites anatomically approach the oropharynx, their mixture coefficients for the oropharynx-like component increase. This is evident in the subsites C02 (tongue) and C05 (palate), which display a higher proportion of oropharyngeal influence in their mixture. These results conform well with the involvement patterns observed in the data.
+The spatial plot in @fig-3_simplex illustrates how the model assigns the three components to different tumor subsites. Component 0, located at the bottom right of the triangle, primarily characterizes hypopharyngeal subsites. Both hypopharyngeal subsites, piriform sinus (C12) and hypopharynx (C13), are strongly assigned to this component.
+Similarly, component 1, located at the bottom left, characterizes oral cavity subsites. For instance, the gum (C03), which has the highest LNL I involvement is fully assigned to this subsite. As subsites anatomically approach the oropharynx, their mixture coefficients for the oropharynx-like component, at the top of the triangle, increase. This is evident in the subsites C02 (tongue) and C05 (palate), which display a higher proportion of oropharyngeal influence in their mixture. These results conform well with the involvement patterns observed in the data in figure @fig-involvement.
+The base of tongue subsite (C01), which exhibits the highest involvement of LNL II, is fully assigned to oropharynx-like component. Similarly, subsite C10, which includes several oropharyngeal regions, is assigned roughly 50% to the oropharynx-like component, with the remaining mixture distributed across the other two components, representing its large variation in spread patterns.
 
 ::: {layout="[75,30]" layout-valign="bottom"}
 
@@ -199,7 +223,53 @@ As subsites anatomically approach the oropharynx, their mixture coefficients for
 ![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_3_t_stages_new.png){#fig-3-matrix}
 :::
 
-# Four component Mixture Model {#sec-4comp}
+
+To evaluate the uncertainty in the model parameters, the bootstrapping approach introduced in @sec-uncert has been applied. Specifically, we generated 200 bootstrap samples by resampling the observed data with replacement, maintaining the original number of samples per ICD code. For each bootstrap sample, the mixture model was re-fitted, and the resulting parameters were recorded. This process yielded a distribution of parameter estimates, allowing us to compute confidence intervals and assess the variability in the model's predictions.
+
+The results of the bootstrapping analysis are shown in @fig-simplex_uncert and @fig-3_comp_scatter_uncert. The figure illustrates the variability in the mixture coefficients $\boldsymbol{\pi}$ for each subsite in the same representation as @fig-3_simplex. The figure shows that the uncertainties match the continuity of the spread patterns. The base of tongue (C01) has most of its uncertainty along in between the oropharynx component and the hypopharynx component. Similarly, the hypopharynx subsite (C13) mostly presents uncertainty between these two components. The more general oropharnyx subsite (C10) shows more uncertainty in each components direction, due to its mixed spread pattern. The subsite for other pars of mouth (C03) however, only has uncertainty along the axis connecting the oropharyngeal component and the oral cavity componen, therefore never mixing with the hypopharynx-like component on the right. In figure @fig-3_comp_scatter_uncert the asymmetry of the uncertainty is better depicted. E.g. the base of tongue (C01) subsite and the hypopharynx (C13) subsite have strongly asymmetric uncertainties. Further, the plot better characterizes the uncertainty in the palate subsite (C05), where the mixture and uncertainty is mainly in the oropharynx-like and the oral cavity-like components if we center the uncertainty around the optimal values instead of the mean values as it is depicted in @fig-simplex_uncert. 
+
+
+![Variability in mixture coefficients $\boldsymbol{\pi}$ across bootstrap samples for each subsite. Where the dots represent the optimal values and the ellipses represent the 68% percentile centered around the mean value. The 68% percentile are computed assuming a 2D-gaussian distribution. However, with the bounds of 0 and 1 the sampled mixture coefficients do not exactly follow a gaussian distribution.](figures/mixture_coefficients_uncert_simplex.png){#fig-simplex_uncert}
+
+![Variability in mixture coefficients $\boldsymbol{\pi}$ across bootstrap samples for each subsite. The dots represent the optimal values. The bars include 68% of all sample values centered around the optimal values.](figures/3_comp_mixture_coefficients_uncert_scatter.png){#fig-3_comp_scatter_uncert}
+
+Additionally, the bootstrapping approach enables us to quantify the uncertainty in the model predictions for each subsite and LNL. To benchmark the model we analyze the predicted and observed prevalences for LNLs I, II, III, IV, and V. These predictions are stratified by tumor subsite and t-stage, providing a comprehensive view of the model's performance and its associated uncertainty. 
+
+In @fig-oral_cavity we present the predictions for the oral cavity subsites C03 and C05. Here we can clearly see in figure @fig-oral_cavity_C03_early and @fig-oral_cavity_C03_late that the difference in prevalence is substantial, even though both subsites are grouped in the same tumor location. The model predicts a higher prevalence for LNL II in subsite C05 (palate) compared to subsite C03 (gum). This is consistent with the observed data, where the prevalence of LNL II involvement is higher for the palate than for the gum. However, the model only predicts a slightly higher prevalence for LNL I in subsite C03 compared to subsite C05. This is not consistent with the observed data, where the prevalence of LNL I involvement is significantly higher for the gum than for the palate. Thus, showing a limitation in the model to properly split these different involvements. In late t-stages, depicted in figure @fig-oral_cavity_C03_late and @fig-oral_cavity_C05_late, the model predicts a higher prevalence for LNL II in subsite C05 compared to the early t-stage, but not fully capturing the increase in prevalence. For subsite C03 the LNL II involvement is predicted to increase  as well, capturing the increase in prevalence. However, for LNL I, while capturing the increase in prevalence, it does not optimally predict the prevalence, similarly to the early t-stage. For LNLs III, IV and V, the model consistently predicts the low prevalences observed in the data for both subsites.
+
+::: {#fig-oral_cavity layout-ncol=1}
+
+![](figures/3_predicted_prevalence_C03_early.png){#fig-oral_cavity_C03_early}
+
+![](figures/3_predicted_prevalence_C05_early.png){#fig-oral_cavity_C05_early}
+
+![](figures/3_predicted_prevalence_C03_late.png){#fig-oral_cavity_C03_late}
+
+![](figures/3_predicted_prevalence_C05_late.png){#fig-oral_cavity_C05_late}
+
+Observed prevalence (solid lines) and predicted prevalence (histograms) for subsites C03 and C05. Figures a and b show the prevalences for early t-stages. Figures c and d show the prevalences for late t-stages. 
+:::
+
+In @fig-oropharynx we present the predictions for the oropharynx subsites C01 and C10. 
+In figures @fig-oropharynx_C01_early and @fig-oropharynx_C10_early we can see that the model predicts a higher prevalence for LNL II in subsite C01 (base of tongue) compared to subsite C10 (oropharynx). This is consistent with the observed data. In figures @fig-oropharynx_C01_late and @fig-oropharynx_C10_late we can see that the model precisely captures the increased prevalence in late t-stage for both subsites. LNLs I, IV and V are predicted to have low prevalences for both subsites, but the model does not perfectly fit the predicted prevalences to the observed prevalences.
+
+
+::: {#fig-oropharynx layout-ncol=1}
+
+![](figures/3_predicted_prevalence_C01_early.png){#fig-oropharynx_C01_early}
+
+![](figures/3_predicted_prevalence_C10_early.png){#fig-oropharynx_C10_early}
+
+![](figures/3_predicted_prevalence_C01_late.png){#fig-oropharynx_C01_late}
+
+![](figures/3_predicted_prevalence_C10_late.png){#fig-oropharynx_C10_late}
+
+Observed prevalence (solid lines) and predicted prevalence (histograms) for subsites C01 and C10. Figures a and b show the prevalences for early t-stages. Figures c and d show the prevalences for late t-stages. 
+:::
+
+In summary, the mixture model successfully distinguishes between subsites, capturing the continuous variation in lymphatic spread patterns across tumor locations. However, the model's predictions are not always perfect. While it generally aligns with observed data, certain nuances, such as the higher prevalence of LNL I involvement in subsite C03 compared to C05, are not fully captured.
+
+## Four Component Mixture Model {#sec-4comp}
 
 We can extend the mixture model to include the larynx. The larynx patients are more finely divided into ICD codes C32.0, C32.1 and C32.2 as there is a notable difference between these ICD codes in @fig-involvement.
 
@@ -207,11 +277,30 @@ Simlarly to the three component model, we can analyze the convergence over the i
 
 ![The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters.](figures/convergence_4_components_4_loc.png){#fig-convergence4}
 
-The component assignment is shown in @fig-4-matrix. Similarly to the 3-component model the different tumor locations are assigned to a one of the components....
+The component assignment is shown in @fig-4-matrix. Similarly to the 3-component model the different tumor locations are assigned to a one of the components. In this case, the new component is used to model laryngeal subsites. 
 
-
-Here i probably should permute the components such that we have the same ordering as in the 3-component model.
 
 ![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_4_t_staging_add_larynx.png){#fig-4-matrix}
 
 add some analysis (level specific predictions and also comparison to single tumor location models.)
+
+# Model Predictions {#sec-model_pred}
+
+Given the model parameters, we can compute the risk of occult metastases given a patient's diagnosis. The model can be applied to predict the risk of involvement for each LNL, given the patient's t-stage and primary tumor subsite. 
+
+The risk predictions are computed by applying the @eq-risk to each component and subsequently mixing the results using the mixture coefficients $\boldsymbol{\pi}$. The risk of involvement for each LNL $v$ in subsite $s$ is given by:
+$$
+P(X_v^s=1 \mid \mathbf{D}, \boldsymbol{\theta}) = \sum_{m=1}^M \pi_m^{s} P(X_v=1 \mid \mathbf{D}, \boldsymbol{\theta}_m)
+$$ {#eq-risk-mixing}
+
+where $s$ is the subsite and $\boldsymbol{\theta}_m$ are the parameters of model component $m$.
+
+For all estimates we will set a 5% threshold for the risk of involvement. This means that if the model predicts a risk of involvement of 5% or higher, we will consider the LNL to be at a "high" risk of involvement and should be irradiated. Consequently all LNLs with a risk of involvement below 5% will be considered to be at a "low" risk of involvement and should not be irradiated. This allows us to compare the model predictions with the current clinical guidelines for elective irradiation of LNLs.
+
+In the following sections we will analyze the model predictions for the four component model only and for selected clinical diagnoses.
+
+## Oral cavity
+
+Oral cavity tumors typically spread to LNLs I, II and III as shown in @fig-involvement. Consequently, the clinical guidelines recommend irradiating LNLs I, II, III for all tumors, irrespective of t-stage and even if there is no LNL involvement [@biau_selection_2019].
+
+We first analyze the risk predictions for the case where we diagnosed 
