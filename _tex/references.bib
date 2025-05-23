@@ -3627,3 +3627,34 @@
   keywords = {elective CTV definition,head and neck cancer,hidden Markov model,metastasis,radiotherapy},
   file = {C:\Users\roman\OneDrive\Documents\Library\Ludwig_2023_Modelling lymphatic metastatic progression in head and neck cancer2.pdf}
 }
+
+@article{Clayton1999,
+ ISSN = {09641998, 1467985X},
+ URL = {http://www.jstor.org/stable/2680488},
+ abstract = {Estimation in mixed linear models is, in general, computationally demanding, since applied problems may involve extensive data sets and large numbers of random effects. Existing computer algorithms are slow and/or require large amounts of memory. These problems are compounded in generalized linear mixed models for categorical data, since even approximate methods involve fitting of a linear mixed model within steps of an iteratively reweighted least squares algorithm. Only in models in which the random effects are hierarchically nested can the computations for fitting these models to large data sets be carried out rapidly. We describe a data augmentation approach to these computational difficulties in which we repeatedly fit an overlapping series of submodels, incorporating the missing terms in each submodel as 'offsets'. The submodels are chosen so that they have a nested random-effect structure, thus allowing maximum exploitation of the computational efficiency which is available in this case. Examples of the use of the algorithm for both metric and discrete responses are discussed, all calculations being carried out using macros within the MLwiN program.},
+ author = {David Clayton and Jon Rasbash},
+ journal = {Journal of the Royal Statistical Society. Series A (Statistics in Society)},
+ number = {3},
+ pages = {425--436},
+ publisher = {[Oxford University Press, Royal Statistical Society]},
+ title = {Estimation in Large Crossed Random-Effect Models by Data Augmentation},
+ urldate = {2024-12-12},
+ volume = {162},
+ year = {1999}
+}
+
+@article{Tanner1987,
+ ISSN = {01621459, 1537274X},
+ URL = {http://www.jstor.org/stable/2289457},
+ abstract = {The idea of data augmentation arises naturally in missing value problems, as exemplified by the standard ways of filling in missing cells in balanced two-way tables. Thus data augmentation refers to a scheme of augmenting the observed data so as to make it more easy to analyze. This device is used to great advantage by the EM algorithm (Dempster, Laird, and Rubin 1977) in solving maximum likelihood problems. In situations when the likelihood cannot be approximated closely by the normal likelihood, maximum likelihood estimates and the associated standard errors cannot be relied upon to make valid inferential statements. From the Bayesian point of view, one must now calculate the posterior distribution of parameters of interest. If data augmentation can be used in the calculation of the maximum likelihood estimate, then in the same cases one ought to be able to use it in the computation of the posterior distribution. It is the purpose of this article to explain how this can be done. The basic idea is quite simple. The observed data y is augmented by the quantity z, which is referred to as the latent data. It is assumed that if y and z are both known, then the problem is straightforward to analyze, that is, the augmented data posterior p(θ ∣ y, z) can be calculated. But the posterior density that we want is p(θ ∣ y), which may be difficult to calculate directly. If, however, one can generate multiple values of z from the predictive distribution p(z ∣ y) (i.e., multiple imputations of z), then p(θ ∣ y) can be approximately obtained as the average of p(θ ∣ y, z) over the imputed z's. However, p(z ∣ y) depends, in turn, on p(θ ∣ y). Hence if p(θ ∣ y) was known, it could be used to calculate p(z ∣ y). This mutual dependency between p(θ ∣ y) and p(z ∣ y) leads to an iterative algorithm to calculate p(θ ∣ y). Analytically, this algorithm is essentially the method of successive substitution for solving an operator fixed point equation. We exploit this fact to prove convergence under mild regularity conditions. Typically, to implement the algorithm, one must be able to sample from two distributions, namely p(θ ∣ y, z) and p(z ∣ θ, y). In many cases, it is straightforward to sample from either distribution. In general, though, either sampling can be difficult, just as either the E or the M step can be difficult to implement in the EM algorithm. For p(θ ∣ y, z) arising from parametric submodels of the multinomial, we develop a primitive but generally applicable way to approximately sample θ. The idea is first to sample from the posterior distribution of the cell probabilities and then to project to the parametric surface that is specified by the submodel, giving more weight to those observations lying closer to the surface. This procedure should cover many of the common models for categorical data. There are several examples given in this article. First, the algorithm is introduced and motivated in the context of a genetic linkage example. Second, we apply this algorithm to an example of inference from incomplete data regarding the correlation coefficient of the bivariate normal distribution. It is seen that the algorithm recovers the bimodal nature of the posterior distribution. Finally, the algorithm is used in the analysis of the traditional latent-class model as applied to data from the General Social Survey.},
+ author = {Martin A. Tanner and Wing Hung Wong},
+ journal = {Journal of the American Statistical Association},
+ number = {398},
+ pages = {528--540},
+ publisher = {[American Statistical Association, Taylor & Francis, Ltd.]},
+ title = {The Calculation of Posterior Distributions by Data Augmentation},
+ urldate = {2024-12-12},
+ volume = {82},
+ year = {1987}
+}
+
