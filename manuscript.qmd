@@ -218,9 +218,9 @@ The base of tongue subsite (C01), which exhibits the highest involvement of LNL 
 
 ::: {layout="[75,30]" layout-valign="bottom"}
 
-![Assignment of each subsite to each of the three components. The closer a subsite is to a vertex, the more it is assigned to the corresponding component, with component 0 on the bottom right, 1 on the bottom left and 2 on the top. The size of the marker (area) corresponds to the number of patients in each subsite.](figures/mixture_components_3_simplex_t_stages_new.png){#fig-3_simplex}
+![Assignment of each subsite to each of the three components. The closer a subsite is to a vertex, the more it is assigned to the corresponding component, with component 0 on the bottom right, 1 on the bottom left and 2 on the top. The size of the marker (area) corresponds to the number of patients in each subsite.](figures/mixture_components_3_simplex.png){#fig-3_simplex}
 
-![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_3_t_stages_new.png){#fig-3-matrix}
+![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_3.png){#fig-3-matrix}
 :::
 
 
@@ -277,12 +277,51 @@ Simlarly to the three component model, we can analyze the convergence over the i
 
 ![The y-axis on the left shows the negative likelihood convergence depicted in the blue line. The y-axis on the right shows the sum of absulte difference between all model parameters.](figures/convergence_4_components_4_loc.png){#fig-convergence4}
 
-The component assignment is shown in @fig-4-matrix. Similarly to the 3-component model the different tumor locations are assigned to a one of the components. In this case, the new component is used to model laryngeal subsites. 
+The component assignment is shown in @fig-4-matrix. Similarly to the 3-component model the different tumor locations are assigned to a one of the components. In this case, the new component is used to model laryngeal subsites. The uncertainty of the assignments is shown in @fig-4_comp_scatter_uncert. The most striking differences are in subsites C03 and C12, which were formerly assigned to a single component. Now, C03 mixes with the laryngeal component, while C12 is mixed with the laryngeal and the hypopharyngeal component. Another interesting observation is the mixture of the supraglottis subsite (C32.1) which is anatomically close to the hypopharynx. The model assigns a strong mixture of the larynx-like component and the hypopharynx-like component to this subsite. This is consistent with the observed data, where the supraglottis subsite has a high prevalence of LNL II and III involvement, which is also observed in the hypopharynx subsites. In contrast, the glottis subsite (C32.0) is strongly assigned to the laryngeal component, while the subsite C32.2 (subglottis) is assigned to the laryngeal component with little uncertainty. This is consistent with the observed data, where the glottis subsite has a much lower prevalence of involvement in any LNL. However, there is a strong t-stage dependency for this subsite.
+
+::: {layout="[30,75]" layout-valign="bottom"}
+
+![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The columns represent the four different components](figures/mixture_components_4.png){#fig-4-matrix}
+
+![Assignment of each subsite to each of the four components. The closer a subsite is to a vertex, the more it is assigned to the corresponding component, with component 0 on the bottom right, 1 on the bottom left, 2 on the top left and 3 on the top right. The size of the marker (area) corresponds to the number of patients in each subsite.](figures/4_comp_mixture_coefficients_uncert_scatter.png){#fig-4_comp_scatter_uncert}
+:::
+
+Similarly to the three component model, we can analyze the predicted and observed prevalences for LNLs I, II, III, IV and V. We will first revisit the oral cavity subsites C03 and C05. to check, whether the additional component improves the model predictions. In @fig-oral_cavity_4 the predictions for the oral cavity subsites C03 and C05 are shown. The model now predicts a higher prevalence for LNL I in subsite C03 (gum) compared to subsite C05 (palate) for both early and 
 
 
-![Matrix representation of component assignment. Each row of the matrix corresponds to each ICD code. The collums represent the three different components](figures/mixture_components_4_t_staging_add_larynx.png){#fig-4-matrix}
+::: {#fig-oral_cavity_4 layout-ncol=1}
 
-add some analysis (level specific predictions and also comparison to single tumor location models.)
+![](figures/4_predicted_prevalence_C03_early.png){#fig-oral_cavity_C03_early}
+
+![](figures/4_predicted_prevalence_C05_early.png){#fig-oral_cavity_C05_early}
+
+![](figures/4_predicted_prevalence_C03_late.png){#fig-oral_cavity_C03_late}
+
+![](figures/4_predicted_prevalence_C05_late.png){#fig-oral_cavity_C05_late}
+
+Observed prevalence (solid lines) and predicted prevalence (histograms) for subsites C03 and C05. Figures a and b show the prevalences for early t-stages. Figures c and d show the prevalences for late t-stages. 
+:::
+
+The predicted prevalences for for the laryngeal subsites C32.0 and C32.1 are shown in @fig-larynx_4. Here, the large difference between early and late t-stages is clearly visible. For subsite C32.0 (glottis) the model predicts a very low prevalence for LNL I, II and III in early t-stages, which is consistent with the observed data. For late t-stages, the model captures the increased involvement probabilities for LNLs II and III. For subsite C32.1 (supraglottis) the model overestimates the prevalence for LNLs II and III in early t-stages and slightly underestimates their prevalence in late t-stages. 
+
+::: {#fig-larynx_4 layout-ncol=1}
+
+![](figures/4_predicted_prevalence_C32.0_early.png){#fig-oral_cavity_C32.0_early}
+
+![](figures/4_predicted_prevalence_C32.1_early.png){#fig-oral_cavity_C05_early}
+
+![](figures/4_predicted_prevalence_C32.0_late.png){#fig-oral_cavity_C03_late}
+
+![](figures/4_predicted_prevalence_C32.1_late.png){#fig-oral_cavity_C05_late}
+
+Observed prevalence (solid lines) and predicted prevalence (histograms) for subsites C32.0 and C32.1. Figures a and b show the prevalences for early t-stages. Figures c and d show the prevalences for late t-stages. 
+:::
+
+The model parameters for the larynx-like component are shown in @fig-4_larynx_parameters. The parameter that governs the impact of t-stage $p_late$ is estimated around 1. Therefore, the model maximizes the increase of risk of involvement for late t-stages to capture the large difference in prevalence between early and late t-stages.
+
+![Model parameters for the larynx-like component. The optimal value and the 68% percentile around the optimal value are marked in red. The mean values and extreme values are indicated by the black bars.](figures/larynx_component_values.png){#fig-4_larynx_parameters}
+
+
 
 # Model Predictions {#sec-model_pred}
 
@@ -304,3 +343,18 @@ In the following sections we will analyze the model predictions for the four com
 Oral cavity tumors typically spread to LNLs I, II and III as shown in @fig-involvement. Consequently, the clinical guidelines recommend irradiating LNLs I, II, III for all tumors, irrespective of t-stage and even if there is no LNL involvement [@biau_selection_2019].
 
 We first analyze the risk predictions for the case where we diagnosed 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Appendix
+Here I will probably add more figures such as all component parameter estimates and their uncertainties.
